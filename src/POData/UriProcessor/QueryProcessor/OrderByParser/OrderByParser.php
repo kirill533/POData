@@ -6,6 +6,7 @@ use POData\Common\InvalidOperationException;
 use POData\Common\Messages;
 use POData\Common\ODataException;
 use POData\Common\ReflectionHandler;
+use POData\Providers\Metadata\Entity\IDynamic;
 use POData\Providers\Metadata\ResourcePropertyKind;
 use POData\Providers\Metadata\ResourceSetWrapper;
 use POData\Providers\Metadata\ResourceType;
@@ -122,8 +123,17 @@ class OrderByParser
         $orderByParser = new self($providerWrapper);
         try {
             $instance = $resourceType->getInstanceType();
-            assert($instance instanceof ReflectionClass, get_class($instance));
-            $orderByParser->dummyObject = $instance->newInstanceArgs([]);
+            if ($instance instanceof IDynamic) {
+                $obj = new \stdClass();
+                foreach ($instance->getPropertyNames() as $key) {
+                    $obj->$key = null;
+                }
+                $orderByParser->dummyObject = $obj;
+            } else {
+                assert($instance instanceof ReflectionClass, get_class($instance));
+                $orderByParser->dummyObject = $instance->newInstanceArgs([]);
+            }
+
         } catch (\ReflectionException $reflectionException) {
             throw ODataException::createInternalServerError(Messages::orderByParserFailedToCreateDummyObject());
         }

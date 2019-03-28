@@ -181,8 +181,63 @@ class WordPressMetadata
         $metadata = new SimpleMetadataProvider('WordPressEntities', 'WordPress');
 
         //Register the entity (resource) type 'Post'
-        $postsEntityType = $metadata->addEntityType(
-            new \ReflectionClass('UnitTests\POData\Facets\WordPress2\Post'), 'Post'
+        $dynamicEntity = new \POData\Providers\Metadata\Entity\Dynamic([
+            //Key Edm.Int32
+            'PostID' => [],
+            //Edm.Int32
+            'Author' => [],
+            //Edm.DateTime
+            'Date' => [],
+            //Edm.DateTime
+            'DateGmt' => [],
+            //Edm.String
+            'Content' => [],
+            //Edm.String
+            'Title' => [],
+            //Edm.String
+            'Excerpt' => [],
+            //Edm.String
+            'Status' => [],
+            //Edm.String
+            'CommentStatus' => [],
+            //Edm.String
+            'PingStatus' => [],
+            //Edm.String
+            'Password' => [],
+            //Edm.String
+            'Name' => [],
+            //Edm.String
+            'ToPing' => [],
+            //Edm.String
+            'Pinged' => [],
+            //Edm.DateTime
+            'Modified' => [],
+            //Edm.DateTime
+            'ModifiedGmt' => [],
+            //Edm.String
+            'ContentFiltered' => [],
+            //Edm.Int32
+            'ParentID' => [],
+            //Edm.String
+            'Guid' => [],
+            //Edm.Int32
+            'MenuOrder' => [],
+            //Edm.String
+            'Type' => [],
+            //Edm.String
+            'MimeType' => [],
+            //Edm.Int32
+            'CommentCount' => [],
+            //Navigation Property User (ResourceReference)
+            'User' => [],
+            //Navigation Property tags (ResourceSetReference)
+            'Tags' => [],
+            //Navigation Property categories (ResourceSetReference)
+            'Categories' => [],
+            //Navigation Property comments (ResourceSetReference)
+            'Comments' => [],
+        ]);
+        $postsEntityType = $metadata->addEntityType($dynamicEntity, 'Post'
         );
         $metadata->addKeyProperty($postsEntityType, 'PostID', EdmPrimitiveType::INT32);
         $metadata->addPrimitiveProperty($postsEntityType, 'Author', EdmPrimitiveType::INT32);

@@ -3,18 +3,19 @@
 namespace POData\Providers\Metadata;
 
 use AlgoWeb\ODataMetadata\MetadataV3\edm\TEntityTypeType;
+use POData\Providers\Metadata\Entity\IDynamic;
 
 class ResourceEntityType extends ResourceType
 {
     /**
      * Create new instance of ResourceEntityType.
-     * @param \ReflectionClass  $instanceType Instance type for the entity type
+     * @param \ReflectionClass|IDynamic  $instanceType Instance type for the entity type
      * @param TEntityTypeType   $entity       Object containing complex type metadata
      * @param IMetadataProvider $meta         Application's metadata provider
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct(\ReflectionClass $instanceType, TEntityTypeType $entity, IMetadataProvider $meta)
+    public function __construct($instanceType, TEntityTypeType $entity, IMetadataProvider $meta)
     {
         $resourceTypeKind = ResourceTypeKind::ENTITY();
         $bitz = explode('.', $entity->getName());

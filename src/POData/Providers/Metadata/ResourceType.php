@@ -6,6 +6,8 @@ use InvalidArgumentException;
 use POData\Common\InvalidOperationException;
 use POData\Common\Messages;
 use POData\Common\ReflectionHandler;
+use POData\Providers\Metadata\Entity\Dynamic;
+use POData\Providers\Metadata\Entity\IDynamic;
 use POData\Providers\Metadata\Type\Binary;
 use POData\Providers\Metadata\Type\Boolean;
 use POData\Providers\Metadata\Type\Byte;
@@ -149,7 +151,7 @@ abstract class ResourceType
      * ReflectionClass (for complex/Entity) or IType (for Primitive) instance for
      * the resource (type) described by this class instance.
      *
-     * @var \ReflectionClass|IType|string
+     * @var \ReflectionClass|IType|IDynamic|string
      */
     protected $type;
 
@@ -170,7 +172,7 @@ abstract class ResourceType
     /**
      * Create new instance of ResourceType.
      *
-     * @param \ReflectionClass|IType $instanceType     Instance type for the resource,
+     * @param \ReflectionClass|IType|IDynamic $instanceType     Instance type for the resource,
      *                                                 for entity and
      *                                                 complex this will
      *                                                 be 'ReflectionClass' and for
@@ -250,14 +252,15 @@ abstract class ResourceType
      * then this function returns reference to ReflectionClass instance for the type.
      * If resource type describes a primitive type, then this function returns ITYpe.
      *
-     * @return \ReflectionClass|IType
+     * @return \ReflectionClass|IType|IDynamic
      */
     public function getInstanceType()
     {
         if (is_string($this->type)) {
             $this->__wakeup();
         }
-        assert($this->type instanceof \ReflectionClass || $this->type instanceof IType);
+        assert($this->type instanceof \ReflectionClass || $this->type instanceof IType
+            || $this->type instanceof IDynamic);
 
         return $this->type;
     }
@@ -858,7 +861,12 @@ abstract class ResourceType
         if (null == $this->type || $this->type instanceof IType) {
             return array_keys(get_object_vars($this));
         }
-        if (is_object($this->type)) {
+        if (is_object($this->type) && $this->type instanceof IDynamic) {
+            $this->type = [
+                'isDynamic' => true,
+                'properties' => $this->type->getProperties()
+            ];
+        } else if (is_object($this->type)) {
             $this->type = $this->type->name;
         }
         assert(is_string($this->type), 'Type name should be a string at end of serialisation');
@@ -871,11 +879,13 @@ abstract class ResourceType
     {
         if (is_string($this->type)) {
             $this->type = new \ReflectionClass($this->type);
+        } else if (is_array($this->type) && !empty($this->type['isDynamic'])) {
+            $this->type = new Dynamic($this->type['properties']);
         }
 
         assert(
-            $this->type instanceof \ReflectionClass || $this->type instanceof IType,
-            '_type neither instance of reflection class nor IType'
+            $this->type instanceof \ReflectionClass || $this->type instanceof IType || $this->type instanceof IDynamic,
+            '_type neither instance of reflection class nor IDynamic'
         );
     }
 
