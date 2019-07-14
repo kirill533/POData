@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use POData\Common\InvalidOperationException;
 use POData\Providers\Metadata\Type\IType;
 use POData\Providers\Metadata\Type\TypeCode;
+use POData\Providers\Metadata\Entity\IDynamic;
 
 /**
  * Class SimpleMetadataProvider.
@@ -279,7 +280,7 @@ class SimpleMetadataProvider implements IMetadataProvider
     /**
      * Add an entity type.
      *
-     * @param  \ReflectionClass                                         $refClass reflection class of the entity
+     * @param  \ReflectionClass|IDynamic                                $refClass reflection class of the entity
      * @param  string                                                   $name name of the entity
      * @param  null|string                                              $pluralName  Optional custom resource set name
      * @param  mixed                                                    $isAbstract
@@ -289,7 +290,7 @@ class SimpleMetadataProvider implements IMetadataProvider
      * @internal param string $namespace namespace of the data source
      */
     public function addEntityType(
-        \ReflectionClass $refClass,
+        $refClass,
         $name,
         $pluralName = null,
         $isAbstract = false,
@@ -320,7 +321,7 @@ class SimpleMetadataProvider implements IMetadataProvider
      * @internal param null|ResourceType $baseResourceType
      */
     private function createResourceType(
-        \ReflectionClass $refClass,
+        $refClass,
         $name,
         $typeKind,
         $isAbstract = false,
@@ -427,7 +428,7 @@ class SimpleMetadataProvider implements IMetadataProvider
      * @param ResourceType $resourceType resource type to which key property
      *                                   is to be added
      * @param string       $name         name of the key property
-     * @param TypeCode     $typeCode     type of the key property
+     * @param TypeCode|int $typeCode     type of the key property
      */
     public function addKeyProperty($resourceType, $name, $typeCode)
     {
@@ -507,6 +508,16 @@ class SimpleMetadataProvider implements IMetadataProvider
     private function checkInstanceProperty($name, ResourceType $resourceType)
     {
         $instance = $resourceType->getInstanceType();
+
+        if ($instance instanceof IDynamic) {
+            if (!$instance->hasProperty($name)) {
+                throw new InvalidOperationException(
+                    'Can\'t add a property which does not exist on the instance type. Property name: ' . $name
+                );
+            }
+            return;
+        }
+
         $hasMagicGetter = $instance instanceof IType || $instance->hasMethod('__get');
         if ($instance instanceof \ReflectionClass) {
             $hasMagicGetter |= $instance->isInstance(new \stdClass);
@@ -519,7 +530,7 @@ class SimpleMetadataProvider implements IMetadataProvider
                 }
             } catch (\ReflectionException $exception) {
                 throw new InvalidOperationException(
-                    'Can\'t add a property which does not exist on the instance type.'
+                    'Can\'t add a property which does not exist on the instance type. Property name: ' . $name
                 );
             }
         }
@@ -531,7 +542,7 @@ class SimpleMetadataProvider implements IMetadataProvider
      * @param ResourceType $resourceType resource type to which key property
      *                                   is to be added
      * @param string       $name         name of the key property
-     * @param TypeCode     $typeCode     type of the key property
+     * @param int|TypeCode $typeCode     type of the key property
      * @param bool         $isBag        property is bag or not
      * @param null|mixed   $defaultValue
      * @param mixed        $nullable
@@ -562,7 +573,7 @@ class SimpleMetadataProvider implements IMetadataProvider
      * @param ResourceType $resourceType resource type to which key property
      *                                   is to be added
      * @param string       $name         name of the property
-     * @param TypeCode     $typeCode     type of the etag property
+     * @param TypeCode|int $typeCode     type of the etag property
      * @param null|mixed   $defaultValue
      * @param mixed        $nullable
      */
@@ -648,6 +659,135 @@ class SimpleMetadataProvider implements IMetadataProvider
             ResourcePropertyKind::RESOURCESET_REFERENCE == $targetResourceKind,
             'N side of 1:N relationship not pointing to resource set reference'
         );
+    }
+
+    /**
+     * To add a 1:N resource reference property using constraint notation.
+     *
+     * @param ResourceEntityType $sourceResourceType The resource type to add the resource
+     *                                               reference property from
+     * @param ResourceEntityType $targetResourceType The resource type to add the resource
+     *                                               reference property to
+     * @param string $sourceNavProperty The name of the property to add, on source type
+     * @param string $targetNavProperty The name of the property to add, on target type
+     * @param string $sourceProperty
+     * @param string $targetProperty
+     * @param bool $nullable Is singleton side of relation nullable?
+     * @throws InvalidOperationException
+     */
+    public function addResourceReferencePropertyConstraint(
+        ResourceEntityType $sourceResourceType,
+        ResourceEntityType $targetResourceType,
+        $sourceNavProperty,
+        $targetNavProperty,
+        $sourceProperty,
+        $targetProperty,
+        $nullable = false
+    ) {
+        if (!is_string($sourceProperty) || !is_string($targetProperty)) {
+            throw new InvalidOperationException('Source and target properties must both be strings');
+        }
+
+        $this->checkInstanceProperty($sourceProperty, $sourceResourceType);
+        $this->checkInstanceProperty($targetProperty, $targetResourceType);
+
+        // check that property and resource name don't up and collide - would violate OData spec
+        if (strtolower($sourceProperty) == strtolower($sourceResourceType->getName())) {
+            throw new InvalidOperationException(
+                'Source property name must be different from source resource name.'
+            );
+        }
+        if (strtolower($targetProperty) == strtolower($targetResourceType->getName())) {
+            throw new InvalidOperationException(
+                'Target property name must be different from target resource name.'
+            );
+        }
+
+        //Create instance of AssociationSet for this relationship
+        $sourceResourceSet = $sourceResourceType->getCustomState();
+        if (!$sourceResourceSet instanceof ResourceSet) {
+            throw new InvalidOperationException(
+                'Failed to retrieve the custom state from '
+                . $sourceResourceType->getName()
+            );
+        }
+        $targetResourceSet = $targetResourceType->getCustomState();
+        if (!$targetResourceSet instanceof ResourceSet) {
+            throw new InvalidOperationException(
+                'Failed to retrieve the custom state from '
+                . $targetResourceType->getName()
+            );
+        }
+
+        //Customer_Orders_Orders, Order_Customer_Customers
+        $fwdSetKey = ResourceAssociationSet::keyName($sourceResourceType, $sourceNavProperty, $targetResourceSet);
+        $revSetKey = ResourceAssociationSet::keyName($targetResourceType, $targetNavProperty, $sourceResourceSet);
+        if (isset($this->associationSets[$fwdSetKey]) && isset($this->associationSets[$revSetKey])) {
+            return;
+        }
+
+        $sourceMultiplicity = true === $nullable ? '0..1' : '1';
+        $targetMultiplicity = '*';
+
+        $sourceKind = ('*' == $sourceMultiplicity)
+            ? ResourcePropertyKind::RESOURCESET_REFERENCE
+            : ResourcePropertyKind::RESOURCE_REFERENCE;
+
+        $targetKind = ('*' == $targetMultiplicity)
+            ? ResourcePropertyKind::RESOURCESET_REFERENCE
+            : ResourcePropertyKind::RESOURCE_REFERENCE;
+
+        // Add navigation properties
+        $sourceResourceNavProperty = new ResourceProperty($sourceNavProperty, null, $targetKind, $targetResourceType);
+        if ($targetKind != $sourceResourceNavProperty->getKind()) {
+            throw new InvalidOperationException(
+                'Resource property kind mismatch between $targetKind and $sourceResourceNavProperty'
+            );
+        }
+        $sourceResourceType->addProperty($sourceResourceNavProperty, false);
+        $targetResourceNavProperty = new ResourceProperty($targetNavProperty, null, $sourceKind, $sourceResourceType);
+        if ($sourceKind != $targetResourceNavProperty->getKind()) {
+            throw new InvalidOperationException(
+                'Resource property kind mismatch between $sourceKind and $targetResourceNavProperty'
+            );
+        }
+        $targetResourceType->addProperty($targetResourceNavProperty, false);
+
+        // find constraints keys properties
+        $sourceResourceProperty = $sourceResourceType->resolvePropertyDeclaredOnThisType($sourceProperty);
+        if ($sourceResourceProperty === null) {
+            throw new InvalidOperationException(
+                'Source property not fount in the source type'
+            );
+        }
+
+        $targetResourceProperty = $targetResourceType->resolvePropertyDeclaredOnThisType($targetProperty);
+
+        if ($targetResourceProperty === null) {
+            throw new InvalidOperationException(
+                'Target property not fount in the target type'
+            );
+        }
+
+        $fwdSet = new ResourceAssociationSet(
+            $fwdSetKey,
+            new ResourceAssociationSetEnd($sourceResourceSet, $sourceResourceType, $sourceResourceNavProperty),
+            new ResourceAssociationSetEnd($targetResourceSet, $targetResourceType, $targetResourceNavProperty)
+        );
+
+        $sourceName = $sourceResourceType->getFullName();
+        $targetName = $targetResourceType->getFullName();
+        $this->getMetadataManager()->addNavigationPropertyToEntityType(
+            $this->oDataEntityMap[$sourceName],
+            $sourceMultiplicity,
+            $sourceNavProperty,
+            $this->oDataEntityMap[$targetName],
+            $targetMultiplicity,
+            $targetNavProperty,
+            [$sourceResourceProperty->getName()],
+            [$targetResourceProperty->getName()]
+        );
+        $this->associationSets[$fwdSetKey] = $fwdSet;
     }
 
     /**

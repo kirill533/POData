@@ -286,7 +286,7 @@ class SimpleMetadataProviderTest extends TestCase
         $complexType = m::mock(ResourceComplexType::class);
         $foo = new SimpleMetadataProvider('string', 'String');
 
-        $expected = 'Can\'t add a property which does not exist on the instance type.';
+        $expected = 'Can\'t add a property which does not exist on the instance type. Property name: Time';
         $actual = null;
 
         try {
@@ -354,7 +354,7 @@ class SimpleMetadataProviderTest extends TestCase
         $keyName = 'id';
         $complex = $foo->addEntityType(new \ReflectionClass(get_class($orig)), 'table');
 
-        $expected = 'Can\'t add a property which does not exist on the instance type.';
+        $expected = 'Can\'t add a property which does not exist on the instance type. Property name: id';
         $actual = null;
 
         try {

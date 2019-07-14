@@ -217,6 +217,7 @@ class JsonLightODataWriterNoMetadataTest extends TestCase
         //decoding the json string to test
         $actual = json_decode($writer->getOutput());
         $expected = '{
+                        "odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "value" : [
 				            {
 				                "ID": 100,
@@ -243,6 +244,7 @@ class JsonLightODataWriterNoMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 						"odata.count":"33",
+						"odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "value" : [
 				            {
 				                "ID": 100,
@@ -461,6 +463,7 @@ class JsonLightODataWriterNoMetadataTest extends TestCase
         //decoding the json string to test
         $actual = json_decode($writer->getOutput());
         $expected = '{
+                        "odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "value": [
 							{
 								"ID": 0,
@@ -503,6 +506,7 @@ class JsonLightODataWriterNoMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 					    "odata.count":"55",
+					    "odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "value": [
 							{
 								"ID": 0,

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edmx:Edmx xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" Version="3.0">
+  <edmx:DataServices m:MaxDataServiceVersion="3.0" m:DataServiceVersion="3.0">
+    <Schema Namespace="NorthWind">
+      <Association Name="Customer_Orders_Order_Customer">
+        <End Type="NorthWind.Customer" Role="Customers_Orders" Multiplicity="0..1"/>
+        <End Type="NorthWind.Order" Role="Orders_Customer" Multiplicity="*"/>
+        <ReferentialConstraint>
+          <Principal Role="Customers_Orders">
+            <PropertyRef Name="CustomerID"/>
+          </Principal>
+          <Dependent Role="Orders_Customer">
+            <PropertyRef Name="CustomerID"/>
+          </Dependent>
+        </ReferentialConstraint>
+      </Association>
+      <Association Name="Product_Order_Details_Order_Details_Product">
+        <End Type="NorthWind.Product" Role="Products_Order_Details" Multiplicity="1"/>
+        <End Type="NorthWind.Order_Details" Role="Order_Details_Product" Multiplicity="*"/>
+        <ReferentialConstraint>
+          <Principal Role="Products_Order_Details">
+            <PropertyRef Name="ProductID"/>
+          </Principal>
+          <Dependent Role="Order_Details_Product">
+            <PropertyRef Name="ProductID"/>
+          </Dependent>
+        </ReferentialConstraint>
+      </Association>
+      <Association Name="Order_Order_Details_Order_Details_Order">
+        <End Type="NorthWind.Order" Role="Orders_Order_Details" Multiplicity="1"/>
+        <End Type="NorthWind.Order_Details" Role="Order_Details_Order" Multiplicity="*"/>
+        <ReferentialConstraint>
+          <Principal Role="Orders_Order_Details">
+            <PropertyRef Name="OrderID"/>
+          </Principal>
+          <Dependent Role="Order_Details_Order">
+            <PropertyRef Name="OrderID"/>
+          </Dependent>
+        </ReferentialConstraint>
+      </Association>
+      <Association Name="Employee_Subordinates_Employee_Manager">
+        <End Type="NorthWind.Employee" Role="Employees_Subordinates" Multiplicity="0..1"/>
+        <End Type="NorthWind.Employee" Role="Employees_Manager" Multiplicity="*"/>
+        <ReferentialConstraint>
+          <Principal Role="Employees_Subordinates">
+            <PropertyRef Name="EmployeeID"/>
+          </Principal>
+          <Dependent Role="Employees_Manager">
+            <PropertyRef Name="ReportsTo"/>
+          </Dependent>
+        </ReferentialConstraint>
+      </Association>
+      <EntityType OpenType="false" Abstract="false" Name="Customer">
+        <Key>
+          <PropertyRef Name="CustomerID"/>
+          <PropertyRef Name="CustomerGuid"/>
+        </Key>
+        <Property Name="CustomerID" Type="Edm.String" Nullable="false"/>
+        <Property Name="CustomerGuid" Type="Edm.Guid" Nullable="false"/>
+        <Property Name="CustomerName" Type="Edm.String" Nullable="false"/>
+        <Property Name="Country" Type="Edm.String" Nullable="false"/>
+        <Property Name="Rating" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="Photo" Type="Edm.Binary" Nullable="false"/>
+        <NavigationProperty Name="Orders" Relationship="NorthWind.Customer_Orders_Order_Customer" ToRole="Orders_Customer" FromRole="Customers_Orders" cg:GetterAccess="Public" cg:SetterAccess="Public"/>
+      </EntityType>
+      <EntityType OpenType="false" Abstract="false" Name="Order">
+        <Key>
+          <PropertyRef Name="OrderID"/>
+        </Key>
+        <Property Name="OrderID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="OrderDate" Type="Edm.DateTime" Nullable="false"/>
+        <Property Name="DeliveryDate" Type="Edm.DateTime" Nullable="false"/>
+        <Property Name="ShipName" Type="Edm.String" Nullable="false"/>
+        <Property Name="ItemCount" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="QualityRate" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="Price" Type="Edm.Double" Nullable="false"/>
+        <Property Name="CustomerID" Type="Edm.Int32" Nullable="false"/>
+        <NavigationProperty Name="Customer" Relationship="NorthWind.Customer_Orders_Order_Customer" ToRole="Customers_Orders" FromRole="Orders_Customer" cg:GetterAccess="Public" cg:SetterAccess="Public"/>
+        <NavigationProperty Name="Order_Details" Relationship="NorthWind.Order_Order_Details_Order_Details_Order" ToRole="Order_Details_Order" FromRole="Orders_Order_Details" cg:GetterAccess="Public" cg:SetterAccess="Public"/>
+      </EntityType>
+      <EntityType OpenType="false" Abstract="false" Name="Product">
+        <Key>
+          <PropertyRef Name="ProductID"/>
+        </Key>
+        <Property Name="ProductID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="ProductName" Type="Edm.String" Nullable="false"/>
+        <NavigationProperty Name="Order_Details" Relationship="NorthWind.Product_Order_Details_Order_Details_Product" ToRole="Order_Details_Product" FromRole="Products_Order_Details" cg:GetterAccess="Public" cg:SetterAccess="Public"/>
+      </EntityType>
+      <EntityType OpenType="false" Abstract="false" Name="Order_Details">
+        <Key>
+          <PropertyRef Name="ProductID"/>
+          <PropertyRef Name="OrderID"/>
+        </Key>
+        <Property Name="ProductID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="OrderID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="UnitPrice" Type="Edm.Decimal" Nullable="false"/>
+        <Property Name="Quantity" Type="Edm.Int16" Nullable="false"/>
+        <Property Name="Discount" Type="Edm.Single" Nullable="false"/>
+        <NavigationProperty Name="Product" Relationship="NorthWind.Product_Order_Details_Order_Details_Product" ToRole="Products_Order_Details" FromRole="Order_Details_Product" cg:GetterAccess="Public" cg:SetterAccess="Public"/>
+        <NavigationProperty Name="Order" Relationship="NorthWind.Order_Order_Details_Order_Details_Order" ToRole="Orders_Order_Details" FromRole="Order_Details_Order" cg:GetterAccess="Public" cg:SetterAccess="Public"/>
+      </EntityType>
+      <EntityType OpenType="false" Abstract="false" Name="Employee">
+        <Key>
+          <PropertyRef Name="EmployeeID"/>
+        </Key>
+        <Property Name="EmployeeID" Type="Edm.String" Nullable="false"/>
+        <Property Name="FirstName" Type="Edm.String" Nullable="false"/>
+        <Property Name="LastName" Type="Edm.String" Nullable="false"/>
+        <Property Name="ReportsTo" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="Emails" Type="Edm.String" Nullable="false"/>
+        <NavigationProperty Name="Subordinates" Relationship="NorthWind.Employee_Subordinates_Employee_Manager" ToRole="Employees_Manager" FromRole="Employees_Subordinates" cg:GetterAccess="Public" cg:SetterAccess="Public"/>
+        <NavigationProperty Name="Manager" Relationship="NorthWind.Employee_Subordinates_Employee_Manager" ToRole="Employees_Subordinates" FromRole="Employees_Manager" cg:GetterAccess="Public" cg:SetterAccess="Public"/>
+      </EntityType>
+      <EntityContainer Name="NorthWindEntities" m:IsDefaultEntityContainer="true">
+        <EntitySet Name="Customers" EntityType="NorthWind.Customer" cg:GetterAccess="Public"/>
+        <EntitySet Name="Orders" EntityType="NorthWind.Order" cg:GetterAccess="Public"/>
+        <EntitySet Name="Products" EntityType="NorthWind.Product" cg:GetterAccess="Public"/>
+        <EntitySet Name="Order_Details" EntityType="NorthWind.Order_Details" cg:GetterAccess="Public"/>
+        <EntitySet Name="Employees" EntityType="NorthWind.Employee" cg:GetterAccess="Public"/>
+        <AssociationSet Name="Customer_Orders_Order_Customer" Association="NorthWind.Customer_Orders_Order_Customer">
+          <End Role="Customers_Orders" EntitySet="Customers"/>
+          <End Role="Orders_Customer" EntitySet="Orders"/>
+        </AssociationSet>
+        <AssociationSet Name="Product_Order_Details_Order_Details_Product" Association="NorthWind.Product_Order_Details_Order_Details_Product">
+          <End Role="Products_Order_Details" EntitySet="Products"/>
+          <End Role="Order_Details_Product" EntitySet="Order_Details"/>
+        </AssociationSet>
+        <AssociationSet Name="Order_Order_Details_Order_Details_Order" Association="NorthWind.Order_Order_Details_Order_Details_Order">
+          <End Role="Orders_Order_Details" EntitySet="Orders"/>
+          <End Role="Order_Details_Order" EntitySet="Order_Details"/>
+        </AssociationSet>
+        <AssociationSet Name="Employee_Subordinates_Employee_Manager" Association="NorthWind.Employee_Subordinates_Employee_Manager">
+          <End Role="Employees_Subordinates" EntitySet="Employees"/>
+          <End Role="Employees_Manager" EntitySet="Employees"/>
+        </AssociationSet>
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

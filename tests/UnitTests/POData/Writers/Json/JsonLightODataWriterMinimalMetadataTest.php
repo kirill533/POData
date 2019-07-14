@@ -226,6 +226,7 @@ class JsonLightODataWriterMinimalMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 					    "odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata#FEED TITLE",
+					    "odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "value" : [
 				            {
 				                "ID": 100,
@@ -252,6 +253,7 @@ class JsonLightODataWriterMinimalMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 						"odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata#FEED TITLE",
+						"odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 						"odata.count":"33",
 					    "value" : [
 				            {
@@ -472,6 +474,7 @@ class JsonLightODataWriterMinimalMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 						"odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata#FEED TITLE",
+						"odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "value": [
 							{
 								"ID": 0,
@@ -514,6 +517,7 @@ class JsonLightODataWriterMinimalMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 					    "odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata#FEED TITLE",
+					    "odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "odata.count":"55",
 					    "value": [
 							{
