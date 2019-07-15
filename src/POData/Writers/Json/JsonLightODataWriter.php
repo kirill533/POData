@@ -15,6 +15,7 @@ use POData\ObjectModel\ODataPropertyContent;
 use POData\ObjectModel\ODataTitle;
 use POData\ObjectModel\ODataURL;
 use POData\ObjectModel\ODataURLCollection;
+use POData\Providers\ProvidersWrapper;
 
 /**
  * Class JsonLightODataWriter is a writer for the json format in OData V3 also known as JSON Light.
@@ -51,6 +52,8 @@ class JsonLightODataWriter extends JsonODataV2Writer
         $this->dataArrayName = ODataConstants::JSON_LIGHT_VALUE_NAME;
         $this->rowCountName = ODataConstants::JSON_LIGHT_ROWCOUNT_STRING;
         $this->metadataLevel = $metadataLevel;
+
+        $this->metadataLevel == JsonLightMetadataLevel::MINIMAL();
     }
 
     /**
@@ -70,7 +73,8 @@ class JsonLightODataWriter extends JsonODataV2Writer
         $parts = explode(';', $contentType);
 
         //It must be app/json and have the right odata= piece
-        return in_array(MimeTypes::MIME_APPLICATION_JSON, $parts) && in_array($this->metadataLevel->getValue(), $parts);
+        $metadata = array_filter($parts, function($item) { return strpos($item, 'odata') !== false; });
+        return in_array(MimeTypes::MIME_APPLICATION_JSON, $parts) && (empty($metadata) || in_array($this->metadataLevel, $metadata));
     }
 
     /**
@@ -315,5 +319,41 @@ class JsonLightODataWriter extends JsonODataV2Writer
 
         $this->writer->endScope();
         return $this;
+    }
+
+    /**
+     * @param ProvidersWrapper $providers
+     * @return JsonLightODataWriter
+     */
+    public function writeServiceDocument(ProvidersWrapper $providers) {
+        $writer = $this->writer;
+        $writer
+            ->startObjectScope()// {
+            ->writeName("odata.metadata")
+            ->writeValue("{$this->baseUri}/\$metadata")
+            ->writeName("value")// "value" :
+            // ->writeName(ODataConstants::ENTITY_SET) // "EntitySets"
+            ->startArrayScope() // [
+        ;
+
+        foreach ($providers->getResourceSets() as $resourceSetWrapper) {
+            $name = $resourceSetWrapper->getName();
+            $writer
+                ->startObjectScope()// {
+                ->writeName("name")// "name" :
+                ->writeValue($name)
+                ->writeName("url")// "name" :
+                ->writeValue($name)
+                ->endScope() // }
+            ;
+        }
+
+        $writer
+            ->endScope()// ]
+            ->endScope() // }
+        ;
+
+        return $this;
+
     }
 }

@@ -7,8 +7,9 @@ use MyCLabs\Enum\Enum;
 /**
  * Class JsonLightMetadataLevel.
  *
- * @method static JsonLightMetadataLevel NONE()
- * @method static JsonLightMetadataLevel MINIMAL()
+ * @method static JsonLightMetadataLevel NONE
+ * @method static JsonLightMetadataLevel MINIMAL
+ * @method static JsonLightMetadataLevel MINIMAL_ALT
  * @method static JsonLightMetadataLevel FULL()
  */
 class JsonLightMetadataLevel extends Enum
@@ -17,6 +18,8 @@ class JsonLightMetadataLevel extends Enum
     const NONE = 'odata=nometadata';
 
     const MINIMAL = 'odata=minimalmetadata';
+
+    const MINIMAL_ALT = 'odata=minimal';
 
     const FULL = 'odata=fullmetadata';
 }
