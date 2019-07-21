@@ -784,8 +784,8 @@ class SimpleMetadataProvider implements IMetadataProvider
             $this->oDataEntityMap[$targetName],
             $targetMultiplicity,
             $targetNavProperty,
-            [$sourceResourceProperty->getName()],
-            [$targetResourceProperty->getName()]
+            [$targetResourceProperty->getName()],
+            [$sourceResourceProperty->getName()]
         );
         $this->associationSets[$fwdSetKey] = $fwdSet;
     }
