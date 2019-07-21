@@ -1,5 +1,5 @@
 {
-  "name": "algo-web/podata",
+  "name": "bim/podata",
   "type": "library",
   "description": "OData for Poor PHP Developers",
   "keywords": [
