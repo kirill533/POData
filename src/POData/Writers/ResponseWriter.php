@@ -70,7 +70,6 @@ class ResponseWriter
                 $responseContentType = MimeTypes::MIME_APPLICATION_OCTETSTREAM;
             }
         } else {
-
             $writer = $service->getODataWriterRegistry()->getWriter(
                 $request->getResponseVersion(),
                 $responseContentType
@@ -90,6 +89,7 @@ class ResponseWriter
 
             $responseBody = $writer->write($entityModel)->getOutput();
         }
+        $responseContentType = trim($responseContentType, ';');
         $rawCode = $service->getHost()->getResponseHeaders()[ODataConstants::HTTPRESPONSE_HEADER_STATUS_CODE];
         $rawCode = (null !== $rawCode) ? $rawCode : HttpStatus::CODE_OK;
         $service->getHost()->setResponseStatusCode($rawCode);
