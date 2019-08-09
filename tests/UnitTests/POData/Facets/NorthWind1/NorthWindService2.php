@@ -6,7 +6,7 @@ use POData\Configuration\EntitySetRights;
 use POData\Configuration\IServiceConfiguration;
 use POData\Configuration\ProtocolVersion;
 use POData\OperationContext\ServiceHost;
-use Symfony\Component\Config\Definition\Exception\Exception;
+use \Exception;
 use UnitTests\POData\Facets\BaseServiceTestWrapper;
 
 class NorthWindService2 extends BaseServiceTestWrapper

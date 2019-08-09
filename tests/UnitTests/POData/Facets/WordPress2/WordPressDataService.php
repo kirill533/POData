@@ -11,7 +11,7 @@ use POData\Configuration\ProtocolVersion;
 use POData\OperationContext\HTTPRequestMethod;
 use POData\OperationContext\ServiceHost;
 use POData\UriProcessor\UriProcessor;
-use Symfony\Component\Config\Definition\Exception\Exception;
+use \Exception;
 
 class WordPressDataService extends BaseService
 {
