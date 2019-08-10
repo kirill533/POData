@@ -212,7 +212,13 @@ class AtomODataWriter implements IODataWriter
             $this->xmlWriter->endElement();
         }
 
-        foreach ($feed->entries as $entry) {
+        if ($feed->hasEntryProvider()) {
+            $entryProvider = $feed;
+        } else {
+            $entryProvider = new \POData\ObjectModel\ArrayEntryProvider($feed->entries);
+        }
+
+        while ($entry = $entryProvider->getNextEntry()) {
             $this->writeEntry($entry);
         }
 

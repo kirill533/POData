@@ -258,7 +258,7 @@ class CynicSerialiser implements IObjectSerialiser
      */
     public function writeTopLevelElements(QueryResult &$entryObjects)
     {
-        $res = $entryObjects->results;
+        $res = &$entryObjects->results;
         if (!(is_array($res) || $res instanceof Collection)) {
             throw new InvalidOperationException('!is_array($entryObjects->results)');
         }
@@ -293,15 +293,23 @@ class CynicSerialiser implements IObjectSerialiser
         if ($this->getRequest()->queryType == QueryType::ENTITIES_WITH_COUNT()) {
             $odata->rowCount = $this->getRequest()->getCountValue();
         }
-        foreach ($res as $entry) {
-            if (!$entry instanceof QueryResult) {
-                $query = new QueryResult();
-                $query->results = $entry;
-            } else {
-                $query = $entry;
-            }
-            $odata->entries[] = $this->writeTopLevelElement($query);
+        
+        if ($entryObjects->hasEntryProvider()) {
+            $entryProvider = $entryObjects;
+        } else {
+            $entryProvider = new ArrayEntryProvider($entryObjects->results);
         }
+
+        $odata->setEntryProvider(new ODataEntryProvider($entryProvider, $this));
+//        while ($entry = $entryProvider->getNextEntry()) {
+//            if (!$entry instanceof QueryResult) {
+//                $query = new QueryResult();
+//                $query->results = $entry;
+//            } else {
+//                $query = $entry;
+//            }
+//            $odata->entries[] = $this->writeTopLevelElement($query);
+//        }
 
         $resourceSet = $this->getRequest()->getTargetResourceSetWrapper()->getResourceSet();
         $requestTop = $this->getRequest()->getTopOptionCount();

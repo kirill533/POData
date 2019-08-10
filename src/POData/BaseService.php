@@ -452,6 +452,7 @@ abstract class BaseService implements IRequestHandler, IService
                     }
                 } else {
                     $odataModelInstance = $objectModelSerializer->writeTopLevelElements($entryObjects);
+                    unset($entryObjects);
                     if (!$odataModelInstance instanceof ODataFeed) {
                         throw new InvalidOperationException('!$odataModelInstance instanceof ODataFeed');
                     }

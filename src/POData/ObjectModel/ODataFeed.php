@@ -5,7 +5,7 @@ namespace POData\ObjectModel;
 /**
  * Class ODataFeed.
  */
-class ODataFeed
+class ODataFeed implements EntryProviderInterface
 {
     /**
      * Feed iD.
@@ -43,6 +43,11 @@ class ODataFeed
      * @var ODataEntry[]
      */
     public $entries = [];
+
+    /**
+     * @var EntryProviderInterface
+     */
+    protected $entryProvider;
 
     /**
      * Last updated timestamp.
@@ -92,5 +97,23 @@ class ODataFeed
     public function setEntries(array $entries)
     {
         $this->entries = $entries;
+    }
+
+    public function hasEntryProvider()
+    {
+        return $this->entryProvider !== null;
+    }
+    
+    public function getNextEntry()
+    {
+        if (isset($this->entryProvider)) {
+            return $this->entryProvider->getNextEntry();
+        }
+        return null;
+    }
+    
+    public function setEntryProvider(EntryProviderInterface $provider)
+    {
+        $this->entryProvider = $provider;
     }
 }

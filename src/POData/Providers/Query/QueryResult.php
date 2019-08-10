@@ -2,12 +2,19 @@
 
 namespace POData\Providers\Query;
 
-class QueryResult
+use \POData\ObjectModel\EntryProviderInterface;
+
+class QueryResult implements EntryProviderInterface
 {
     /**
      * @var object[]|object|null
      */
     public $results;
+
+    /**
+     * @var EntryProviderInterface
+     */
+    protected $entryProvider;
 
     /***
      * @var int|null
@@ -49,5 +56,23 @@ class QueryResult
         } //if there's no top, then it's the count as is
 
         return intval(min($count, $top)); //count is top, unless there aren't enough records
+    }
+
+    public function hasEntryProvider()
+    {
+        return $this->entryProvider !== null;
+    }
+
+    public function getNextEntry()
+    {
+        if (isset($this->entryProvider)) {
+            return $this->entryProvider->getNextEntry();
+        }
+        return null;
+    }
+
+    public function setEntryProvider(EntryProviderInterface $provider)
+    {
+        $this->entryProvider = $provider;
     }
 }
