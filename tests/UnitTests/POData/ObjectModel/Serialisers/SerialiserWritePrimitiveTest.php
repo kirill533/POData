@@ -178,7 +178,7 @@ class SerialiserWritePrimitiveTest extends SerialiserTestBase
         $objProp = new ODataProperty();
         $objProp->name = 'DesertWithNoName';
         $objProp->typeName = 'String';
-        $objProp->value = '2017-07-02T11:10:09-06:00';
+        $objProp->value = '2017-07-02T11:10:09+00:00';
         $objectResult = new ODataPropertyContent();
         $objectResult->properties['DesertWithNoName'] = $objProp;
         $ironicResult = $ironic->writeTopLevelPrimitive($collection, $resProp);

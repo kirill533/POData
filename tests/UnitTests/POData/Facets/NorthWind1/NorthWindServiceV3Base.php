@@ -6,13 +6,9 @@ use POData\Configuration\EntitySetRights;
 use POData\Configuration\IServiceConfiguration;
 use POData\Configuration\ProtocolVersion;
 use POData\OperationContext\ServiceHost;
-use \Exception;
-use UnitTests\POData\Facets\BaseServiceTestWrapper;
 
-class NorthWindService2 extends BaseServiceTestWrapper
+class NorthWindServiceV3Base extends \POData\BaseService
 {
-    private $_northWindMetadata = null;
-
     public function __construct(ServiceHost $serviceHost)
     {
         $this->setHost($serviceHost);
@@ -29,8 +25,9 @@ class NorthWindService2 extends BaseServiceTestWrapper
         $config->setEntitySetPageSize('*', 5);
         $config->setEntitySetAccessRule('*', EntitySetRights::ALL);
         $config->setAcceptCountRequests(true);
-        $config->setAcceptProjectionRequests(true);
-        $config->setMaxDataServiceVersion(ProtocolVersion::V2());
+        //Disable projection request for testing purpose
+        $config->setAcceptProjectionRequests(false);
+        $config->setMaxDataServiceVersion(ProtocolVersion::V3());
     }
 
     /**
@@ -38,7 +35,7 @@ class NorthWindService2 extends BaseServiceTestWrapper
      */
     public function getMetadataProvider()
     {
-        return NorthWindMetadata::Create();
+        return NorthWindMetadata::CreateRefConstraints();
     }
 
     /**
@@ -51,6 +48,6 @@ class NorthWindService2 extends BaseServiceTestWrapper
 
     public function getStreamProviderX()
     {
-        throw new Exception('not implemented');
+        throw new \Exception('not implemented');
     }
 }

@@ -13,7 +13,7 @@ use POData\OperationContext\ServiceHost;
 use POData\UriProcessor\UriProcessor;
 use \Exception;
 
-class WordPressDataService extends BaseService
+class WordPressDataServiceDynamic extends BaseService
 {
     private $_wordPressMetadata = null;
     private $_wordPressQueryProvider = null;
@@ -29,7 +29,6 @@ class WordPressDataService extends BaseService
      * This method is called only once to initialize service-wide policies.
      *
      * @param IServiceConfiguration $config Data service configuration object
-     * @throws \POData\Common\InvalidOperationException
      */
     public function initialize(IServiceConfiguration $config)
     {
@@ -42,12 +41,11 @@ class WordPressDataService extends BaseService
 
     /**
      * @return \POData\Providers\Metadata\IMetadataProvider
-     * @throws \POData\Common\InvalidOperationException
      */
     public function getMetadataProvider()
     {
         if (null === $this->_wordPressMetadata) {
-            $this->_wordPressMetadata = WordPressMetadata::create();
+            $this->_wordPressMetadata = WordPressMetadataDynamic::create();
             // $this->_wordPressMetadata->mappedDetails = CreateWordPressMetadata::mappingInitialize();
         }
 

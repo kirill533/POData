@@ -6,6 +6,7 @@ namespace UnitTests\POData\Facets\NorthWind1;
 class Order2
 {
     public $OrderID;
+    public $CustomerID;
     public $OrderDate;
     public $DeliveryDate;
     public $ShipName;

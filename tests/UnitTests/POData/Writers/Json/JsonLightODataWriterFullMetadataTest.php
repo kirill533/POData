@@ -230,6 +230,7 @@ class JsonLightODataWriterFullMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 					    "odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata#FEED TITLE",
+					    "odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "value" : [
 				            {
 				                "odata.type": "DataServiceProviderDemo.Product",
@@ -240,7 +241,7 @@ class JsonLightODataWriterFullMetadataTest extends TestCase
 				                "ID": 100,
 				                "Name": "Bread",
 				                "ReleaseDate@odata.type": "Edm.DateTime",
-				                "ReleaseDate" : "/Date(1347891433000)/",
+				                "ReleaseDate" : "2012-09-17T14:17:13",
 				                "DiscontinuedDate" : null,
 				                "Price@odata.type": "Edm.Decimal",
 				                "Price" : 2.5
@@ -263,6 +264,7 @@ class JsonLightODataWriterFullMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 						"odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata#FEED TITLE",
+						"odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 						"odata.count":"33",
 					    "value" : [
 				            {
@@ -274,7 +276,7 @@ class JsonLightODataWriterFullMetadataTest extends TestCase
 				                "ID": 100,
 				                "Name": "Bread",
 				                "ReleaseDate@odata.type": "Edm.DateTime",
-				                "ReleaseDate" : "/Date(1347891433000)/",
+				                "ReleaseDate" : "2012-09-17T14:17:13",
 				                "DiscontinuedDate" : null,
 				                "Price@odata.type": "Edm.Decimal",
 				                "Price" : 2.5
@@ -490,6 +492,7 @@ class JsonLightODataWriterFullMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 						"odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata#FEED TITLE",
+						"odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "value": [
 							{
 								"odata.type": "ODataDemo.Supplier",
@@ -544,6 +547,7 @@ class JsonLightODataWriterFullMetadataTest extends TestCase
         $actual = json_decode($writer->getOutput());
         $expected = '{
 					    "odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata#FEED TITLE",
+					    "odata.nextLink":"http://services.odata.org/OData/OData.svc$skiptoken=12",
 					    "odata.count":"55",
 					    "value": [
 							{
@@ -1363,7 +1367,11 @@ class JsonLightODataWriterFullMetadataTest extends TestCase
         $writer = new JsonLightODataWriter(JsonLightMetadataLevel::FULL(), $this->serviceBase);
         $actual = $writer->writeServiceDocument($this->mockProvider)->getOutput();
 
-        $expected = "{\n    \"d\":{\n        \"EntitySet\":[\n\n        ]\n    }\n}";
+        $expected = '{
+    "odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata","value":[
+
+    ]
+}';
 
         $this->assertEquals($expected, $actual);
     }
@@ -1388,7 +1396,15 @@ class JsonLightODataWriterFullMetadataTest extends TestCase
         $writer = new JsonLightODataWriter(JsonLightMetadataLevel::FULL(), $this->serviceBase);
         $actual = $writer->writeServiceDocument($this->mockProvider)->getOutput();
 
-        $expected = "{\n    \"d\":{\n        \"EntitySet\":[\n            \"Name 1\",\"XML escaped stuff \\\" ' <> & ?\"\n        ]\n    }\n}";
+        $expected = '{
+    "odata.metadata":"http://services.odata.org/OData/OData.svc/$metadata","value":[
+        {
+            "name":"Name 1","url":"Name 1"
+        },{
+            "name":"XML escaped stuff \" \' <> & ?","url":"XML escaped stuff \" \' <> & ?"
+        }
+    ]
+}';
 
         $this->assertEquals($expected, $actual);
     }
@@ -1418,7 +1434,7 @@ class JsonLightODataWriterFullMetadataTest extends TestCase
 
             [200, Version::v1(), MimeTypes::MIME_APPLICATION_JSON, false],
             [201, Version::v2(), MimeTypes::MIME_APPLICATION_JSON, false],
-            [202, Version::v3(), MimeTypes::MIME_APPLICATION_JSON, false],
+            [202, Version::v3(), MimeTypes::MIME_APPLICATION_JSON, true],
 
             //TODO: is this first one right?  this should NEVER come up, but should we claim to handle this format when
             //it's invalid for V1? Ditto first of the next sections

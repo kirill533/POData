@@ -5,15 +5,13 @@ namespace UnitTests\POData\IDSQP2\WordPress;
 use POData\Common\Url;
 use POData\Common\Version;
 use UnitTests\POData\Facets\ServiceHostTestFake;
-use UnitTests\POData\Facets\WordPress2\WordPressDataService;
+use UnitTests\POData\Facets\WordPress2\WordPressDataServiceDynamic as WordPressDataService;
 use UnitTests\POData\TestCase;
 
-class WordPressMySQLTest extends TestCase
+class WordPressMySQLDynamicTest extends TestCase
 {
     /**
      * test the generated string comparison expression in mysql.
-     * @throws \POData\Common\UrlFormatException
-     * @throws \POData\Common\ODataException
      */
     public function testStringCompareMySQL()
     {

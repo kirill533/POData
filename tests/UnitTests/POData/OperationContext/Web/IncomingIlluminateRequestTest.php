@@ -5,7 +5,6 @@ namespace UnitTests\POData\OperationContext\Web;
 use Illuminate\Http\Request;
 use Mockery as m;
 use POData\OperationContext\Web\Illuminate\IncomingIlluminateRequest;
-use Symfony\Component\HttpFoundation\ParameterBag;
 use UnitTests\POData\TestCase;
 
 class IncomingIlluminateRequestTest extends TestCase

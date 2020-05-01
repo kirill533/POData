@@ -375,18 +375,19 @@ abstract class BaseService implements IRequestHandler, IService
         $serviceVersion = $this->getConfiguration()->getMaxDataServiceVersion();
         $serviceURI = $this->getHost()->getAbsoluteServiceUri()->getUrlAsString();
 
+        if (-1 < $serviceVersion->compare(Version::v3())) {
+            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::NONE(), $serviceURI));
+            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::MINIMAL_ALT(), $serviceURI));
+            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::MINIMAL(), $serviceURI));
+            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::FULL(), $serviceURI));
+        }
+
         //We always register the v1 stuff
         $registry->register(new JsonODataV1Writer());
         $registry->register(new AtomODataWriter($serviceURI));
 
         if (-1 < $serviceVersion->compare(Version::v2())) {
             $registry->register(new JsonODataV2Writer());
-        }
-
-        if (-1 < $serviceVersion->compare(Version::v3())) {
-            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::NONE(), $serviceURI));
-            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::MINIMAL(), $serviceURI));
-            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::FULL(), $serviceURI));
         }
     }
 
@@ -470,6 +471,7 @@ abstract class BaseService implements IRequestHandler, IService
                     }
                 } else {
                     $odataModelInstance = $objectModelSerializer->writeTopLevelElements($entryObjects);
+                    unset($entryObjects);
                     if (!$odataModelInstance instanceof ODataFeed) {
                         throw new InvalidOperationException('!$odataModelInstance instanceof ODataFeed');
                     }
@@ -575,6 +577,11 @@ abstract class BaseService implements IRequestHandler, IService
                 $responseContentType .= ';charset=utf-8';
             }
         }
+
+        //It must be app/json and have the right odata= piece
+        $parts = explode(";", $this->getHost()->getRequestAccept());
+        $metadata = array_filter($parts, function($item) { return strpos($item, 'odata') !== false; });
+        $responseContentType .= ';' . implode(';', $metadata);
 
         if ($hasResponseBody) {
             ResponseWriter::write($this, $request, $odataModelInstance, $responseContentType);

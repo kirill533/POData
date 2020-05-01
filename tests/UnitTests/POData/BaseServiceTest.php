@@ -102,7 +102,7 @@ class BaseServiceTest extends TestCase
 
         $service->setHost($this->mockHost);
 
-        $this->mockRegistry->shouldReceive('register')->withAnyArgs()->passthru()->times(6);
+        $this->mockRegistry->shouldReceive('register')->withAnyArgs()->passthru()->times(7);
         // TODO: Figure out how to set up overlapping expectations in Mockery
         /*
         $this->mockRegistry->shouldReceive('register')

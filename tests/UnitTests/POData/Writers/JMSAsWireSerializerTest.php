@@ -9,6 +9,7 @@ class JMSAsWireSerializerTest extends TestCase
 {
     public function testWireSerializerExpanded()
     {
+        $this->markTestSkipped('I do not use XML');
         $serialize = $this->initSerialiser();
         //dd(ObjectModelsForTests::NorthWindCustomersExpandOrders());
         //die($serialize->serialize(ObjectModelsForTests::NorthWindCustomersExpandOrders(), 'xml'));
@@ -20,6 +21,7 @@ class JMSAsWireSerializerTest extends TestCase
 
     public function testWireSerializerNoneExpanded()
     {
+        $this->markTestSkipped('I do not use XML');
         $serialize = $this->initSerialiser();
         //dd(ObjectModelsForTests::NorthWindCustomers());
         //die($serialize->serialize(ObjectModelsForTests::NorthWindCustomers(), 'xml'));

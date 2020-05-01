@@ -1,5 +1,5 @@
 {
-    "name": "algo-web/podata",
+    "name": "bim/podata",
     "type": "library",
     "description": "OData for Poor PHP Developers",
     "keywords": [ "rest", "odata" ],
@@ -20,31 +20,38 @@
         {
             "name": "Microsoft Open Technologies, Inc.",
             "email": "msopentech@microsoft.com"
+        },
+        {
+            "name": "Kyrylo Kostiukov",
+            "email": "kyrylo.kostiukov@bimproject.net"
         }
     ],
 
   "repositories": [
     {
-      "type": "vcs",
-      "url": "https://github.com/Algo-Web/serializer.git",
-      "no-api": true
+        "type": "vcs",
+        "url": "https://github.com/kirill533/serializer.git",
+        "no-api": true
+    },
+    {
+        "type": "vcs",
+        "url": "https://github.com/kirill533/ODataMetadata.git",
+        "no-api": true
     }
   ],
-
-    "minimum-stability": "dev",
     "require": {
         "myclabs/php-enum": "1.2.0",
         "php": ">=5.6.4|^7.0",
         "illuminate/http": ">=5.1|^6.0",
-        "nesbot/carbon": "^1.0|^2.0",
-        "algo-web/o-data-metadata": "0.1.*|dev-master",
+        "nesbot/carbon": "^1.21|^2.0",
+        "bim/o-data-metadata": "^0.1.4",
         "jms/serializer": "^1.7"
     },
     "require-dev": {
         "doctrine/annotations": "^v1.4.0",
         "php-coveralls/php-coveralls": ">=v2.1",
         "phpunit/phpunit": "^5.6",
-        "mockery/mockery": "0.9.*|dev-master",
+        "mockery/mockery": "0.9.*",
         "fiunchinho/phpunit-randomizer": "2.0.*"
     },
     "autoload": {

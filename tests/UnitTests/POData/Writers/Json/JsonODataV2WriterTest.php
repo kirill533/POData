@@ -199,7 +199,7 @@ class JsonODataV2WriterTest extends TestCase
 					                },
 					                "ID": 100,
 					                "Name": "Bread",
-					                "ReleaseDate" : "/Date(1346990823000)/",
+					                "ReleaseDate" : "2012-09-07T04:07:03",
 					                "DiscontinuedDate" : null,
 					                "Price" : 2.5
 					            }

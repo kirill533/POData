@@ -6,6 +6,7 @@ use POData\Common\InvalidOperationException;
 use POData\Common\Messages;
 use POData\Common\ODataException;
 use POData\Common\ReflectionHandler;
+use POData\Providers\Metadata\Entity\IDynamic;
 use POData\Providers\Metadata\ResourceEntityType;
 use POData\Providers\Metadata\ResourceProperty;
 use POData\Providers\Metadata\ResourcePropertyKind;
@@ -126,8 +127,17 @@ class OrderByParser
         $orderByParser = new self($providerWrapper);
         try {
             $instance = $resourceType->getInstanceType();
-            assert($instance instanceof ReflectionClass, get_class($instance));
-            $orderByParser->dummyObject = $instance->newInstanceArgs([]);
+            if ($instance instanceof IDynamic) {
+                $obj = new \stdClass();
+                foreach ($instance->getPropertyNames() as $key) {
+                    $obj->$key = null;
+                }
+                $orderByParser->dummyObject = $obj;
+            } else {
+                assert($instance instanceof ReflectionClass, get_class($instance));
+                $orderByParser->dummyObject = $instance->newInstanceArgs([]);
+            }
+
         } catch (\ReflectionException $reflectionException) {
             throw ODataException::createInternalServerError(Messages::orderByParserFailedToCreateDummyObject());
         }
@@ -168,13 +178,11 @@ class OrderByParser
      *                                           segment
      *
      * @throws ODataException If any error occurs while processing the orderby path segments
-     * @throws \ReflectionException
      * @return mixed
      */
     private function buildOrderByTree(&$orderByPathSegments)
     {
         foreach ($orderByPathSegments as $index1 => &$orderBySubPathSegments) {
-            /** @var OrderByNode $currentNode */
             $currentNode = $this->rootOrderByNode;
             $currentObject = $this->dummyObject;
             $ascending = true;

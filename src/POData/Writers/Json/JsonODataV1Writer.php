@@ -6,6 +6,7 @@ use POData\Common\MimeTypes;
 use POData\Common\ODataConstants;
 use POData\Common\ODataException;
 use POData\Common\Version;
+use POData\ObjectModel\ArrayEntryProvider;
 use POData\ObjectModel\ODataBagContent;
 use POData\ObjectModel\ODataCategory;
 use POData\ObjectModel\ODataEntry;
@@ -139,7 +140,14 @@ class JsonODataV1Writer implements IODataWriter
      */
     protected function writeFeed(ODataFeed $feed)
     {
-        foreach ($feed->entries as $entry) {
+
+        if ($feed->hasEntryProvider()) {
+            $entryProvider = $feed;
+        } else {
+            $entryProvider = new ArrayEntryProvider($feed->entries);
+        }
+
+        while ($entry = $entryProvider->getNextEntry()) {
             $this->writer->startObjectScope();
             $this->writeEntry($entry);
             $this->writer->endScope();
