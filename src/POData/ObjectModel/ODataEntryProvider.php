@@ -7,6 +7,9 @@ use POData\Providers\Query\QueryResult;
 class ODataEntryProvider implements EntryProviderInterface
 {
     protected $provider;
+    /**
+     * @var IObjectSerialiser
+     */
     protected $serializer;
     /**
      * EntryProvider constructor.
@@ -27,13 +30,15 @@ class ODataEntryProvider implements EntryProviderInterface
     {
         $entry = $this->provider->getNextEntry();
 
+        if (!$entry) {
+            return null;
+        }
         if (!$entry instanceof QueryResult) {
             $query = new QueryResult();
             $query->results = $entry;
         } else {
             $query = $entry;
         }
-        
         return $this->serializer->writeTopLevelElement($query);
     }
 }

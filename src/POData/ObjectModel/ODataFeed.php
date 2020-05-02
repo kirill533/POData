@@ -83,6 +83,34 @@ class ODataFeed implements EntryProviderInterface
         }
     }
 
+    /**
+     * The method is not efficient if a lot of entries will need to be read
+     * @return \POData\ObjectModel\ODataEntry[]
+     */
+    public function getEntries()
+    {
+        if (empty($this->entries)) {
+            $this->entries = [];
+
+            while ($entry = $this->getNextEntry()) {
+                $this->entries[] = $entry;
+            }
+
+            $this->clearEntityProvider();
+        }
+
+        return $this->entries;
+    }
+
+    /**
+     * @param \POData\ObjectModel\ODataEntry[] $entries
+     */
+    public function setEntries(array $entries)
+    {
+        $this->clearEntityProvider();
+        $this->entries = $entries;
+    }
+
     public function hasEntryProvider()
     {
         return $this->entryProvider !== null;
@@ -102,7 +130,7 @@ class ODataFeed implements EntryProviderInterface
     }
 
     /**
-     * Method might be used for testing
+     * Method might be used for testing.
      */
     public function clearEntityProvider()
     {
