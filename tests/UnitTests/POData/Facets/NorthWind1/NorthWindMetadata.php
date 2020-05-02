@@ -229,7 +229,7 @@ class NorthWindMetadata
         $metadata->addPrimitiveProperty(
             $orderEntityType,
             'CustomerID',
-            EdmPrimitiveType::INT32
+            EdmPrimitiveType::INT32()
         );
 
         /**

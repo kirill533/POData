@@ -308,20 +308,13 @@ class CynicSerialiser implements IObjectSerialiser
         
         if ($entryObjects->hasEntryProvider()) {
             $entryProvider = $entryObjects;
+        } else if ($entryObjects->results instanceof Collection) {
+            $entryProvider = new CollectionEntryProvider($entryObjects->results);
         } else {
             $entryProvider = new ArrayEntryProvider($entryObjects->results);
         }
 
         $odata->setEntryProvider(new ODataEntryProvider($entryProvider, $this));
-//        while ($entry = $entryProvider->getNextEntry()) {
-//            if (!$entry instanceof QueryResult) {
-//                $query = new QueryResult();
-//                $query->results = $entry;
-//            } else {
-//                $query = $entry;
-//            }
-//            $odata->entries[] = $this->writeTopLevelElement($query);
-//        }
 
         $resourceSet = $this->getRequest()->getTargetResourceSetWrapper()->getResourceSet();
         $requestTop = $this->getRequest()->getTopOptionCount();

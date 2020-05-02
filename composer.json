@@ -27,7 +27,7 @@
         }
     ],
 
-  "repositories": [
+    "repositories": [
     {
         "type": "vcs",
         "url": "https://github.com/kirill533/serializer.git",

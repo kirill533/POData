@@ -83,22 +83,6 @@ class ODataFeed implements EntryProviderInterface
         }
     }
 
-    /**
-     * @return \POData\ObjectModel\ODataEntry[]
-     */
-    public function getEntries()
-    {
-        return $this->entries;
-    }
-
-    /**
-     * @param \POData\ObjectModel\ODataEntry[] $entries
-     */
-    public function setEntries(array $entries)
-    {
-        $this->entries = $entries;
-    }
-
     public function hasEntryProvider()
     {
         return $this->entryProvider !== null;
@@ -115,5 +99,13 @@ class ODataFeed implements EntryProviderInterface
     public function setEntryProvider(EntryProviderInterface $provider)
     {
         $this->entryProvider = $provider;
+    }
+
+    /**
+     * Method might be used for testing
+     */
+    public function clearEntityProvider()
+    {
+        $this->entryProvider = null;
     }
 }

@@ -571,6 +571,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
         list($host, $meta, $query) = $this->setUpDataServiceDeps($request);
 
         // default data service
+        /** @var IronicSerialiser $ironic */
         list($object, $ironic) = $this->setUpSerialisers($query, $meta, $host);
 
         $mod1 = new Employee2();
@@ -698,6 +699,11 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
 
         $ironicResult = $ironic->writeTopLevelElements($collection);
 
+        while ($entity = $ironicResult->getNextEntry()) {
+            $ironicResult->entries[] = $entity;
+        }
+
+        $ironicResult->clearEntityProvider();
         // zero out etag values
         $ironicResult->entries[0]->mediaLink->eTag = '';
         $ironicResult->entries[1]->mediaLink->eTag = '';
