@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Providers\Metadata\Type;
 
 use Mockery\Matcher\Not;
@@ -10,18 +12,18 @@ use POData\Common\NotImplementedException;
  */
 class Char implements IType
 {
-    const A = 65;
-    const Z = 90;
-    const SMALL_A = 97;
-    const SMALL_Z = 122;
-    const F = 70;
-    const SMALL_F = 102;
-    const ZERO = 48;
-    const NINE = 57;
-    const TAB = 9;
-    const NEWLINE = 10;
+    const A               = 65;
+    const Z               = 90;
+    const SMALL_A         = 97;
+    const SMALL_Z         = 122;
+    const F               = 70;
+    const SMALL_F         = 102;
+    const ZERO            = 48;
+    const NINE            = 57;
+    const TAB             = 9;
+    const NEWLINE         = 10;
     const CARRIAGE_RETURN = 13;
-    const SPACE = 32;
+    const SPACE           = 32;
 
     /**
      * Gets the type code
@@ -109,7 +111,7 @@ class Char implements IType
     }
 
     /**
-     * Checks a character is whilespace.
+     * Checks a character is whitespace.
      *
      * @param char|string $char character to check
      *

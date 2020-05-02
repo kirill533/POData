@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\QueryProcessor\ExpressionParser;
 
+use Mockery as m;
+use POData\Common\NotImplementedException;
 use POData\Common\ODataException;
 use POData\Providers\Metadata\IMetadataProvider;
 use POData\Providers\Metadata\ResourceType;
@@ -24,6 +28,8 @@ use POData\UriProcessor\QueryProcessor\ExpressionParser\Expressions\LogicalExpre
 use POData\UriProcessor\QueryProcessor\ExpressionParser\Expressions\PropertyAccessExpression;
 use POData\UriProcessor\QueryProcessor\ExpressionParser\Expressions\RelationalExpression;
 use POData\UriProcessor\QueryProcessor\ExpressionParser\Expressions\UnaryExpression;
+use POData\UriProcessor\QueryProcessor\ExpressionParser\ExpressionToken;
+use POData\UriProcessor\QueryProcessor\ExpressionParser\ExpressionTokenId;
 use UnitTests\POData\Facets\NorthWind1\NorthWindMetadata;
 use UnitTests\POData\TestCase;
 
@@ -48,8 +54,8 @@ class ExpressionParserTest extends TestCase
     public function testConstantExpression()
     {
         $expression = '123';
-        $parser = new ExpressionParser($expression, $this->customersResourceType, false);
-        $expr = $parser->parseFilter();
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+        $expr       = $parser->parseFilter();
         $this->assertTrue($expr instanceof ConstantExpression);
         $this->assertTrue($expr->getType() instanceof Int32);
         $this->assertEquals(123, $expr->getValue());
@@ -145,8 +151,8 @@ class ExpressionParserTest extends TestCase
     public function testPropertyAccessExpression()
     {
         $expression = 'CustomerID';
-        $parser = new ExpressionParser($expression, $this->customersResourceType, false);
-        $expr = $parser->parseFilter();
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+        $expr       = $parser->parseFilter();
         $this->assertTrue($expr instanceof PropertyAccessExpression);
         $this->assertTrue($expr->getType() instanceof StringType);
 
@@ -217,7 +223,7 @@ class ExpressionParserTest extends TestCase
         }
 
         $expression = 'Customer/CustomerID';
-        $parser = new ExpressionParser(
+        $parser     = new ExpressionParser(
             $expression,
             $this->northWindMetadata->resolveResourceSet('Orders')->getResourceType(),
             false
@@ -243,8 +249,8 @@ class ExpressionParserTest extends TestCase
     public function testArithmeticExpressionAndOperandPromotion()
     {
         $expression = '1 add 2';
-        $parser = new ExpressionParser($expression, $this->customersResourceType, false);
-        $expr = $parser->parseFilter();
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+        $expr       = $parser->parseFilter();
         $this->assertTrue($expr instanceof ArithmeticExpression);
         $this->assertTrue($expr->getType() instanceof Int32);
         $this->assertTrue($expr->getLeft() instanceof ConstantExpression);
@@ -402,8 +408,8 @@ class ExpressionParserTest extends TestCase
     public function testRelationalExpression()
     {
         $expression = '2.5 gt 2';
-        $parser = new ExpressionParser($expression, $this->customersResourceType, true);
-        $expr = $parser->parseFilter();
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, true);
+        $expr       = $parser->parseFilter();
         $this->assertTrue($expr instanceof RelationalExpression);
         $this->assertTrue($expr->getType() instanceof Boolean);
 
@@ -469,8 +475,8 @@ class ExpressionParserTest extends TestCase
     public function testLogicalExpression()
     {
         $expression = 'true or false';
-        $parser = new ExpressionParser($expression, $this->customersResourceType, false);
-        $expr = $parser->parseFilter();
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+        $expr       = $parser->parseFilter();
         $this->assertTrue($expr instanceof LogicalExpression);
         $this->assertTrue($expr->getType() instanceof Boolean);
 
@@ -538,8 +544,8 @@ class ExpressionParserTest extends TestCase
     public function testUnaryExpression()
     {
         $expression = '-Rating';
-        $parser = new ExpressionParser($expression, $this->customersResourceType, false);
-        $expr = $parser->parseFilter();
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+        $expr       = $parser->parseFilter();
         $this->assertTrue($expr instanceof UnaryExpression);
         $this->assertEquals(ExpressionType::NEGATE(), $expr->getNodeType());
         $this->assertTrue($expr->getChild() instanceof PropertyAccessExpression);
@@ -580,8 +586,8 @@ class ExpressionParserTest extends TestCase
     public function testFunctionCallExpression()
     {
         $expression = 'year(datetime\'1988-11-11\')';
-        $parser = new ExpressionParser($expression, $this->customersResourceType, false);
-        $expr = $parser->parseFilter();
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+        $expr       = $parser->parseFilter();
         $this->assertTrue($expr instanceof FunctionCallExpression);
         $this->assertTrue($expr->getType() instanceof Int32);
 
@@ -648,7 +654,140 @@ class ExpressionParserTest extends TestCase
     public function testNewConstructionLacksLevel2Property()
     {
         $expression = 'year(datetime\'1988-11-11\')';
-        $parser = new ExpressionParser($expression, $this->customersResourceType, false);
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
         $this->assertFalse($parser->hasLevel2Property());
+    }
+
+    /**
+     * @throws ODataException
+     * @throws \ReflectionException
+     */
+    public function testSetCurrentToken()
+    {
+        $expression = 'year(datetime\'1988-11-11\')';
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+
+        $newToken = m::mock(ExpressionToken::class)->makePartial();
+        $newToken->shouldReceive('getIdentifier')->andReturn('drop bear');
+
+        $reflec = new \ReflectionClass($parser);
+
+        $method = $reflec->getMethod('setCurrentToken');
+        $method->setAccessible(true);
+
+        $get = $reflec->getMethod('getCurrentToken');
+        $get->setAccessible(true);
+
+        $method->invokeArgs($parser, [$newToken]);
+        $result = $get->invokeArgs($parser, []);
+
+        $this->assertEquals('drop bear', $result->getIdentifier());
+    }
+
+    /**
+     * @return array
+     */
+    public function primaryStartKaboomProvider(): array
+    {
+        $result   = [];
+        $result[] = [ExpressionTokenId::BINARY_LITERAL(), NotImplementedException::class, 'Support for binary is not implemented'];
+        $result[] = [null, ODataException::class, 'Expression expected'];
+
+        return $result;
+    }
+
+    /**
+     * @dataProvider primaryStartKaboomProvider
+     *
+     * @param $tokenId
+     * @param $exceptionType
+     * @param $exceptionMessage
+     * @throws ODataException
+     * @throws \ReflectionException
+     */
+    public function testParsePrimaryStartKaboom($tokenId, $exceptionType, $exceptionMessage)
+    {
+        $expression = 'year(datetime\'1988-11-11\')';
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+
+        $newToken = m::mock(ExpressionToken::class)->makePartial();
+        $newToken->shouldReceive('getId')->andReturn($tokenId);
+
+        $reflec = new \ReflectionClass($parser);
+
+        $method = $reflec->getMethod('setCurrentToken');
+        $method->setAccessible(true);
+
+        $method->invokeArgs($parser, [$newToken]);
+
+        $this->expectException($exceptionType);
+        $this->expectExceptionMessage($exceptionMessage);
+
+        $parse = $reflec->getMethod('parsePrimaryStart');
+        $parse->setAccessible(true);
+
+        $parse->invokeArgs($parser, []);
+    }
+
+    /**
+     * @throws ODataException
+     * @throws \ReflectionException
+     */
+    public function testParseParenExpressionBadInitialToken()
+    {
+        $exceptionType    = ODataException::class;
+        $exceptionMessage = 'Open parenthesis expected.';
+
+        $expression = 'year(datetime\'1988-11-11\')';
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+
+        $newToken = m::mock(ExpressionToken::class)->makePartial();
+        $newToken->shouldReceive('getId')->andReturn(null)->once();
+
+        $reflec = new \ReflectionClass($parser);
+
+        $method = $reflec->getMethod('setCurrentToken');
+        $method->setAccessible(true);
+
+        $method->invokeArgs($parser, [$newToken]);
+
+        $this->expectException($exceptionType);
+        $this->expectExceptionMessage($exceptionMessage);
+
+        $parse = $reflec->getMethod('parseParenExpression');
+        $parse->setAccessible(true);
+
+        $parse->invokeArgs($parser, []);
+    }
+
+    /**
+     * @throws ODataException
+     * @throws \ReflectionException
+     */
+    public function testParseArgumentListBadInitialToken()
+    {
+        $exceptionType    = ODataException::class;
+        $exceptionMessage = 'Open parenthesis expected.';
+
+        $expression = 'year(datetime\'1988-11-11\')';
+        $parser     = new ExpressionParser($expression, $this->customersResourceType, false);
+
+        $newToken = m::mock(ExpressionToken::class)->makePartial();
+        $newToken->shouldReceive('getId')->andReturn(null)->once();
+
+        $reflec = new \ReflectionClass($parser);
+
+        $method = $reflec->getMethod('setCurrentToken');
+        $method->setAccessible(true);
+
+        $method->invokeArgs($parser, [$newToken]);
+
+        $this->expectException($exceptionType);
+        $this->expectExceptionMessage($exceptionMessage);
+
+        $parse = $reflec->getMethod('parseArgumentList');
+        $parse->setAccessible(true);
+
+        $parse->invokeArgs($parser, []);
     }
 }

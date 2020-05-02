@@ -3,7 +3,7 @@
 namespace POData\Common\Messages;
 
 /**
- * Trait responseWriter
+ * Trait responseWriter.
  * @package POData\Common\Messages
  */
 trait responseWriter

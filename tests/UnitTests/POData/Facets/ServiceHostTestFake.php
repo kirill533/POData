@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\Facets;
 
 /*
@@ -18,11 +20,11 @@ class ServiceHostTestFake extends ServiceHost
 
     public function __construct(array $hostInfo)
     {
-        $this->hostInfo = $hostInfo;
-        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $this->hostInfo                                = $hostInfo;
+        $_SERVER['REQUEST_METHOD']                     = 'GET';
         $_SERVER[ODataConstants::HTTPREQUEST_PROTOCOL] = $this->hostInfo['AbsoluteRequestUri']->getScheme();
         $_SERVER[HttpProcessUtility::headerToServerKey(ODataConstants::HTTPREQUEST_HEADER_HOST)]
-            = $this->hostInfo['AbsoluteRequestUri']->getHost().':'.$this->hostInfo['AbsoluteRequestUri']->getPort();
+                                                  = $this->hostInfo['AbsoluteRequestUri']->getHost() . ':' . $this->hostInfo['AbsoluteRequestUri']->getPort();
         $_SERVER[ODataConstants::HTTPREQUEST_URI] = $this->hostInfo['AbsoluteRequestUri']->getPath();
 
         if (array_key_exists('DataServiceVersion', $this->hostInfo)) {
@@ -49,9 +51,15 @@ class ServiceHostTestFake extends ServiceHost
             $_SERVER[ODataConstants::HTTPREQUEST_QUERY_STRING] = $this->hostInfo['QueryString'];
         }
         //print_r($_SERVER);
-        parse_str($hostInfo['QueryString'], $_GET);
-        parse_str($hostInfo['QueryString'], $_REQUEST);
-        parent::__construct(null, new Request($_GET, $_REQUEST, [], [], $_FILES, $_SERVER, null));
+        parse_str(strval($hostInfo['QueryString']), $_GET);
+        parse_str(strval($hostInfo['QueryString']), $_REQUEST);
+
+        $request = new Request($_GET, $_REQUEST, [], [], $_FILES, $_SERVER, null);
+        if (array_key_exists('RequestAccept', $this->hostInfo)) {
+            $request->headers->add([ODataConstants::HTTPREQUEST_HEADER_ACCEPT => $this->hostInfo['RequestAccept']]);
+        }
+
+        parent::__construct(null, $request);
 
         if (array_key_exists('AbsoluteServiceUri', $this->hostInfo)) {
             $this->setServiceUri($this->hostInfo['AbsoluteServiceUri']->getUrlAsString());

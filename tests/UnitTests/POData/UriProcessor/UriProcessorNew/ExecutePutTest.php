@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\UriProcessorNew;
 
 use Mockery as m;
@@ -26,6 +28,8 @@ use POData\Providers\Metadata\ResourceType;
 use POData\Providers\Metadata\ResourceTypeKind;
 use POData\Providers\Metadata\Type\IType;
 use POData\Providers\ProvidersWrapper;
+use POData\Readers\Atom\AtomODataReader;
+use POData\Readers\ODataReaderRegistry;
 use POData\UriProcessor\ResourcePathProcessor\SegmentParser\SegmentDescriptor;
 use POData\UriProcessor\UriProcessorNew;
 use UnitTests\POData\Facets\NorthWind1\Customer2;
@@ -36,7 +40,7 @@ class ExecutePutTest extends TestCase
     public function testExecutePutOnResourceSet()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -46,8 +50,8 @@ class ExecutePutTest extends TestCase
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('getRequestContentType')->andReturn(ODataConstants::FORMAT_ATOM)->atLeast(1);
 
-        $requestPayload = new ODataEntry();
-        $requestPayload->type = new ODataCategory('Customer');
+        $requestPayload                  = new ODataEntry();
+        $requestPayload->type            = new ODataCategory('Customer');
         $requestPayload->propertyContent = new ODataPropertyContent();
 
         $request = m::mock(IHTTPRequest::class);
@@ -84,16 +88,16 @@ class ExecutePutTest extends TestCase
 
         $remix = UriProcessorNew::process($service);
 
-        $expected = 'The URI \'http://localhost/odata.svc/customers\' is not valid for PUT method.';
+        $expected      = 'The URI \'http://localhost/odata.svc/customers\' is not valid for PUT method.';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             $remix->execute();
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -103,7 +107,7 @@ class ExecutePutTest extends TestCase
     public function testExecutePutOnResourceSingleNoData()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -113,9 +117,9 @@ class ExecutePutTest extends TestCase
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('getRequestContentType')->andReturn(ODataConstants::FORMAT_ATOM)->atLeast(1);
 
-        $requestPayload = new ODataEntry();
-        $requestPayload->id = 'http://localhost/odata.svc/customers(id=1)';
-        $requestPayload->type = new ODataCategory('Customer');
+        $requestPayload                  = new ODataEntry();
+        $requestPayload->id              = 'http://localhost/odata.svc/customers(id=1)';
+        $requestPayload->type            = new ODataCategory('Customer');
         $requestPayload->propertyContent = new ODataPropertyContent();
 
         $request = m::mock(IHTTPRequest::class);
@@ -161,16 +165,16 @@ class ExecutePutTest extends TestCase
 
         $remix = UriProcessorNew::process($service);
 
-        $expected = 'Method PUT expecting some data, but received empty data.';
+        $expected      = 'Method PUT expecting some data, but received empty data.';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             $remix->execute();
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -180,7 +184,7 @@ class ExecutePutTest extends TestCase
     public function testExecutePutOnSingleWithData()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(CustomerID=42)');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(CustomerID=42)');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -190,14 +194,14 @@ class ExecutePutTest extends TestCase
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('getRequestContentType')->andReturn(ODataConstants::FORMAT_ATOM)->atLeast(2);
 
-        $requestPayload = new ODataEntry();
-        $requestPayload->id = 'http://localhost/odata.svc/customers(CustomerID=42)';
-        $requestPayload->type = new ODataCategory('Customer');
-        $requestPayload->propertyContent = new ODataPropertyContent();
-        $requestPayload->propertyContent->properties['otherNumber'] = new ODataProperty();
+        $requestPayload                                                    = new ODataEntry();
+        $requestPayload->id                                                = 'http://localhost/odata.svc/customers(CustomerID=42)';
+        $requestPayload->type                                              = new ODataCategory('Customer');
+        $requestPayload->propertyContent                                   = new ODataPropertyContent();
+        $requestPayload->propertyContent->properties['otherNumber']        = new ODataProperty();
         $requestPayload->propertyContent->properties['otherNumber']->value = 42;
-        $requestPayload->propertyContent->properties['CustomerID'] = new ODataProperty();
-        $requestPayload->propertyContent->properties['CustomerID']->value = 42;
+        $requestPayload->propertyContent->properties['CustomerID']         = new ODataProperty();
+        $requestPayload->propertyContent->properties['CustomerID']->value  = 42;
 
         $request = m::mock(IHTTPRequest::class);
         $request->shouldReceive('getMethod')->andReturn(HTTPRequestMethod::PUT());
@@ -273,12 +277,15 @@ class ExecutePutTest extends TestCase
     protected function setUpService($host, $wrapper, $context, $config)
     {
         $metaProv = m::mock(IMetadataProvider::class);
-        $service = m::mock(IService::class);
+        $service  = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
         $service->shouldReceive('getProvidersWrapper')->andReturn($wrapper);
         $service->shouldReceive('getOperationContext')->andReturn($context);
         $service->shouldReceive('getConfiguration')->andReturn($config);
         $service->shouldReceive('getMetadataProvider')->andReturn($metaProv);
+        $readerRegistery = new ODataReaderRegistry();
+        $readerRegistery->register(new AtomODataReader());
+        $service->shouldReceive('getODataReaderRegistry')->andReturn($readerRegistery);
         return $service;
     }
 }

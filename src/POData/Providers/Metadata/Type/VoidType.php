@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Providers\Metadata\Type;
 
 use POData\Common\NotImplementedException;
@@ -67,7 +69,7 @@ class VoidType implements IType
      * @param string $stringValue value to convert
      *
      * @throws NotImplementedException
-     * @return NoType
+     * @return void
      */
     public function convert($stringValue)
     {
@@ -80,7 +82,7 @@ class VoidType implements IType
      * @param string $value value to convert to OData
      *
      * @throws NotImplementedException
-     * @return NoType
+     * @return void
      */
     public function convertToOData($value)
     {

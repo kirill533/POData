@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Providers\Metadata;
 
 use POData\Common\Messages;
@@ -59,10 +61,10 @@ class ResourceAssociationTypeEnd
      *                                                uni-directional
      */
     public function __construct(
-        $name,
+        string $name,
         ResourceEntityType $resourceType,
-        $resourceProperty,
-        $fromProperty
+        ?ResourceProperty $resourceProperty,
+        ?ResourceProperty $fromProperty
     ) {
         if (null === $resourceProperty && null === $fromProperty) {
             throw new \InvalidArgumentException(
@@ -70,30 +72,10 @@ class ResourceAssociationTypeEnd
             );
         }
 
-        if (null !== $fromProperty
-            && !($fromProperty instanceof ResourceProperty)
-        ) {
-            throw new \InvalidArgumentException(
-                Messages::resourceAssociationTypeEndPropertyMustBeNullOrInstanceofResourceProperty(
-                    '$fromProperty'
-                )
-            );
-        }
-
-        if (null !== $resourceProperty
-            && !($resourceProperty instanceof ResourceProperty)
-        ) {
-            throw new \InvalidArgumentException(
-                Messages::resourceAssociationTypeEndPropertyMustBeNullOrInstanceofResourceProperty(
-                    '$resourceProperty'
-                )
-            );
-        }
-
-        $this->name = $name;
-        $this->resourceType = $resourceType;
+        $this->name             = $name;
+        $this->resourceType     = $resourceType;
         $this->resourceProperty = $resourceProperty;
-        $this->fromProperty = $fromProperty;
+        $this->fromProperty     = $fromProperty;
     }
 
     /**
@@ -161,7 +143,7 @@ class ResourceAssociationTypeEnd
     public function getMultiplicity()
     {
         if (null !== $this->fromProperty
-            && $this->fromProperty->getKind() == ResourcePropertyKind::RESOURCE_REFERENCE
+            && $this->fromProperty->getKind() == ResourcePropertyKind::RESOURCE_REFERENCE()
         ) {
             return ODataConstants::ZERO_OR_ONE;
         }

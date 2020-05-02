@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\UriProcessor\Interfaces;
 
 use POData\Common\ODataException;

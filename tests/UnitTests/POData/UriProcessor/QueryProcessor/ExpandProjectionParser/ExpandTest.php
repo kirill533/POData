@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\QueryProcessor\ExpandProjectionParser;
 
 use POData\Common\ODataException;
@@ -25,9 +27,9 @@ class ExpandTest extends TestCase
     public function testEmptyExpandAndSelect()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -35,7 +37,7 @@ class ExpandTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
         //check with empty expand/select option
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
@@ -73,9 +75,9 @@ class ExpandTest extends TestCase
     public function testExpandWithOneLevelNavigationProperty()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -83,7 +85,7 @@ class ExpandTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
 
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
@@ -127,9 +129,9 @@ class ExpandTest extends TestCase
     public function testExpandWithOneLevelNavigationPropertyWithDuplication()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -137,8 +139,8 @@ class ExpandTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
-        $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
+        $projectionTreeRoot          = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
             $customerResourceType,
             null,
@@ -171,9 +173,9 @@ class ExpandTest extends TestCase
     public function testExpandWithNonIdentifierPathSegment()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -181,7 +183,7 @@ class ExpandTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
         try {
             $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
                 $customersResourceSetWrapper,
@@ -205,9 +207,9 @@ class ExpandTest extends TestCase
     public function testExpandWithStartEndTokenAsComma()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -215,7 +217,7 @@ class ExpandTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
         try {
             $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
                 $customersResourceSetWrapper,
@@ -266,9 +268,9 @@ class ExpandTest extends TestCase
     public function testExpandWithNonNavigationPropertyInThePath()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -276,7 +278,7 @@ class ExpandTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
         try {
             //Test with Primitive property in expand path
             $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
@@ -292,8 +294,8 @@ class ExpandTest extends TestCase
             $this->fail('An expected ODataException for non-navigation property in the path has not been thrown');
         } catch (ODataException $odataException) {
             $this->assertStringStartsWith(
-                "Error in the expand clause. Expand path can contain only navigation property, the property"
-                ." 'CustomerName' defined in 'NorthWind.Customer' is not a navigation property",
+                'Error in the expand clause. Expand path can contain only navigation property, the property'
+                . " 'CustomerName' defined in 'NorthWind.Customer' is not a navigation property",
                 $odataException->getMessage()
             );
         }
@@ -325,9 +327,9 @@ class ExpandTest extends TestCase
     public function testExpandWithSelectAllTokenInThePath()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -335,7 +337,7 @@ class ExpandTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
         try {
             //Test with * in expand path
             $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
@@ -360,9 +362,9 @@ class ExpandTest extends TestCase
     public function testExpandWithMultilevelNavigationProperty()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -370,7 +372,7 @@ class ExpandTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
 
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
@@ -455,9 +457,9 @@ class ExpandTest extends TestCase
     public function testExpandWithMultipleMultilevelNavigationProperty()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -465,7 +467,7 @@ class ExpandTest extends TestCase
             false
         );
         $orderDetailsResourceSetWrapper = $providersWrapper->resolveResourceSet('Order_Details');
-        $orderDetailResourceType = $orderDetailsResourceSetWrapper->getResourceType();
+        $orderDetailResourceType        = $orderDetailsResourceSetWrapper->getResourceType();
 
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $orderDetailsResourceSetWrapper,
@@ -510,11 +512,11 @@ class ExpandTest extends TestCase
     public function testExpandWithNonVisibleResourceSet()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
         //Make 'Customers' and 'Orders' visible, make 'Order_Details' invisible
-        $configuration->setEntitySetAccessRule('Customers', EntitySetRights::ALL);
-        $configuration->setEntitySetAccessRule('Orders', EntitySetRights::ALL);
+        $configuration->setEntitySetAccessRule('Customers', EntitySetRights::ALL());
+        $configuration->setEntitySetAccessRule('Orders', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)

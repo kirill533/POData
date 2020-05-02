@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\Common;
 
 use POData\Common\HttpHeaderFailure;
@@ -50,7 +52,7 @@ class HttpProcessUtilityTest extends TestCase
     public function testSelectMimeType1dot0QValueMultipleAvailable()
     {
         $actual = HttpProcessUtility::selectMimeType(
-            MimeTypes::MIME_APPLICATION_ATOM.';q=1.0',
+            MimeTypes::MIME_APPLICATION_ATOM . ';q=1.0',
             [
                 MimeTypes::MIME_APPLICATION_ATOM,
                 MimeTypes::MIME_APPLICATION_ATOMSERVICE,
@@ -63,7 +65,7 @@ class HttpProcessUtilityTest extends TestCase
     public function testSelectMimeType0dot0QValueMultipleAvailable()
     {
         $actual = HttpProcessUtility::selectMimeType(
-            MimeTypes::MIME_APPLICATION_ATOM.';q=0.0',
+            MimeTypes::MIME_APPLICATION_ATOM . ';q=0.0',
             [
                 MimeTypes::MIME_APPLICATION_ATOM,
                 MimeTypes::MIME_APPLICATION_ATOMSERVICE,
@@ -76,7 +78,7 @@ class HttpProcessUtilityTest extends TestCase
     public function testSelectMimeType0dot5QValueMultipleAvailable()
     {
         $actual = HttpProcessUtility::selectMimeType(
-            MimeTypes::MIME_APPLICATION_ATOM.';q=0.5',
+            MimeTypes::MIME_APPLICATION_ATOM . ';q=0.5',
             [
                 MimeTypes::MIME_APPLICATION_ATOM,
                 MimeTypes::MIME_APPLICATION_ATOMSERVICE,
@@ -89,7 +91,7 @@ class HttpProcessUtilityTest extends TestCase
     public function testSelectMimeTypeMultipleValuesSameQMultipleAvailable()
     {
         $actual = HttpProcessUtility::selectMimeType(
-            MimeTypes::MIME_APPLICATION_ATOM.';q=0.5, '.MimeTypes::MIME_APPLICATION_ATOMSERVICE.';q=0.5',
+            MimeTypes::MIME_APPLICATION_ATOM . ';q=0.5, ' . MimeTypes::MIME_APPLICATION_ATOMSERVICE . ';q=0.5',
             [
                 MimeTypes::MIME_APPLICATION_ATOM,
                 MimeTypes::MIME_APPLICATION_ATOMSERVICE,
@@ -102,7 +104,7 @@ class HttpProcessUtilityTest extends TestCase
     public function testSelectMimeTypeMultipleValuesSameQReversedMultipleAvailable()
     {
         $actual = HttpProcessUtility::selectMimeType(
-            MimeTypes::MIME_APPLICATION_ATOMSERVICE.';q=0.5, '.MimeTypes::MIME_APPLICATION_ATOM.';q=0.5',
+            MimeTypes::MIME_APPLICATION_ATOMSERVICE . ';q=0.5, ' . MimeTypes::MIME_APPLICATION_ATOM . ';q=0.5',
             [
                 MimeTypes::MIME_APPLICATION_ATOM,
                 MimeTypes::MIME_APPLICATION_ATOMSERVICE,
@@ -115,7 +117,7 @@ class HttpProcessUtilityTest extends TestCase
     public function testSelectMimeTypeMultipleValuesDifferentQMultipleAvailable()
     {
         $actual = HttpProcessUtility::selectMimeType(
-            MimeTypes::MIME_APPLICATION_ATOMSERVICE.';q=0.5, '.MimeTypes::MIME_APPLICATION_ATOM.';q=1.0',
+            MimeTypes::MIME_APPLICATION_ATOMSERVICE . ';q=0.5, ' . MimeTypes::MIME_APPLICATION_ATOM . ';q=1.0',
             [
                 MimeTypes::MIME_APPLICATION_ATOM,
                 MimeTypes::MIME_APPLICATION_ATOMSERVICE,
@@ -128,7 +130,7 @@ class HttpProcessUtilityTest extends TestCase
     public function testSelectMimeTypeMultipleValuesDifferentQReversedMultipleAvailable()
     {
         $actual = HttpProcessUtility::selectMimeType(
-            MimeTypes::MIME_APPLICATION_ATOMSERVICE.';q=1.0, '.MimeTypes::MIME_APPLICATION_ATOM.';q=0.5',
+            MimeTypes::MIME_APPLICATION_ATOMSERVICE . ';q=1.0, ' . MimeTypes::MIME_APPLICATION_ATOM . ';q=0.5',
             [
                 MimeTypes::MIME_APPLICATION_ATOM,
                 MimeTypes::MIME_APPLICATION_ATOMSERVICE,
@@ -142,7 +144,7 @@ class HttpProcessUtilityTest extends TestCase
     {
         $actual = HttpProcessUtility::selectMimeType(
             MimeTypes::MIME_APPLICATION_JSON_MINIMAL_META
-            .';q=1.0, '.MimeTypes::MIME_APPLICATION_JSON_FULL_META.';q=0.5',
+            . ';q=1.0, ' . MimeTypes::MIME_APPLICATION_JSON_FULL_META . ';q=0.5',
             [
                 MimeTypes::MIME_APPLICATION_ATOM,
                 MimeTypes::MIME_APPLICATION_ATOMSERVICE,
@@ -156,7 +158,7 @@ class HttpProcessUtilityTest extends TestCase
     {
         $actual = HttpProcessUtility::selectMimeType(
             MimeTypes::MIME_APPLICATION_JSON_MINIMAL_META
-            .';q=1.0, '.MimeTypes::MIME_APPLICATION_JSON_FULL_META.';q=0.5',
+            . ';q=1.0, ' . MimeTypes::MIME_APPLICATION_JSON_FULL_META . ';q=0.5',
             [
                 MimeTypes::MIME_APPLICATION_JSON_MINIMAL_META,
                 MimeTypes::MIME_APPLICATION_JSON_FULL_META,
@@ -170,7 +172,7 @@ class HttpProcessUtilityTest extends TestCase
     {
         $actual = HttpProcessUtility::selectMimeType(
             MimeTypes::MIME_APPLICATION_JSON_MINIMAL_META
-            .';q=1.0, '.MimeTypes::MIME_APPLICATION_JSON_FULL_META.';q=0.5',
+            . ';q=1.0, ' . MimeTypes::MIME_APPLICATION_JSON_FULL_META . ';q=0.5',
             [
                 MimeTypes::MIME_APPLICATION_JSON,
             ]
@@ -183,7 +185,7 @@ class HttpProcessUtilityTest extends TestCase
     {
         $actual = HttpProcessUtility::selectMimeType(
             MimeTypes::MIME_APPLICATION_JSON_MINIMAL_META
-            .';q=1.0, '.MimeTypes::MIME_APPLICATION_JSON_FULL_META.';q=0.5',
+            . ';q=1.0, ' . MimeTypes::MIME_APPLICATION_JSON_FULL_META . ';q=0.5',
             [
                 MimeTypes::MIME_APPLICATION_JSON,
                 MimeTypes::MIME_APPLICATION_JSON_FULL_META,
@@ -195,9 +197,9 @@ class HttpProcessUtilityTest extends TestCase
 
     public function testHeaderToServerKeyNotOnList()
     {
-        $input = 'name';
+        $input    = 'name';
         $expected = 'NAME';
-        $actual = HttpProcessUtility::headerToServerKey($input);
+        $actual   = HttpProcessUtility::headerToServerKey($input);
         $this->assertEquals($expected, $actual);
     }
 
@@ -210,15 +212,15 @@ class HttpProcessUtilityTest extends TestCase
 
     public function testDigitToIntBadData()
     {
-        $expected = 'Malformed value in request header.';
+        $expected     = 'Malformed value in request header.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = null;
+        $actual       = null;
+        $actualCode   = null;
 
         try {
             HttpProcessUtility::digitToInt32('a');
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
@@ -228,19 +230,19 @@ class HttpProcessUtilityTest extends TestCase
 
     public function testBadQualityValueFirstDigit()
     {
-        $expected = 'Malformed value in request header.';
+        $expected     = 'Malformed value in request header.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = null;
+        $actual       = null;
+        $actualCode   = null;
 
-        $qualText = '2.000';
-        $qualDex = 0;
+        $qualText  = '2.000';
+        $qualDex   = 0;
         $qualValue = 0;
 
         try {
             HttpProcessUtility::readQualityValue($qualText, $qualDex, $qualValue);
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
@@ -250,19 +252,19 @@ class HttpProcessUtilityTest extends TestCase
 
     public function testBadQualityValueTooBig()
     {
-        $expected = 'Malformed value in request header.';
+        $expected     = 'Malformed value in request header.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = null;
+        $actual       = null;
+        $actualCode   = null;
 
-        $qualText = '1.9 ';
-        $qualDex = 0;
+        $qualText  = '1.9 ';
+        $qualDex   = 0;
         $qualValue = 0;
 
         try {
             HttpProcessUtility::readQualityValue($qualText, $qualDex, $qualValue);
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
@@ -272,40 +274,36 @@ class HttpProcessUtilityTest extends TestCase
 
     public function testGoodQualityValueOneDigit()
     {
-        $qualText = '0.9 ';
-        $qualDex = 0;
-        $qualValue = 0;
-        HttpProcessUtility::readQualityValue($qualText, $qualDex, $qualValue);
+        $qualText  = '0.9 ';
+        $qualDex   = 0;
+        $qualValue = HttpProcessUtility::readQualityValue($qualText, $qualDex);
 
         $this->assertEquals(900, $qualValue);
     }
 
     public function testGoodQualityValueTwoDigit()
     {
-        $qualText = '0.81 ';
-        $qualDex = 0;
-        $qualValue = 0;
-        HttpProcessUtility::readQualityValue($qualText, $qualDex, $qualValue);
+        $qualText  = '0.81 ';
+        $qualDex   = 0;
+        $qualValue = HttpProcessUtility::readQualityValue($qualText, $qualDex);
 
         $this->assertEquals(810, $qualValue);
     }
 
     public function testGoodQualityValueThreeDigit()
     {
-        $qualText = "0.729\t";
-        $qualDex = 0;
-        $qualValue = 0;
-        HttpProcessUtility::readQualityValue($qualText, $qualDex, $qualValue);
+        $qualText  = "0.729\t";
+        $qualDex   = 0;
+        $qualValue = HttpProcessUtility::readQualityValue($qualText, $qualDex);
 
         $this->assertEquals(729, $qualValue);
     }
 
     public function testGoodQualityValueFourDigit()
     {
-        $qualText = '0.6561';
-        $qualDex = 0;
-        $qualValue = 0;
-        HttpProcessUtility::readQualityValue($qualText, $qualDex, $qualValue);
+        $qualText  = '0.6561';
+        $qualDex   = 0;
+        $qualValue = HttpProcessUtility::readQualityValue($qualText, $qualDex);
 
         $this->assertEquals(656, $qualValue);
     }
@@ -313,19 +311,19 @@ class HttpProcessUtilityTest extends TestCase
     public function testReadQuotedParameterValueWithoutClosingQuote()
     {
         $expected = 'Value for MIME type parameter \'parm\' is incorrect because the closing quote character'
-                    .' could not be found while the parameter value started with a quote character.';
+                    . ' could not be found while the parameter value started with a quote character.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = null;
+        $actual       = null;
+        $actualCode   = null;
 
         $parameterName = 'parm';
-        $headerText = '"';
-        $textIndex = 0;
+        $headerText    = '"';
+        $textIndex     = 0;
 
         try {
             HttpProcessUtility::readQuotedParameterValue($parameterName, $headerText, $textIndex);
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
@@ -336,19 +334,19 @@ class HttpProcessUtilityTest extends TestCase
     public function testReadQuotedParameterValueWithIntermediateQuote()
     {
         $expected = 'Value for MIME type parameter \'parm\' is incorrect because it contained escape characters'
-                    .' even though it was not quoted.';
+                    . ' even though it was not quoted.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = null;
+        $actual       = null;
+        $actualCode   = null;
 
         $parameterName = 'parm';
-        $headerText = 'a"';
-        $textIndex = 0;
+        $headerText    = 'a"';
+        $textIndex     = 0;
 
         try {
             HttpProcessUtility::readQuotedParameterValue($parameterName, $headerText, $textIndex);
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
@@ -359,19 +357,19 @@ class HttpProcessUtilityTest extends TestCase
     public function testReadQuotedParameterValueWithEscapeCharAtEnd()
     {
         $expected = 'Value for MIME type parameter \'parm\' is incorrect because it terminated with escape character.'
-                    .' Escape characters must always be followed by a character in a parameter value.';
+                    . ' Escape characters must always be followed by a character in a parameter value.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = null;
+        $actual       = null;
+        $actualCode   = null;
 
         $parameterName = 'parm';
-        $headerText = '"\\';
-        $textIndex = 0;
+        $headerText    = '"\\';
+        $textIndex     = 0;
 
         try {
             HttpProcessUtility::readQuotedParameterValue($parameterName, $headerText, $textIndex);
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
@@ -382,11 +380,11 @@ class HttpProcessUtilityTest extends TestCase
     public function testReadQuotedParameterValueWithQuotesAtBothEnds()
     {
         $expected = 'quoted';
-        $actual = null;
+        $actual   = null;
 
         $parameterName = 'parm';
-        $headerText = '"quoted"';
-        $textIndex = 0;
+        $headerText    = '"quoted"';
+        $textIndex     = 0;
 
         $actual = HttpProcessUtility::readQuotedParameterValue($parameterName, $headerText, $textIndex);
         $this->assertNotNull($actual);
@@ -395,20 +393,20 @@ class HttpProcessUtilityTest extends TestCase
 
     public function testReadMediaTypeSubtypeOnlyHasType()
     {
-        $expected = 'Media type is unspecified.';
+        $expected     = 'Media type is unspecified.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = 400;
+        $actual       = null;
+        $actualCode   = 400;
 
         $mediaString = 'application';
-        $textIndex = 0;
-        $type = '';
-        $subtype = '';
+        $textIndex   = 0;
+        $type        = '';
+        $subtype     = '';
 
         try {
             HttpProcessUtility::readMediaTypeAndSubtype($mediaString, $textIndex, $type, $subtype);
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
@@ -418,20 +416,20 @@ class HttpProcessUtilityTest extends TestCase
 
     public function testReadMediaTypeSubtypeBadSeparator()
     {
-        $expected = 'Media type requires a \'/\' character.';
+        $expected     = 'Media type requires a \'/\' character.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = 400;
+        $actual       = null;
+        $actualCode   = 400;
 
         $mediaString = 'application(';
-        $textIndex = 0;
-        $type = '';
-        $subtype = '';
+        $textIndex   = 0;
+        $type        = '';
+        $subtype     = '';
 
         try {
             HttpProcessUtility::readMediaTypeAndSubtype($mediaString, $textIndex, $type, $subtype);
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
@@ -441,45 +439,40 @@ class HttpProcessUtilityTest extends TestCase
 
     public function testReadMediaTypeSubtypeCompletelyMissingSubtype()
     {
-        $expected = 'Media type requires a subtype definition.';
+        $expected     = 'Media type requires a subtype definition.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = 400;
+        $actual       = null;
+        $actualCode   = 400;
 
         $mediaString = 'application/';
-        $textIndex = 0;
-        $type = '';
-        $subtype = '';
+        $textIndex   = 0;
+        $type        = '';
+        $subtype     = '';
 
         try {
             HttpProcessUtility::readMediaTypeAndSubtype($mediaString, $textIndex, $type, $subtype);
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
         $this->assertEquals($expected, $actual);
         $this->assertEquals($expectedCode, $actualCode);
-    }
-
-    public function testSelectRequiredMimeTypeWithAllParmsNull()
-    {
-        $this->assertNull(HttpProcessUtility::selectRequiredMimeType(null, null, null));
     }
 
     public function testSelectRequiredMimeTypeWithMalformedAcceptTypes()
     {
-        $expected = 'Media type is unspecified.';
+        $expected     = 'Media type is unspecified.';
         $expectedCode = 400;
-        $actual = null;
-        $actualCode = null;
+        $actual       = null;
+        $actualCode   = null;
 
         $acceptTypesText = 'blahblah';
 
         try {
-            HttpProcessUtility::selectRequiredMimeType($acceptTypesText, null, null);
+            HttpProcessUtility::selectRequiredMimeType($acceptTypesText, [], null);
         } catch (HttpHeaderFailure $e) {
-            $actual = $e->getMessage();
+            $actual     = $e->getMessage();
             $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
@@ -487,26 +480,30 @@ class HttpProcessUtilityTest extends TestCase
         $this->assertEquals($expectedCode, $actualCode);
     }
 
-    public function testSelectRequiredMimeTypeWithOnlyAcceptTypes()
+    public function testSelectRequiredMimeTypeWithNullAcceptTypes()
     {
-        $expected = 'Invalid argument supplied for foreach()';
-        $actual = null;
+        $expected     = 'Unsupported media type requested.';
+        $expectedCode = 415;
+        $actual       = null;
+        $actualCode   = null;
 
-        $acceptTypesText =  MimeTypes::MIME_APPLICATION_ATOM;
+        $acceptTypesText = null;
 
         try {
-            HttpProcessUtility::selectRequiredMimeType($acceptTypesText, null, null);
-        } catch (\Exception $e) {
-            $actual = $e->getMessage();
+            HttpProcessUtility::selectRequiredMimeType($acceptTypesText, [], null);
+        } catch (HttpHeaderFailure $e) {
+            $actual     = $e->getMessage();
+            $actualCode = $e->getStatusCode();
         }
         $this->assertNotNull($actual);
         $this->assertEquals($expected, $actual);
+        $this->assertEquals($expectedCode, $actualCode);
     }
 
     public function testSelectRequiredMimeTypeWithAcceptTypesAndEmptyExactTypes()
     {
         $expected = 'Unsupported media type requested.';
-        $actual = null;
+        $actual   = null;
 
         $acceptTypesText =  MimeTypes::MIME_APPLICATION_ATOM;
 
@@ -524,7 +521,7 @@ class HttpProcessUtilityTest extends TestCase
         $expected = MimeTypes::MIME_APPLICATION_ATOM;
 
         $acceptTypesText =  MimeTypes::MIME_APPLICATION_ATOM;
-        $exactTypes = [MimeTypes::MIME_APPLICATION_ATOM];
+        $exactTypes      = [MimeTypes::MIME_APPLICATION_ATOM];
 
         $actual = HttpProcessUtility::selectRequiredMimeType($acceptTypesText, $exactTypes, null);
         $this->assertEquals($expected, $actual);
@@ -533,10 +530,10 @@ class HttpProcessUtilityTest extends TestCase
     public function testSelectRequiredMimeTypeWithAcceptTypesAndSingletonNoMatchExactTypes()
     {
         $expected = 'Unsupported media type requested.';
-        $actual = null;
+        $actual   = null;
 
         $acceptTypesText =  MimeTypes::MIME_APPLICATION_JSON;
-        $exactTypes = [MimeTypes::MIME_APPLICATION_ATOM];
+        $exactTypes      = [MimeTypes::MIME_APPLICATION_ATOM];
 
         try {
             HttpProcessUtility::selectRequiredMimeType($acceptTypesText, $exactTypes, null);
@@ -552,7 +549,7 @@ class HttpProcessUtilityTest extends TestCase
      */
     public function testReadMediaTypeParameterFromEmptyString()
     {
-        $text = '';
+        $text      = '';
         $textIndex = 0;
 
         $parms = [];
@@ -561,5 +558,31 @@ class HttpProcessUtilityTest extends TestCase
         $this->expectExceptionMessage(Messages::httpProcessUtilityMediaTypeMissingValue());
 
         HttpProcessUtility::readMediaTypeParameter($text, $textIndex, $parms);
+    }
+
+    public function testIsHttpElementSeparator()
+    {
+        $this->assertTrue(HttpProcessUtility::isHttpElementSeparator(','));
+        $this->assertTrue(HttpProcessUtility::isHttpElementSeparator(' '));
+        $this->assertTrue(HttpProcessUtility::isHttpElementSeparator('\t'));
+        $this->assertFalse(HttpProcessUtility::isHttpElementSeparator('n'));
+    }
+
+    public function testNonHttpHeaderName()
+    {
+        $input = 'name';
+        $expected = 'NAME';
+        $actual = HttpProcessUtility::headerToServerKey($input);
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testMimeTypesFromAcceptHeadersWithoutSemicolons()
+    {
+        $text = '*/*&@#$@%';
+
+        $this->expectException(HttpHeaderFailure::class);
+        $this->expectExceptionMessage('Media type requires a \';\' character before a parameter definition.');
+
+        HttpProcessUtility::mimeTypesFromAcceptHeaders($text);
     }
 }

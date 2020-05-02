@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\OperationContext;
 
 use POData\OperationContext\Web\OutgoingResponse;
@@ -15,7 +17,7 @@ interface IOperationContext
      *
      * @return OutgoingResponse reference of OutgoingResponse object
      */
-    public function outgoingResponse();
+    public function outgoingResponse(): OutgoingResponse;
 
     /**
      * Gets the Web request context for the request being received.

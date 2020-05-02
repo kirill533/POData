@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\UriProcessor\QueryProcessor\ExpressionParser\Expressions;
 
 /**
@@ -25,7 +27,7 @@ class UnaryExpression extends AbstractExpression
         //allowed unary operator are 'not' (ExpressionType::NOT_LOGICAL)
         //and ExpressionType::NEGATE
         $this->nodeType = $nodeType;
-        $this->type = $type;
+        $this->type     = $type;
     }
 
     /**

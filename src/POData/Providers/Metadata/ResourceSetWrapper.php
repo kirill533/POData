@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Providers\Metadata;
 
 use POData\Common\ODataException;
@@ -46,8 +48,8 @@ class ResourceSetWrapper extends ResourceSet
      */
     public function __construct(ResourceSet $resourceSet, IServiceConfiguration $configuration)
     {
-        $this->resourceSet = $resourceSet;
-        $this->resourceSetRights = $configuration->getEntitySetAccessRule($resourceSet);
+        $this->resourceSet         = $resourceSet;
+        $this->resourceSetRights   = $configuration->getEntitySetAccessRule($resourceSet);
         $this->resourceSetPageSize = $configuration->getEntitySetPageSize($resourceSet);
     }
 
@@ -86,7 +88,7 @@ class ResourceSetWrapper extends ResourceSet
      *
      * @return EntitySetRights
      */
-    public function getResourceSetRights()
+    public function getResourceSetRights(): EntitySetRights
     {
         return $this->resourceSetRights;
     }
@@ -106,9 +108,9 @@ class ResourceSetWrapper extends ResourceSet
      *
      * @return bool
      */
-    public function isVisible()
+    public function isVisible(): bool
     {
-        return $this->resourceSetRights != EntitySetRights::NONE;
+        return $this->resourceSetRights != EntitySetRights::NONE();
     }
 
     /**
@@ -117,9 +119,9 @@ class ResourceSetWrapper extends ResourceSet
      *
      * @param ProvidersWrapper $provider
      *
-     * @return bool
      * @throws \POData\Common\InvalidOperationException
      * @throws ODataException
+     * @return bool
      */
     public function hasNamedStreams(ProvidersWrapper $provider)
     {
@@ -145,14 +147,14 @@ class ResourceSetWrapper extends ResourceSet
      *
      * @param ProvidersWrapper $provider Metadata query provider wrapper
      *
-     * @return bool
      * @throws \POData\Common\InvalidOperationException
      * @throws ODataException
+     * @return bool
      */
     public function hasBagProperty(ProvidersWrapper $provider)
     {
         $arrayToDetectLoop = [];
-        $hasBagProperty = $this->resourceSet->getResourceType()->hasBagProperty($arrayToDetectLoop);
+        $hasBagProperty    = $this->resourceSet->getResourceType()->hasBagProperty($arrayToDetectLoop);
         unset($arrayToDetectLoop);
         // This will check only the resource type associated with
         // the resource set, we need to check presence of bag property
@@ -177,9 +179,9 @@ class ResourceSetWrapper extends ResourceSet
      *
      * @throws ODataException exception if access to this resource set is forbidden
      */
-    public function checkResourceSetRights($requiredRights)
+    public function checkResourceSetRights(EntitySetRights $requiredRights): void
     {
-        if (($this->resourceSetRights & $requiredRights) == 0) {
+        if (($this->resourceSetRights->getValue() & $requiredRights->getValue()) == 0) {
             throw ODataException::createForbiddenError();
         }
     }
@@ -195,7 +197,7 @@ class ResourceSetWrapper extends ResourceSet
     {
         $this->checkResourceSetRights(
             $singleResult ?
-            EntitySetRights::READ_SINGLE : EntitySetRights::READ_MULTIPLE
+            EntitySetRights::READ_SINGLE() : EntitySetRights::READ_MULTIPLE()
         );
     }
 }

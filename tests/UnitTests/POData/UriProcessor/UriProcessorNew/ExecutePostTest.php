@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\UriProcessorNew;
 
 use Mockery as m;
@@ -33,10 +35,13 @@ use POData\Providers\Metadata\ResourceTypeKind;
 use POData\Providers\Metadata\Type\IType;
 use POData\Providers\ProvidersWrapper;
 use POData\Providers\Query\QueryType;
+use POData\Readers\Atom\AtomODataReader;
+use POData\Readers\ODataReaderRegistry;
 use POData\UriProcessor\RequestDescription;
 use POData\UriProcessor\ResourcePathProcessor\SegmentParser\SegmentDescriptor;
 use POData\UriProcessor\ResourcePathProcessor\SegmentParser\TargetKind;
 use POData\UriProcessor\UriProcessorNew;
+use POData\Writers\Atom\AtomODataWriter;
 use UnitTests\POData\Facets\NorthWind1\Customer2;
 use UnitTests\POData\TestCase;
 use UnitTests\POData\UriProcessor\UriProcessorDummy;
@@ -46,7 +51,7 @@ class ExecutePostTest extends TestCase
     public function testExecutePostOnSingleWithNoData()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -56,8 +61,9 @@ class ExecutePostTest extends TestCase
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('getRequestContentType')->andReturn(ODataConstants::FORMAT_ATOM)->atLeast(2);
 
-        $requestPayload = new ODataEntry();
-        $requestPayload->type = new ODataCategory('Customer');
+        $writer                          = new AtomODataWriter($baseUrl->getUrlAsString());
+        $requestPayload                  = new ODataEntry();
+        $requestPayload->type            = new ODataCategory('Customer');
         $requestPayload->propertyContent = new ODataPropertyContent();
 
         $request = m::mock(IHTTPRequest::class);
@@ -101,16 +107,16 @@ class ExecutePostTest extends TestCase
 
         $remix = UriProcessorNew::process($service);
 
-        $expected = 'Method POST expecting some data, but received empty data.';
+        $expected      = 'Method POST expecting some data, but received empty data.';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             $remix->execute();
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -120,7 +126,7 @@ class ExecutePostTest extends TestCase
     public function testExecutePostOnSingleWithSomeData()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(CustomerID=42)');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(CustomerID=42)');
 
         $expectedServiceLocation = 'http://localhost/odata.svc/Orders(CustomerID=42)';
 
@@ -134,10 +140,10 @@ class ExecutePostTest extends TestCase
         $host->shouldReceive('setResponseStatusCode')->withArgs([HttpStatus::CODE_CREATED])->once();
         $host->shouldReceive('setResponseLocation')->withArgs([$expectedServiceLocation])->once();
 
-        $requestPayload = new ODataEntry();
-        $requestPayload->type = new ODataCategory('Customer');
-        $requestPayload->propertyContent = new ODataPropertyContent();
-        $requestPayload->propertyContent->properties['otherNumber'] = new ODataProperty();
+        $requestPayload                                                    = new ODataEntry();
+        $requestPayload->type                                              = new ODataCategory('Customer');
+        $requestPayload->propertyContent                                   = new ODataPropertyContent();
+        $requestPayload->propertyContent->properties['otherNumber']        = new ODataProperty();
         $requestPayload->propertyContent->properties['otherNumber']->value = 42;
 
         $request = m::mock(IHTTPRequest::class);
@@ -225,7 +231,7 @@ class ExecutePostTest extends TestCase
         $remix->shouldReceive('getRequest->getData')->andReturn($payload)->once();
 
         $expected = 'POData\\ObjectModel\\ODataFeed';
-        $actual = null;
+        $actual   = null;
 
         try {
             $result = $remix->executePost();
@@ -243,7 +249,7 @@ class ExecutePostTest extends TestCase
         $segment->shouldReceive('getTargetKind')->andReturn(TargetKind::RESOURCE())->once();
         $segment->shouldReceive('getTargetResourceSetWrapper')->andReturn($resourceSet)->once();
 
-        $payload = new ODataEntry();
+        $payload     = new ODataEntry();
         $payload->id = '1';
 
         $remix = m::mock(UriProcessorDummy::class)->makePartial();
@@ -253,7 +259,7 @@ class ExecutePostTest extends TestCase
         $remix->shouldReceive('getRequest->getData')->andReturn($payload)->once();
 
         $expected = 'Payload ID must be empty for POST request';
-        $actual = null;
+        $actual   = null;
 
         try {
             $result = $remix->executePost();
@@ -265,14 +271,14 @@ class ExecutePostTest extends TestCase
 
     public function testExecutePostWithBadHookup()
     {
-        $reqUrl = new Url('http://localhost/odata.svc/customers(CustomerID=42)');
+        $reqUrl      = new Url('http://localhost/odata.svc/customers(CustomerID=42)');
         $resourceSet = m::mock(ResourceSetWrapper::class)->makePartial();
 
         $segment = m::mock(SegmentDescriptor::class)->makePartial();
         $segment->shouldReceive('getTargetKind')->andReturn(TargetKind::RESOURCE())->once();
         $segment->shouldReceive('getTargetResourceSetWrapper')->andReturn($resourceSet)->twice();
 
-        $payload = new ODataURL();
+        $payload      = new ODataURL();
         $payload->url = 'http://localhost/odata.svc/customers(CustomerID=42)/orders';
 
         $host = m::mock(ServiceHost::class)->makePartial();
@@ -305,7 +311,7 @@ class ExecutePostTest extends TestCase
         $remix->shouldReceive('getProviders')->andReturn($wrapper)->twice();
 
         $expected = 'AdapterIndicatedLinkNotAttached';
-        $actual = null;
+        $actual   = null;
 
         try {
             $remix->executePost();
@@ -325,12 +331,15 @@ class ExecutePostTest extends TestCase
     protected function setUpService($host, $wrapper, $context, $config)
     {
         $metaProv = m::mock(IMetadataProvider::class);
-        $service = m::mock(IService::class);
+        $service  = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
         $service->shouldReceive('getProvidersWrapper')->andReturn($wrapper);
         $service->shouldReceive('getOperationContext')->andReturn($context);
         $service->shouldReceive('getConfiguration')->andReturn($config);
         $service->shouldReceive('getMetadataProvider')->andReturn($metaProv);
+        $readerRegistery = new ODataReaderRegistry();
+        $readerRegistery->register(new AtomODataReader());
+        $service->shouldReceive('getODataReaderRegistry')->andReturn($readerRegistery);
         return $service;
     }
 }

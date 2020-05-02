@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\UriProcessor\QueryProcessor\SkipTokenParser;
 
 use InvalidArgumentException;
@@ -73,11 +75,11 @@ class InternalSkipTokenInfo
         $orderByValuesInSkipToken,
         ResourceType &$resourceType
     ) {
-        $this->internalOrderByInfo = $internalOrderByInfo;
+        $this->internalOrderByInfo      = $internalOrderByInfo;
         $this->orderByValuesInSkipToken = $orderByValuesInSkipToken;
-        $this->resourceType = $resourceType;
-        $this->skipTokenInfo = null;
-        $this->keyObject = null;
+        $this->resourceType             = $resourceType;
+        $this->skipTokenInfo            = null;
+        $this->keyObject                = null;
     }
 
     /**
@@ -90,7 +92,7 @@ class InternalSkipTokenInfo
     public function getSkipTokenInfo()
     {
         if (null === $this->skipTokenInfo) {
-            $orderbyInfo = $this->getInternalOrderByInfo()->getOrderByInfo();
+            $orderbyInfo         = $this->getInternalOrderByInfo()->getOrderByInfo();
             $this->skipTokenInfo = new SkipTokenInfo(
                 $orderbyInfo,
                 $this->orderByValuesInSkipToken
@@ -126,25 +128,20 @@ class InternalSkipTokenInfo
      *             m keys where m < n, where n is total number of positional
      *             keys, then return the index of the object which has most matching
      */
-    public function getIndexOfFirstEntryInTheNextPage(&$searchArray)
+    public function getIndexOfFirstEntryInTheNextPage(array &$searchArray): int
     {
-        if (!is_array($searchArray)) {
-            $msg = Messages::internalSkipTokenInfoBinarySearchRequireArray('searchArray');
-            throw new \InvalidArgumentException($msg);
-        }
-
         if (empty($searchArray)) {
             return -1;
         }
 
         $comparer = $this->getInternalOrderByInfo()->getSorterFunction();
         //Gets the key object initialized from skiptoken
-        $keyObject = $this->getKeyObject();
-        $low = 0;
+        $keyObject       = $this->getKeyObject();
+        $low             = 0;
         $searchArraySize = count($searchArray) - 1;
-        $high = $searchArraySize;
+        $high            = $searchArraySize;
         do {
-            $mid = $low + round(($high - $low)/2);
+            $mid    = intval($low + round(($high - $low)/2));
             $result = $comparer($keyObject, $searchArray[$mid]);
             if ($result > 0) {
                 $low = $mid + 1;
@@ -185,12 +182,12 @@ class InternalSkipTokenInfo
     {
         if (null === $this->keyObject) {
             $this->keyObject = $this->getInternalOrderByInfo()->getDummyObject();
-            $i = 0;
+            $i               = 0;
             foreach ($this->getInternalOrderByInfo()->getOrderByPathSegments() as $orderByPathSegment) {
-                $index = 0;
-                $currentObject = $this->keyObject;
+                $index           = 0;
+                $currentObject   = $this->keyObject;
                 $subPathSegments = $orderByPathSegment->getSubPathSegments();
-                $subPathCount = count($subPathSegments);
+                $subPathCount    = count($subPathSegments);
                 foreach ($subPathSegments as &$subPathSegment) {
                     $isLastSegment = ($index == $subPathCount - 1);
                     try {
@@ -235,7 +232,7 @@ class InternalSkipTokenInfo
     }
 
     /**
-     * Build nextpage link from the given object which will be the last object
+     * Build next-page link from the given object which will be the last object
      * in the page.
      *
      * @param mixed $lastObject Entity instance to build next page link from
@@ -249,10 +246,10 @@ class InternalSkipTokenInfo
     {
         $nextPageLink = null;
         foreach ($this->getInternalOrderByInfo()->getOrderByPathSegments() as $orderByPathSegment) {
-            $index = 0;
-            $currentObject = $lastObject;
+            $index           = 0;
+            $currentObject   = $lastObject;
             $subPathSegments = $orderByPathSegment->getSubPathSegments();
-            $subPathCount = count($subPathSegments);
+            $subPathCount    = count($subPathSegments);
             foreach ($subPathSegments as &$subPathSegment) {
                 $isLastSegment = ($index == $subPathCount - 1);
                 try {

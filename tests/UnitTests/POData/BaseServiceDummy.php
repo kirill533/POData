@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData;
 
 use POData\Configuration\EntitySetRights;
@@ -38,7 +40,7 @@ class BaseServiceDummy extends BaseServiceTestWrapper
         IMetadataProvider $metaProvider = null,
         IServiceConfiguration $config = null
     ) {
-        $this->metaProvider = $metaProvider;
+        $this->metaProvider  = $metaProvider;
         $this->queryProvider = $db;
         $provider->setService($this);
         $this->streamProvider = $provider;
@@ -50,7 +52,7 @@ class BaseServiceDummy extends BaseServiceTestWrapper
     /**
      * @return IQueryProvider
      */
-    public function getQueryProvider()
+    public function getQueryProvider(): ?IQueryProvider
     {
         return $this->queryProvider;
     }
@@ -93,11 +95,11 @@ class BaseServiceDummy extends BaseServiceTestWrapper
         &$entryObject,
         ResourceType &$resourceType,
         &$needToSerializeResponse
-    ) {
+    ): ?string {
         return parent::compareETag($entryObject, $resourceType, $needToSerializeResponse);
     }
 
-    public function getETagForEntry(&$entryObject, ResourceType &$resourceType)
+    public function getETagForEntry(&$entryObject, ResourceType &$resourceType): ?string
     {
         return parent::getETagForEntry($entryObject, $resourceType);
     }

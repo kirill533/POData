@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Common;
 
 use POData\HttpProcessUtility;
@@ -15,15 +17,14 @@ class ErrorHandler
     /**
      * Common function to handle exceptions in the data service.
      *
-     * @param \Exception $exception exception
-     * @param IService $service service
+     * @param  \Exception     $exception exception
+     * @param  IService       $service   service
      * @throws ODataException
      * @throws \Exception
      */
     public static function handleException(\Exception $exception, IService $service)
     {
-        $acceptTypesText = $service->getHost()->getRequestAccept();
-        $responseContentType = null;
+        $acceptTypesText     = $service->getHost()->getRequestAccept() ?? '';
         try {
             $responseContentType = HttpProcessUtility::selectMimeType(
                 $acceptTypesText,
@@ -41,7 +42,7 @@ class ErrorHandler
             // Never come here
         }
 
-        if (null === $responseContentType) {
+        if (!isset($responseContentType)) {
             $responseContentType = MimeTypes::MIME_APPLICATION_XML;
         }
 
@@ -59,9 +60,9 @@ class ErrorHandler
             $service->getHost()->setResponseStatusCode($exception->getStatusCode());
             $service->getHost()->setResponseContentType($responseContentType);
             if (strcasecmp($responseContentType, MimeTypes::MIME_APPLICATION_XML) == 0) {
-                $responseBody = AtomODataWriter::serializeException($exception, true);
+                $responseBody = AtomODataWriter::serializeException($exception);
             } else {
-                $responseBody = JsonODataV2Writer::serializeException($exception, true);
+                $responseBody = JsonODataV2Writer::serializeException($exception);
             }
 
             $service->getHost()->getOperationContext()->outgoingResponse()->setStream($responseBody);

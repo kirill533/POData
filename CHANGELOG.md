@@ -1,5 +1,13 @@
 Unreleased
 ----------
+   * Drop support for PHP 5.6 and 7.0 (see [#226] (https://github.com/Algo-Web/POData/pull/226))
+   * Reformat codebase to PSR-12 (see [#229] (https://github.com/Algo-Web/POData/pull/226)).
+        This exposed:
+        - Long-b0rked OData-specific exception constructors,
+        - EOL-handling mismatch between Linux and Windows,
+        - ... interesting ... ways that XMLWriter was being used.
+   * Drop external dependency on JMS serialiser in favour of a more performant functional equivalent (see [#227] (https://github.com/Algo-Web/POData/pull/227))
+   * Encapsulate enum constants where possible (see [#235] (https://github.com/Algo-Web/POData/pull/235))
 
 0.3.7 (2020-03-13)
 ------------------

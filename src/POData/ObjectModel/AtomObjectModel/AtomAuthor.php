@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: Barnso
@@ -8,7 +9,7 @@
 namespace POData\ObjectModel\AtomObjectModel;
 
 /**
- * Class AtomAuthor
+ * Class AtomAuthor.
  * @package POData\ObjectModel\AtomObjectModel
  */
 class AtomAuthor

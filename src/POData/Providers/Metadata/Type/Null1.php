@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Providers\Metadata\Type;
 
 use POData\Common\NotImplementedException;

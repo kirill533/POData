@@ -1,9 +1,11 @@
 <?php
 
+
+
 namespace POData\Common\Messages;
 
 /**
- * Trait IService
+ * Trait IService.
  * @package POData\Common\Messages
  */
 trait IService
@@ -15,7 +17,7 @@ trait IService
      */
     public static function invalidMetadataInstance()
     {
-        return 'IService.getMetdataProvider returns invalid object.';
+        return 'IService.getMetadataProvider returns invalid object.';
     }
 
     /**

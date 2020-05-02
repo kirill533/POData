@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData;
 
 use Mockery as m;
@@ -40,15 +42,15 @@ class BaseServiceNewTest extends TestCase
 {
     public function testGetResultWithNullMetadataProviderThrowException()
     {
-        $db = m::mock(IQueryProvider::class);
-        $host = m::mock(ServiceHost::class)->makePartial();
+        $db     = m::mock(IQueryProvider::class);
+        $host   = m::mock(ServiceHost::class)->makePartial();
         $cereal = $this->spinUpMockSerialiser();
-        $wrap = m::mock(StreamProviderWrapper::class)->makePartial();
+        $wrap   = m::mock(StreamProviderWrapper::class)->makePartial();
 
         $foo = new BaseServiceDummy($db, $host, $cereal, $wrap, null);
 
         $expected = 'For custom providers, GetService should not return null for both IMetadataProvider'
-                    .' and IQueryProvider types.';
+                    . ' and IQueryProvider types.';
         $actual = null;
 
         try {
@@ -64,8 +66,8 @@ class BaseServiceNewTest extends TestCase
         $foo = m::mock(BaseServiceDummy::class)->makePartial();
         $foo->shouldReceive('getMetadataProvider')->andReturn('foobar');
 
-        $expected = 'IService.getMetdataProvider returns invalid object.';
-        $actual = null;
+        $expected = 'IService.getMetadataProvider returns invalid object.';
+        $actual   = null;
 
         try {
             $result = $foo->handleRequest();
@@ -77,35 +79,16 @@ class BaseServiceNewTest extends TestCase
 
     public function testGetResultWithNullQueryProviderThrowException()
     {
-        $db = null;
-        $host = m::mock(ServiceHost::class)->makePartial();
+        $db     = null;
+        $host   = m::mock(ServiceHost::class)->makePartial();
         $cereal = $this->spinUpMockSerialiser();
-        $wrap = m::mock(StreamProviderWrapper::class)->makePartial();
-        $meta = m::mock(IMetadataProvider::class);
+        $wrap   = m::mock(StreamProviderWrapper::class)->makePartial();
+        $meta   = m::mock(IMetadataProvider::class);
 
         $foo = new BaseServiceDummy($db, $host, $cereal, $wrap, $meta);
 
         $expected = 'For custom providers, GetService should not return null for both IMetadataProvider'
-                    .' and IQueryProvider types.';
-        $actual = null;
-
-        try {
-            $result = $foo->handleRequest();
-        } catch (ODataException $e) {
-            $actual = $e->getMessage();
-        }
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function testGetResultWithBadQueryProviderTypeThrowException()
-    {
-        $meta = m::mock(IMetadataProvider::class);
-
-        $foo = m::mock(BaseServiceDummy::class)->makePartial();
-        $foo->shouldReceive('getMetadataProvider')->andReturn($meta);
-        $foo->shouldReceive('getQueryProvider')->andReturn('foobar');
-
-        $expected = 'IService.getQueryProvider returns invalid object.';
+                    . ' and IQueryProvider types.';
         $actual = null;
 
         try {
@@ -133,7 +116,7 @@ class BaseServiceNewTest extends TestCase
         $proc = m::mock(UriProcessor::class);
 
         $expected = 'Unsupported media type requested.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $service->getResponseContentType($request, $proc);
@@ -147,7 +130,7 @@ class BaseServiceNewTest extends TestCase
     {
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
 
         $request = m::mock(RequestDescription::class);
         $request->shouldReceive('getResponseVersion')->andReturn(Version::v3());
@@ -162,7 +145,7 @@ class BaseServiceNewTest extends TestCase
         $proc = m::mock(UriProcessor::class);
 
         $expected = 'is_null($projectedProperty)';
-        $actual = null;
+        $actual   = null;
 
         try {
             $result = $service->getResponseContentType($request, $proc);
@@ -179,7 +162,7 @@ class BaseServiceNewTest extends TestCase
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
 
         $request = m::mock(RequestDescription::class);
         $request->shouldReceive('getResponseVersion')->andReturn(Version::v3());
@@ -194,7 +177,7 @@ class BaseServiceNewTest extends TestCase
         $proc = m::mock(UriProcessor::class);
 
         $expected = '!$type instanceof IType';
-        $actual = null;
+        $actual   = null;
 
         try {
             $result = $service->getResponseContentType($request, $proc);
@@ -213,7 +196,7 @@ class BaseServiceNewTest extends TestCase
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
 
         $request = m::mock(RequestDescription::class);
         $request->shouldReceive('getResponseVersion')->andReturn(Version::v3());
@@ -228,7 +211,7 @@ class BaseServiceNewTest extends TestCase
         $proc = m::mock(UriProcessor::class);
 
         $expected = 'application/octet-stream';
-        $result = $service->getResponseContentType($request, $proc);
+        $result   = $service->getResponseContentType($request, $proc);
 
         $this->assertEquals($expected, $result);
     }
@@ -244,7 +227,7 @@ class BaseServiceNewTest extends TestCase
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
 
         $request = m::mock(RequestDescription::class);
@@ -262,7 +245,7 @@ class BaseServiceNewTest extends TestCase
         $proc = m::mock(UriProcessor::class);
 
         $expected = 'The URI \'https://www.example.org/odata.svc\' is not valid. The segment before \'$value\' '
-                    .'must be a Media Link Entry or a primitive property.';
+                    . 'must be a Media Link Entry or a primitive property.';
         $actual = null;
 
         try {
@@ -284,7 +267,7 @@ class BaseServiceNewTest extends TestCase
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
         $host->shouldReceive('getResponseContentType')->andReturn('application/xml')->times(2);
         $host->shouldReceive('getResponseETag')->andReturn('electric-rave')->times(2);
@@ -334,7 +317,7 @@ class BaseServiceNewTest extends TestCase
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('text/xml');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
 
         $request = m::mock(RequestDescription::class);
@@ -366,7 +349,7 @@ class BaseServiceNewTest extends TestCase
 
     public function testGetEtagForEntryNoProperties()
     {
-        $host = m::mock(ServiceHost::class);
+        $host   = m::mock(ServiceHost::class);
         $cereal = $this->spinUpMockSerialiser();
 
         $stream = m::mock(StreamProviderWrapper::class);
@@ -387,7 +370,7 @@ class BaseServiceNewTest extends TestCase
         $property = m::mock(ResourceProperty::class);
         $property->shouldReceive('getInstanceType')->andReturnNull()->once();
 
-        $host = m::mock(ServiceHost::class);
+        $host   = m::mock(ServiceHost::class);
         $cereal = $this->spinUpMockSerialiser();
 
         $stream = m::mock(StreamProviderWrapper::class);
@@ -400,7 +383,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null);
 
         $expected = '!$type instanceof IType';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->getETagForEntry($object, $type);
@@ -418,7 +401,7 @@ class BaseServiceNewTest extends TestCase
         $property->shouldReceive('getInstanceType')->andReturn($instanceType)->once();
         $property->shouldReceive('getName')->andReturn('name');
 
-        $host = m::mock(ServiceHost::class);
+        $host   = m::mock(ServiceHost::class);
         $cereal = $this->spinUpMockSerialiser();
 
         $stream = m::mock(StreamProviderWrapper::class);
@@ -432,7 +415,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null);
 
         $expected = 'Data Service failed to access or initialize the property name of type.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->getETagForEntry($object, $type);
@@ -450,7 +433,7 @@ class BaseServiceNewTest extends TestCase
         $property->shouldReceive('getInstanceType')->andReturn($instanceType)->twice();
         $property->shouldReceive('getName')->andReturn('name', 'type');
 
-        $host = m::mock(ServiceHost::class);
+        $host   = m::mock(ServiceHost::class);
         $cereal = $this->spinUpMockSerialiser();
 
         $stream = m::mock(StreamProviderWrapper::class);
@@ -461,7 +444,7 @@ class BaseServiceNewTest extends TestCase
         $type->shouldReceive('getName')->andReturn('type');
         $object = new reusableEntityClass2('hammer', 'time!');
 
-        $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null);
+        $foo    = new BaseServiceDummy(null, $host, $cereal, $stream, null);
         $result = $foo->getETagForEntry($object, $type);
         $this->assertEquals("'hammer','time!'", $result);
     }
@@ -474,7 +457,7 @@ class BaseServiceNewTest extends TestCase
         $property->shouldReceive('getInstanceType')->andReturn($instanceType)->twice();
         $property->shouldReceive('getName')->andReturn('name', 'type');
 
-        $host = m::mock(ServiceHost::class);
+        $host   = m::mock(ServiceHost::class);
         $cereal = $this->spinUpMockSerialiser();
 
         $stream = m::mock(StreamProviderWrapper::class);
@@ -485,7 +468,7 @@ class BaseServiceNewTest extends TestCase
         $type->shouldReceive('getName')->andReturn('type');
         $object = new reusableEntityClass3('hammer', 'time!');
 
-        $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null);
+        $foo    = new BaseServiceDummy(null, $host, $cereal, $stream, null);
         $result = $foo->getETagForEntry($object, $type);
         $this->assertEquals("'hammer','time!'", $result);
     }
@@ -506,10 +489,10 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null);
 
         $expected = 'The resource targeted by the request does not exists, eTag header is not allowed'
-                    .' for non-existing resource.';
-        $actual = null;
+                    . ' for non-existing resource.';
+        $actual          = null;
         $needtoSerialise = false;
-        $object = null;
+        $object          = null;
 
         try {
             $foo->compareETag($object, $type, $needtoSerialise);
@@ -535,7 +518,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null);
 
         $needtoSerialise = false;
-        $object = null;
+        $object          = null;
 
         $result = $foo->compareETag($object, $type, $needtoSerialise);
         $this->assertNull($result);
@@ -560,10 +543,10 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
         $expected = 'If-Match or If-None-Match headers cannot be specified if the target type does not'
-                    .' have etag properties defined.';
-        $actual = null;
+                    . ' have etag properties defined.';
+        $actual          = null;
         $needtoSerialise = false;
-        $object = 'abc';
+        $object          = 'abc';
 
         try {
             $foo->compareETag($object, $type, $needtoSerialise);
@@ -592,7 +575,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
         $needtoSerialise = false;
-        $object = 'abc';
+        $object          = 'abc';
 
         $result = $foo->compareETag($object, $type, $needtoSerialise);
         $this->assertNull($result);
@@ -618,7 +601,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
         $needtoSerialise = false;
-        $object = 'abc';
+        $object          = 'abc';
 
         $result = $foo->compareETag($object, $type, $needtoSerialise);
         $this->assertNull($result);
@@ -627,7 +610,7 @@ class BaseServiceNewTest extends TestCase
 
     public function testCompareETagPropertyValidateEtagHeadersNoRequestMatching()
     {
-        $itype = new StringType();
+        $itype   = new StringType();
         $resProp = m::mock(ResourceProperty::class);
         $resProp->shouldReceive('getInstanceType')->andReturn($itype);
         $resProp->shouldReceive('getName')->andReturn('type');
@@ -650,7 +633,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
         $needtoSerialise = false;
-        $object = new reusableEntityClass2('foo', 'bar');
+        $object          = new reusableEntityClass2('foo', 'bar');
 
         $expected = 'W/"\'bar\'"';
 
@@ -661,7 +644,7 @@ class BaseServiceNewTest extends TestCase
 
     public function testCompareETagPropertyValidateEtagHeadersIfNoneMatchAll()
     {
-        $itype = new StringType();
+        $itype   = new StringType();
         $resProp = m::mock(ResourceProperty::class);
         $resProp->shouldReceive('getInstanceType')->andReturn($itype);
         $resProp->shouldReceive('getName')->andReturn('type');
@@ -684,7 +667,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
         $needtoSerialise = false;
-        $object = new reusableEntityClass2('foo', 'bar');
+        $object          = new reusableEntityClass2('foo', 'bar');
 
         $expected = 'W/"\'bar\'"';
 
@@ -695,7 +678,7 @@ class BaseServiceNewTest extends TestCase
 
     public function testCompareETagPropertyValidateEtagHeadersIfNoneMatchSome()
     {
-        $itype = new StringType();
+        $itype   = new StringType();
         $resProp = m::mock(ResourceProperty::class);
         $resProp->shouldReceive('getInstanceType')->andReturn($itype);
         $resProp->shouldReceive('getName')->andReturn('type');
@@ -718,7 +701,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
         $needtoSerialise = false;
-        $object = new reusableEntityClass2('foo', 'bar');
+        $object          = new reusableEntityClass2('foo', 'bar');
 
         $expected = 'W/"\'bar\'"';
 
@@ -729,7 +712,7 @@ class BaseServiceNewTest extends TestCase
 
     public function testCompareETagPropertyValidateEtagHeadersIfNoneMatchEtag()
     {
-        $itype = new StringType();
+        $itype   = new StringType();
         $resProp = m::mock(ResourceProperty::class);
         $resProp->shouldReceive('getInstanceType')->andReturn($itype);
         $resProp->shouldReceive('getName')->andReturn('type');
@@ -752,7 +735,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
         $needtoSerialise = false;
-        $object = new reusableEntityClass2('foo', 'bar');
+        $object          = new reusableEntityClass2('foo', 'bar');
 
         $expected = 'W/"\'bar\'"';
 
@@ -763,7 +746,7 @@ class BaseServiceNewTest extends TestCase
 
     public function testCompareETagPropertyValidateEtagHeadersPreconditionFailure()
     {
-        $itype = new StringType();
+        $itype   = new StringType();
         $resProp = m::mock(ResourceProperty::class);
         $resProp->shouldReceive('getInstanceType')->andReturn($itype);
         $resProp->shouldReceive('getName')->andReturn('type');
@@ -786,12 +769,12 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
         $needtoSerialise = false;
-        $object = new reusableEntityClass2('foo', 'bar');
+        $object          = new reusableEntityClass2('foo', 'bar');
 
         $expected = 'W/"\'bar\'"';
 
         $expected = 'The etag value in the request header does not match with the current etag value of the object.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->compareETag($object, $type, $needtoSerialise);
@@ -836,8 +819,8 @@ class BaseServiceNewTest extends TestCase
         $uriProc = m::mock(UriProcessor::class);
 
         $expected = 'If-Match or If-None-Match HTTP headers cannot be specified since the'
-                    .' URI \'https://www.example.org/odata.svc\' refers to a collection of resources or has'
-                    .' a $count or $link segment or has an $expand as one of the query parameters.';
+                    . ' URI \'https://www.example.org/odata.svc\' refers to a collection of resources or has'
+                    . ' a $count or $link segment or has an $expand as one of the query parameters.';
         $actual = null;
 
         try {
@@ -877,7 +860,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc = m::mock(UriProcessor::class);
 
         $expected = 'Unsupported media type requested.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -902,7 +885,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('application/xml');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withArgs([HttpStatus::CODE_OK])->andReturnNull()->once();
         $host->shouldReceive('setResponseContentType')->withArgs(['application/xml;charset=utf-8'])
@@ -948,7 +931,7 @@ class BaseServiceNewTest extends TestCase
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('setResponseStatusCode')->withArgs([HttpStatus::CODE_NOCONTENT])->andReturnNull()->once();
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('getOperationContext->incomingRequest')->andReturn($req);
         $host->shouldReceive('getRequestIfMatch')->andReturn(null);
@@ -1003,7 +986,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withArgs([HttpStatus::CODE_NOCONTENT])->andReturnNull()->once();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1052,7 +1035,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1081,7 +1064,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'Target resource type cannot be null';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1111,7 +1094,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1127,7 +1110,7 @@ class BaseServiceNewTest extends TestCase
 
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = 'ScatmanJohn';
 
         $request = m::mock(RequestDescription::class);
@@ -1144,7 +1127,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = '!is_array($entryObjects->results)';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1174,7 +1157,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1191,7 +1174,7 @@ class BaseServiceNewTest extends TestCase
 
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = ['ScatmanJohn'];
 
         $request = m::mock(RequestDescription::class);
@@ -1208,7 +1191,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = '!$odataModelInstance instanceof ODataURLCollection';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1238,7 +1221,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1255,7 +1238,7 @@ class BaseServiceNewTest extends TestCase
 
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = ['ScatmanJohn'];
 
         $request = m::mock(RequestDescription::class);
@@ -1272,7 +1255,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = '!$odataModelInstance instanceof ODataFeed';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1302,7 +1285,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1320,7 +1303,7 @@ class BaseServiceNewTest extends TestCase
 
         $property = m::mock(ResourceProperty::class);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = null;
 
         $request = m::mock(RequestDescription::class);
@@ -1339,7 +1322,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'Resource not found for the segment \'FNORD\'.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1369,7 +1352,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1392,7 +1375,7 @@ class BaseServiceNewTest extends TestCase
 
         $property = m::mock(ResourceProperty::class);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = 'ad astra per fnordua';
 
         $request = m::mock(RequestDescription::class);
@@ -1410,7 +1393,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'No writer can handle the request.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1440,7 +1423,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1461,7 +1444,7 @@ class BaseServiceNewTest extends TestCase
 
         $property = m::mock(ResourceProperty::class);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = 'ad astra per fnordua';
 
         $request = m::mock(RequestDescription::class);
@@ -1480,7 +1463,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'Unexpected resource target kind';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1510,7 +1493,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1532,7 +1515,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
         $foo->setODataWriterRegistry($rego);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = 'ad astra per fnordua';
 
         $request = m::mock(RequestDescription::class);
@@ -1550,7 +1533,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'No writer can handle the request.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1580,7 +1563,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1603,7 +1586,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
         $foo->setODataWriterRegistry($rego);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = 'ad astra per fnordua';
 
         $request = m::mock(RequestDescription::class);
@@ -1621,7 +1604,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'Projected request property cannot be null';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1652,7 +1635,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1673,7 +1656,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
         $foo->setODataWriterRegistry($rego);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = 'ad astra per fnordua';
 
         $request = m::mock(RequestDescription::class);
@@ -1691,7 +1674,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'No writer can handle the request.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1721,7 +1704,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1742,7 +1725,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
         $foo->setODataWriterRegistry($rego);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = 'ad astra per fnordua';
 
         $request = m::mock(RequestDescription::class);
@@ -1760,7 +1743,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'No writer can handle the request.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1792,7 +1775,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1813,7 +1796,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
         $foo->setODataWriterRegistry($rego);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = 'ad astra per fnordua';
 
         $request = m::mock(RequestDescription::class);
@@ -1831,7 +1814,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'No writer can handle the request.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->serializeResult($request, $uriProc);
@@ -1863,7 +1846,7 @@ class BaseServiceNewTest extends TestCase
         $host->shouldReceive('getRequestIfMatch')->andReturn('a');
         $host->shouldReceive('getRequestIfNoneMatch')->andReturn('b');
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($url);
-        $host->shouldReceive('getRequestAccept')->andReturn(null);
+        $host->shouldReceive('getRequestAccept')->andReturn('*/*');
         $host->shouldReceive('getQueryStringItem')->andReturn(null);
         $host->shouldReceive('setResponseStatusCode')->withAnyArgs()->andReturnNull()->never();
         $host->shouldReceive('setResponseContentType')->withAnyArgs()->andReturnNull()->never();
@@ -1884,7 +1867,7 @@ class BaseServiceNewTest extends TestCase
         $foo = new BaseServiceDummy(null, $host, $cereal, $stream, null, $config);
         $foo->setODataWriterRegistry($rego);
 
-        $queryResult = new QueryResult();
+        $queryResult          = new QueryResult();
         $queryResult->results = 'ad astra per fnordua';
 
         $request = m::mock(RequestDescription::class);
@@ -1902,7 +1885,7 @@ class BaseServiceNewTest extends TestCase
         $uriProc->shouldReceive('execute')->andReturnNull()->once();
 
         $expected = 'Both If-Match and If-None-Match HTTP headers cannot be specified at the same time.'
-                    .' Please specify either one of the headers or none of them.';
+                    . ' Please specify either one of the headers or none of them.';
         $actual = null;
 
         try {
@@ -1915,12 +1898,12 @@ class BaseServiceNewTest extends TestCase
 
     public function testGetResponseTypeForMetadata()
     {
-        $db = m::mock(IQueryProvider::class);
+        $db   = m::mock(IQueryProvider::class);
         $host = m::mock(ServiceHost::class)->makePartial();
         $host->shouldReceive('getRequestAccept')->andReturn('application/xml, application/atomsvc+xml');
         $host->shouldReceive('getQueryStringItem')->andReturn(null)->once();
         $cereal = $this->spinUpMockSerialiser();
-        $wrap = m::mock(StreamProviderWrapper::class)->makePartial();
+        $wrap   = m::mock(StreamProviderWrapper::class)->makePartial();
 
         $foo = new BaseServiceDummy($db, $host, $cereal, $wrap, null);
 
@@ -1931,18 +1914,18 @@ class BaseServiceNewTest extends TestCase
         $request->shouldReceive('getTargetKind')->andReturn(TargetKind::METADATA());
 
         $expected = 'application/xml';
-        $actual = $foo->getResponseContentType($request, $uriProc);
+        $actual   = $foo->getResponseContentType($request, $uriProc);
         $this->assertEquals($expected, $actual);
     }
 
     public function testGetResponseTypeForServiceDirectory()
     {
-        $db = m::mock(IQueryProvider::class);
+        $db   = m::mock(IQueryProvider::class);
         $host = m::mock(ServiceHost::class)->makePartial();
         $host->shouldReceive('getRequestAccept')->andReturn('application/xml, application/atomsvc+xml');
         $host->shouldReceive('getQueryStringItem')->andReturn(null)->once();
         $cereal = $this->spinUpMockSerialiser();
-        $wrap = m::mock(StreamProviderWrapper::class)->makePartial();
+        $wrap   = m::mock(StreamProviderWrapper::class)->makePartial();
 
         $foo = new BaseServiceDummy($db, $host, $cereal, $wrap, null);
 
@@ -1953,7 +1936,7 @@ class BaseServiceNewTest extends TestCase
         $request->shouldReceive('getTargetKind')->andReturn(TargetKind::SERVICE_DIRECTORY());
 
         $expected = 'application/atomsvc+xml';
-        $actual = $foo->getResponseContentType($request, $uriProc);
+        $actual   = $foo->getResponseContentType($request, $uriProc);
         $this->assertEquals($expected, $actual);
     }
 

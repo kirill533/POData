@@ -3,7 +3,7 @@
 namespace POData\Common\Messages;
 
 /**
- * Trait resourceAssociationType
+ * Trait resourceAssociationType.
  * @package POData\Common\Messages
  */
 trait resourceAssociationType

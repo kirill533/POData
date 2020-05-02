@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\Facets\WordPress2;
 
 use POData\BaseService;
@@ -10,13 +12,14 @@ use POData\Configuration\IServiceConfiguration;
 use POData\Configuration\ProtocolVersion;
 use POData\OperationContext\HTTPRequestMethod;
 use POData\OperationContext\ServiceHost;
+use POData\Providers\Query\IQueryProvider;
 use POData\UriProcessor\UriProcessor;
 use \Exception;
 
 class WordPressDataService extends BaseService
 {
-    private $_wordPressMetadata = null;
-    private $_wordPressQueryProvider = null;
+    private $_wordPressMetadata           = null;
+    private $_wordPressQueryProvider      = null;
     private $_wordPressExpressionProvider = null;
 
     public function __construct(ServiceHost $serviceHost)
@@ -28,21 +31,21 @@ class WordPressDataService extends BaseService
     /**
      * This method is called only once to initialize service-wide policies.
      *
-     * @param IServiceConfiguration $config Data service configuration object
+     * @param  IServiceConfiguration                    $config Data service configuration object
      * @throws \POData\Common\InvalidOperationException
      */
     public function initialize(IServiceConfiguration $config)
     {
         $config->setEntitySetPageSize('*', 5);
-        $config->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $config->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $config->setAcceptCountRequests(true);
         $config->setAcceptProjectionRequests(true);
         $config->setMaxDataServiceVersion(ProtocolVersion::V3());
     }
 
     /**
-     * @return \POData\Providers\Metadata\IMetadataProvider
      * @throws \POData\Common\InvalidOperationException
+     * @return \POData\Providers\Metadata\IMetadataProvider
      */
     public function getMetadataProvider()
     {
@@ -57,7 +60,7 @@ class WordPressDataService extends BaseService
     /**
      * @return \POData\Providers\Query\IQueryProvider
      */
-    public function getQueryProvider()
+    public function getQueryProvider(): ?IQueryProvider
     {
         if (null === $this->_wordPressQueryProvider) {
             $this->_wordPressQueryProvider = new WordPressQueryProvider();

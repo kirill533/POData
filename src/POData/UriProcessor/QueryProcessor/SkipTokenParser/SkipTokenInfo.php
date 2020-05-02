@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\UriProcessor\QueryProcessor\SkipTokenParser;
 
 use POData\Providers\Metadata\Type\IType;
@@ -39,12 +41,12 @@ class SkipTokenInfo
      */
     public function __construct(OrderByInfo &$orderByInfo, $orderByValuesInSkipToken)
     {
-        $this->orderByInfo = $orderByInfo;
+        $this->orderByInfo              = $orderByInfo;
         $this->orderByValuesInSkipToken = $orderByValuesInSkipToken;
     }
 
     /**
-     * Get reference to the OrderByInfo instance holdint information about the
+     * Get reference to the OrderByInfo instance holding information about the
      * navigation properties used in the orderby clause (if any) and orderby path.
      *
      * @return OrderByInfo

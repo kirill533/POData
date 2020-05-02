@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\Configuration;
 
 use POData\Common\InvalidOperationException;
@@ -10,6 +12,10 @@ use POData\Providers\Metadata\IMetadataProvider;
 use UnitTests\POData\Facets\NorthWind1\NorthWindMetadata;
 use UnitTests\POData\TestCase;
 
+/**
+ * Class ServiceConfigurationTest.
+ * @package UnitTests\POData\Configuration
+ */
 class ServiceConfigurationTest extends TestCase
 {
     /** @var IMetadataProvider */
@@ -21,32 +27,12 @@ class ServiceConfigurationTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->northWindMetadata = NorthWindMetadata::Create();
+        $this->northWindMetadata        = NorthWindMetadata::Create();
         $this->dataServiceConfiguration = new ServiceConfiguration($this->northWindMetadata);
     }
 
     public function testConfiguration1()
     {
-        try {
-            $this->dataServiceConfiguration->setMaxExpandCount(-123);
-            $this->fail('An expected InvalidArgumentException for \'non-negative parameter\' was not thrown for month');
-        } catch (\InvalidArgumentException $exception) {
-            $this->assertStringEndsWith(
-                'should be non-negative, negative value \'-123\' passed',
-                $exception->getMessage()
-            );
-        }
-
-        try {
-            $this->dataServiceConfiguration->setMaxExpandDepth('ABCS');
-            $this->fail('An expected InvalidArgumentException for \'non-integer parameter\' was not thrown for month');
-        } catch (\InvalidArgumentException $exception) {
-            $this->assertStringEndsWith(
-                'should be integer, non-integer value \'ABCS\' passed',
-                $exception->getMessage()
-            );
-        }
-
         $this->assertEquals($this->dataServiceConfiguration->getMaxExpandCount(), PHP_INT_MAX);
         $this->assertEquals($this->dataServiceConfiguration->getMaxExpandDepth(), PHP_INT_MAX);
 
@@ -116,11 +102,11 @@ class ServiceConfigurationTest extends TestCase
         $this->assertNotNull($customersResourceSet);
         $this->AssertEquals(
             $this->dataServiceConfiguration->getEntitySetAccessRule($customersResourceSet),
-            EntitySetRights::NONE
+            EntitySetRights::NONE()
         );
 
         try {
-            $this->dataServiceConfiguration->setEntitySetAccessRule('Customers', EntitySetRights::ALL + 1);
+            $this->dataServiceConfiguration->setEntitySetAccessRule('Customers', new EntitySetRights(EntitySetRights::ALL + 1));
             $this->fail('An expected InvalidOperationException for \'page size and max result per collection mutual exclusion\' was not thrown for month');
         } catch (\InvalidArgumentException $exception) {
             $this->assertEquals(
@@ -129,16 +115,16 @@ class ServiceConfigurationTest extends TestCase
             );
         }
 
-        $this->dataServiceConfiguration->setEntitySetAccessRule('Customers', EntitySetRights::READ_ALL);
+        $this->dataServiceConfiguration->setEntitySetAccessRule('Customers', EntitySetRights::READ_ALL());
         $this->assertEquals(
             $this->dataServiceConfiguration->getEntitySetAccessRule($customersResourceSet),
-            EntitySetRights::READ_ALL
+            EntitySetRights::READ_ALL()
         );
 
         try {
             $this->dataServiceConfiguration->setEntitySetAccessRule(
                 'NonExistEntitySet',
-                EntitySetRights::READ_MULTIPLE
+                EntitySetRights::READ_MULTIPLE()
             );
             $this->fail('An expected InvalidArgumentException for \'non-exist entity set name\' was not thrown for month');
         } catch (\InvalidArgumentException $exception) {

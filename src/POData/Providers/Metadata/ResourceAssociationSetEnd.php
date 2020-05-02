@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Providers\Metadata;
 
 use POData\Common\Messages;
@@ -45,8 +47,8 @@ class ResourceAssociationSetEnd
      * base resource of this entity, on which the navigation property
      * represented by $resourceProperty is defined.
      *
-     * @param ResourceSet $resourceSet Resource set for the association end
-     * @param ResourceEntityType $resourceType Resource type for the association end
+     * @param ResourceSet           $resourceSet      Resource set for the association end
+     * @param ResourceEntityType    $resourceType     Resource type for the association end
      * @param ResourceProperty|null $resourceProperty Resource property for the association end
      *
      * @param ResourceEntityType|null $concreteType
@@ -59,8 +61,8 @@ class ResourceAssociationSetEnd
     ) {
         if (null !== $resourceProperty
             && (null === $resourceType->resolveProperty($resourceProperty->getName())
-                || (($resourceProperty->getKind() != ResourcePropertyKind::RESOURCE_REFERENCE)
-                    && ($resourceProperty->getKind() != ResourcePropertyKind::RESOURCESET_REFERENCE)))
+                || (($resourceProperty->getKind() != ResourcePropertyKind::RESOURCE_REFERENCE())
+                    && ($resourceProperty->getKind() != ResourcePropertyKind::RESOURCESET_REFERENCE())))
         ) {
             throw new \InvalidArgumentException(
                 Messages::resourceAssociationSetEndPropertyMustBeNavigationProperty(
@@ -90,10 +92,10 @@ class ResourceAssociationSetEnd
             $concType = $resourceType;
         }
 
-        $this->resourceSet = $resourceSet;
-        $this->resourceType = $resourceType;
+        $this->resourceSet      = $resourceSet;
+        $this->resourceType     = $resourceType;
         $this->resourceProperty = $resourceProperty;
-        $this->concreteType = $concType;
+        $this->concreteType     = $concType;
     }
 
     /**

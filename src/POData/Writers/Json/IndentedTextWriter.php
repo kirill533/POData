@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Writers\Json;
 
 /**
@@ -42,7 +44,7 @@ class IndentedTextWriter
      */
     public function __construct($writer)
     {
-        $this->result = $writer;
+        $this->result    = $writer;
         $this->tabString = '    ';
     }
 
@@ -116,10 +118,11 @@ class IndentedTextWriter
 
     /**
      * @return string the current written text
+     *                strReplace as json_encode does not always respect PHP_EOL
      */
     public function getResult()
     {
-        return $this->result;
+        return str_replace("\n", PHP_EOL, $this->result);
     }
 
     /**

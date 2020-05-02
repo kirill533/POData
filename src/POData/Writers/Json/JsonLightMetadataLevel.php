@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Writers\Json;
 
 use MyCLabs\Enum\Enum;

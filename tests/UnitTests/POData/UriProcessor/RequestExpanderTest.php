@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor;
 
 use Mockery as m;
@@ -125,7 +127,7 @@ class RequestExpanderTest extends TestCase
         $node->shouldReceive('getChildNodes')->andReturn([])->never();
 
         $resProperty = m::mock(ResourceProperty::class);
-        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCE_REFERENCE);
+        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCE_REFERENCE());
         $resProperty->shouldReceive('getName')->andReturn('resourceProperty');
 
         $type = m::mock(ResourceType::class);
@@ -164,7 +166,7 @@ class RequestExpanderTest extends TestCase
 
         $queryResult = m::mock(QueryResult::class);
 
-        $resource = m::mock(ResourceSet::class)->makePartial();
+        $resource          = m::mock(ResourceSet::class)->makePartial();
         $resource->results = $queryResult;
 
         $type = m::mock(ResourceEntityType::class);
@@ -191,7 +193,7 @@ class RequestExpanderTest extends TestCase
         $node->shouldReceive('getChildNodes')->andReturn([])->never();
 
         $resProperty = m::mock(ResourceProperty::class);
-        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE);
+        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE());
         $resProperty->shouldReceive('getTypeKind')->andReturn(ResourceTypeKind::ENTITY());
         $resProperty->shouldReceive('getName')->andReturn('resourceProperty');
 
@@ -224,11 +226,11 @@ class RequestExpanderTest extends TestCase
 
     public function testExpandCollectionWithNothingRelated()
     {
-        $resource = m::mock(ResourceSet::class)->makePartial();
+        $resource          = m::mock(ResourceSet::class)->makePartial();
         $resource->results = null;
 
         $resProperty = m::mock(ResourceProperty::class);
-        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE);
+        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE());
         $resProperty->shouldReceive('getTypeKind')->andReturn(ResourceTypeKind::ENTITY());
         $resProperty->shouldReceive('getName')->andReturn('resourceProperty');
 
@@ -275,11 +277,11 @@ class RequestExpanderTest extends TestCase
             return 0;
         };
 
-        $resource = m::mock(ResourceSet::class)->makePartial();
+        $resource          = m::mock(ResourceSet::class)->makePartial();
         $resource->results = ['foo', 'bar'];
 
         $resProperty = m::mock(ResourceProperty::class);
-        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE);
+        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE());
         $resProperty->shouldReceive('getTypeKind')->andReturn(ResourceTypeKind::ENTITY());
         $resProperty->shouldReceive('getName')->andReturn('resourceProperty');
 
@@ -329,7 +331,7 @@ class RequestExpanderTest extends TestCase
         $foo->shouldReceive('getService')->andReturn($service);
 
         $expected = '!null($currentResourceSetWrapper)';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->handleExpansion();
@@ -344,14 +346,14 @@ class RequestExpanderTest extends TestCase
     {
         $queryResult = m::mock(QueryResult::class);
 
-        $resource = m::mock(ResourceSet::class)->makePartial();
+        $resource          = m::mock(ResourceSet::class)->makePartial();
         $resource->results = $queryResult;
 
         $type = m::mock(ResourceType::class);
         $type->shouldReceive('setPropertyValue')->withAnyArgs()->andReturnNull()->once();
 
         $resProperty = m::mock(ResourceProperty::class);
-        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE);
+        $resProperty->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE());
         $resProperty->shouldReceive('getTypeKind')->andReturn(ResourceTypeKind::COMPLEX());
         $resProperty->shouldReceive('getName')->andReturn('resourceProperty');
 
@@ -388,7 +390,7 @@ class RequestExpanderTest extends TestCase
         $foo->shouldReceive('getProviders')->andReturn($providers);
 
         $expected = 'pushSegmentForNavigationProperty should not be called with non-entity type';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->handleExpansion();

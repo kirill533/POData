@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\UriProcessor\QueryProcessor\ExpressionParser;
 
 /**
@@ -44,7 +46,7 @@ class FilterInfo
             'Filter expression must be a string'
         );
         $this->navigationPropertiesUsedInTheFilterClause = $navigationProperties;
-        $this->filterExpressionAsDataSourceExpression = $filterExpAsDataSourceExp;
+        $this->filterExpressionAsDataSourceExpression    = $filterExpAsDataSourceExp;
     }
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\ObjectModel;
 
 /**
@@ -37,7 +39,7 @@ class ODataProperty
     /**
      * @return bool|null
      */
-    public function isNull()
+    public function isNull(): ?bool
     {
         return null === $this->value ? true : null;
     }

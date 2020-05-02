@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\IDSQP2\WordPress;
 
 use POData\Common\Url;
@@ -17,10 +19,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testStringCompareMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=Title eq \'OData PHP Producer\'',
@@ -28,7 +30,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
         $dataService->setHost($host);
 
@@ -50,10 +52,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testFunctionCallMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=replace(Title, \'PHP\', \'Java\') eq \'OData Java Producer\'',
@@ -61,7 +63,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -82,10 +84,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testNullabilityCheckMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=PostID eq  null',
@@ -93,7 +95,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -114,10 +116,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testNegationMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=-PostID eq -1',
@@ -125,7 +127,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -146,10 +148,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testDateTimeComparisionMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=Date eq datetime\'2011-12-24 19:54:00\'',
@@ -157,7 +159,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -178,10 +180,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testYearFunctionCallMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=year(Date) eq  year(datetime\'1996-07-09\')',
@@ -189,7 +191,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -210,10 +212,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testYearFunctionCallWtihAriRelMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=year(Date) add 2 eq 2013',
@@ -221,7 +223,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -242,10 +244,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testCeilFloorFunctionCallMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=ceiling(floor(PostID)) eq 2',
@@ -253,7 +255,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -274,10 +276,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testRoundFunctionCallMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=round(PostID) eq 1',
@@ -285,7 +287,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -306,10 +308,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testModOperatorMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=PostID mod 5 eq 4',
@@ -317,7 +319,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -338,10 +340,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testSubString2ParamMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=substring(Title, 1) eq \'Data PHP Producer\'',
@@ -349,7 +351,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -370,18 +372,18 @@ class WordPressMySQLTest extends TestCase
      */
     public function testSubString3ParamMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
-                'AbsoluteServiceUri'    => new Url($serviceUri),
-                'AbsoluteRequestUri'    => new Url($requestUri),
-                'QueryString'           => '$filter=substring(Title, 1, 6) eq \'Data P\'',
-                'DataServiceVersion'    => new Version(3, 0),
-                'MaxDataServiceVersion' => new Version(3, 0),
-            ];
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
+            'AbsoluteServiceUri'    => new Url($serviceUri),
+            'AbsoluteRequestUri'    => new Url($requestUri),
+            'QueryString'           => '$filter=substring(Title, 1, 6) eq \'Data P\'',
+            'DataServiceVersion'    => new Version(3, 0),
+            'MaxDataServiceVersion' => new Version(3, 0),
+        ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -402,10 +404,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testSubStringTrimMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=trim(\'  OData PHP Producer   \') eq Title',
@@ -413,7 +415,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -434,10 +436,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testEndsWithMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=endswith(Title, \'umer\')',
@@ -445,7 +447,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -466,10 +468,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testStartsWithMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=startswith(Title, \'OData\')',
@@ -477,7 +479,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -498,10 +500,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testIndexOfMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=indexof(Title, \'ata\') eq 2',
@@ -509,7 +511,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -530,10 +532,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testReplaceMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=replace(Title, \' \', \'\') eq \'ODataPHPProducer\'',
@@ -541,7 +543,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -562,10 +564,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testSubStringOfMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=substringof(\'Producer\', Title)',
@@ -573,7 +575,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -594,10 +596,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testSubStringOfIndexOfMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=substringof(\'Producer\', Title) and indexof(Title, \'Producer\') eq 11',
@@ -605,7 +607,7 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
@@ -626,10 +628,10 @@ class WordPressMySQLTest extends TestCase
      */
     public function testSubConcatMySQL()
     {
-        $serviceUri = 'http://localhost:8083/WordPressDataService.svc/';
+        $serviceUri   = 'http://localhost:8083/WordPressDataService.svc/';
         $resourcePath = 'Posts';
-        $requestUri = $serviceUri.$resourcePath;
-        $hostInfo = [
+        $requestUri   = $serviceUri . $resourcePath;
+        $hostInfo     = [
             'AbsoluteServiceUri'    => new Url($serviceUri),
             'AbsoluteRequestUri'    => new Url($requestUri),
             'QueryString'           => '$filter=concat(concat(Title, \', \'), \'Open source now\') eq \'OData .NET Producer, Open source now\'',
@@ -637,19 +639,19 @@ class WordPressMySQLTest extends TestCase
             'MaxDataServiceVersion' => new Version(3, 0),
         ];
 
-        $host = new ServiceHostTestFake($hostInfo);
+        $host        = new ServiceHostTestFake($hostInfo);
         $dataService = new WordPressDataService($host);
 
         $uriProcessor = $dataService->handleRequest();
-        $check = null !== $uriProcessor;
+        $check        = null !== $uriProcessor;
         $this->assertTrue($check);
 
         $requestDescription = $uriProcessor->getRequest();
-        $check = null !== $requestDescription;
+        $check              = null !== $requestDescription;
         $this->assertTrue($check);
 
         $filterInfo = $requestDescription->getFilterInfo();
-        $check = null !== $filterInfo;
+        $check      = null !== $filterInfo;
         $this->assertTrue($check);
 
         $mysqlexpression = $filterInfo->getExpressionAsString();

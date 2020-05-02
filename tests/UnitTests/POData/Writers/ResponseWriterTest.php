@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\Writers;
 
 use Mockery as m;
@@ -22,6 +24,9 @@ use UnitTests\POData\TestCase;
 
 class ResponseWriterTest extends TestCase
 {
+    /**
+     * @throws \Exception
+     */
     public function testWriteMetadata()
     {
         $wrapper = m::mock(ProvidersWrapper::class);
@@ -41,7 +46,7 @@ class ResponseWriterTest extends TestCase
         $service->shouldReceive('getHost')->andReturn($host)->atLeast(1);
         $service->shouldReceive('getProvidersWrapper')->andReturn($wrapper);
 
-        ResponseWriter::write($service, $request, null, null);
+        ResponseWriter::write($service, $request, null, 'application/atom+xml');
     }
 
     public function testWriteServiceDocument()
@@ -66,13 +71,13 @@ class ResponseWriterTest extends TestCase
         $service->shouldReceive('getProvidersWrapper')->andReturn($wrapper);
         $service->shouldReceive('getODataWriterRegistry->getWriter')->andReturn($writer);
 
-        ResponseWriter::write($service, $request, null, null);
+        ResponseWriter::write($service, $request, null, 'application/atom+xml');
     }
 
     public function testWriteServiceDocumentNoWriter()
     {
         $expected = 'No writer can handle the request.';
-        $actual = null;
+        $actual   = null;
 
         $writer = null;
 
@@ -182,7 +187,7 @@ class ResponseWriterTest extends TestCase
         $host->shouldReceive('getOperationContext->outgoingResponse')->andReturn($response);
 
         $expected = Messages::modelPayloadOnLinkModification();
-        $actual = null;
+        $actual   = null;
 
         $service = m::mock(IService::class)->makePartial();
         $service->shouldReceive('getHost')->andReturn($host)->atLeast(1);

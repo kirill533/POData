@@ -19,7 +19,7 @@ class RelationalExpression extends BinaryExpression
     public function __construct($left, $right, ExpressionType $nodeType)
     {
         $this->nodeType = $nodeType;
-        $this->type = new Boolean();
+        $this->type     = new Boolean();
         parent::__construct($left, $right);
     }
 }

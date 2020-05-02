@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\QueryProcessor\ExpandProjectionParser;
 
 use POData\Common\ODataException;
@@ -26,9 +28,9 @@ class SelectTest extends TestCase
     public function testWildCartSelectOnRoot()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -36,7 +38,7 @@ class SelectTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
 
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
@@ -68,9 +70,9 @@ class SelectTest extends TestCase
     public function testWildCardWithExplicitSelectionOnRoot()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -78,7 +80,7 @@ class SelectTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
         //First test with explicit selection and no '*' application
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
@@ -150,9 +152,9 @@ class SelectTest extends TestCase
     public function testTraversalOfNavigationPropertyWhichIsNotExpandedOnRoot()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -160,7 +162,7 @@ class SelectTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
 
         try {
             //Try to traverse 'Orders' on select without expanding
@@ -178,7 +180,7 @@ class SelectTest extends TestCase
         } catch (ODataException $odataException) {
             $this->assertStringStartsWith(
                 'Only navigation properties specified in expand option can be traversed in select option.  '
-                .'In order to traverse',
+                . 'In order to traverse',
                 $odataException->getMessage()
             );
         }
@@ -193,9 +195,9 @@ class SelectTest extends TestCase
     public function testInclusionOfSubTreeDueToParentInclusion1()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -203,7 +205,7 @@ class SelectTest extends TestCase
             false
         );
         $ordersResourceSetWrapper = $providersWrapper->resolveResourceSet('Orders');
-        $orderResourceType = $ordersResourceSetWrapper->getResourceType();
+        $orderResourceType        = $ordersResourceSetWrapper->getResourceType();
         //First test with explicit selection and no '*' application
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $ordersResourceSetWrapper,
@@ -261,9 +263,9 @@ class SelectTest extends TestCase
     public function testInclusionOfSubTreeDueToParentInclusion2()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -271,7 +273,7 @@ class SelectTest extends TestCase
             false
         );
         $ordersResourceSetWrapper = $providersWrapper->resolveResourceSet('Orders');
-        $orderResourceType = $ordersResourceSetWrapper->getResourceType();
+        $orderResourceType        = $ordersResourceSetWrapper->getResourceType();
 
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $ordersResourceSetWrapper,
@@ -337,9 +339,9 @@ class SelectTest extends TestCase
     public function testRemovalOfSubTreeWhichIsExpandedButNotSelected1()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -347,7 +349,7 @@ class SelectTest extends TestCase
             false
         );
         $orderDetailsResourceSetWrapper = $providersWrapper->resolveResourceSet('Order_Details');
-        $orderDetailsResourceType = $orderDetailsResourceSetWrapper->getResourceType();
+        $orderDetailsResourceType       = $orderDetailsResourceSetWrapper->getResourceType();
 
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $orderDetailsResourceSetWrapper,
@@ -385,7 +387,7 @@ class SelectTest extends TestCase
 
         //Test the same case but with one more level of navigation
         $ordersResourceSetWrapper = $providersWrapper->resolveResourceSet('Orders');
-        $orderResourceType = $ordersResourceSetWrapper->getResourceType();
+        $orderResourceType        = $ordersResourceSetWrapper->getResourceType();
         //Here parser should discard the last expanded node 'Orders' in 'Order_Details/Product/Order_Details/Order'
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
             $ordersResourceSetWrapper,
@@ -447,9 +449,9 @@ class SelectTest extends TestCase
     public function testRemovalOfSubTreeWhichIsExpandedButNotSelected2()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -459,8 +461,8 @@ class SelectTest extends TestCase
         //Selecting immediate properties of 'Order_Details' will de-select subtree of
         //'Order_Details' if they are not selected explicitly
         $ordersResourceSetWrapper = $providersWrapper->resolveResourceSet('Orders');
-        $orderResourceType = $ordersResourceSetWrapper->getResourceType();
-        $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
+        $orderResourceType        = $ordersResourceSetWrapper->getResourceType();
+        $projectionTreeRoot       = ExpandProjectionParser::parseExpandAndSelectClause(
             $ordersResourceSetWrapper,
             $orderResourceType,
             null,
@@ -500,9 +502,9 @@ class SelectTest extends TestCase
     public function testPrimitiveBagComplexAsIntermediateSegments()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -510,7 +512,7 @@ class SelectTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
         //Test using primitive type as navigation
         try {
             $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
@@ -529,7 +531,7 @@ class SelectTest extends TestCase
         } catch (ODataException $odataException) {
             $this->assertStringStartsWith(
                 'Property \'OrderID\' on type \'NorthWind.Order\' is of primitive type and cannot'
-                .' be used as a navigation property.',
+                . ' be used as a navigation property.',
                 $odataException->getMessage()
             );
         }
@@ -550,13 +552,13 @@ class SelectTest extends TestCase
         } catch (ODataException $odataException) {
             $this->assertStringStartsWith(
                 'select doesn\'t support selection of properties of complex type. The property \'Address\' on'
-                .' type \'NorthWind.Customer\' is a complex type',
+                . ' type \'NorthWind.Customer\' is a complex type',
                 $odataException->getMessage()
             );
         }
 
         $employeesResourceSetWrapper = $providersWrapper->resolveResourceSet('Employees');
-        $employeeResourceType = $employeesResourceSetWrapper->getResourceType();
+        $employeeResourceType        = $employeesResourceSetWrapper->getResourceType();
         //Test using bag type as navigation
         try {
             $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(
@@ -573,7 +575,7 @@ class SelectTest extends TestCase
         } catch (ODataException $odataException) {
             $this->assertStringStartsWith(
                 'The selection from property \'Emails\' on type \'NorthWind.Employee\' is not valid.'
-                .' The select query option does not support selection items from a bag property',
+                . ' The select query option does not support selection items from a bag property',
                 $odataException->getMessage()
             );
         }
@@ -586,9 +588,9 @@ class SelectTest extends TestCase
     public function testProjectionNodeCreation()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -596,7 +598,7 @@ class SelectTest extends TestCase
             false
         );
         $ordersResourceSetWrapper = $providersWrapper->resolveResourceSet('Orders');
-        $orderResourceType = $ordersResourceSetWrapper->getResourceType();
+        $orderResourceType        = $ordersResourceSetWrapper->getResourceType();
         //test selection of properties which is not included in expand clause
         //1 primitve ('Order_Details/UnitPrice') and 1 link to navigation 'Customer'
         $projectionTreeRoot = ExpandProjectionParser::parseExpandAndSelectClause(

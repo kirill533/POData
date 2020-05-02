@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor;
 
 use Mockery as m;
@@ -30,7 +32,7 @@ class SegmentStackTest extends TestCase
         $foo = new SegmentStack($wrap);
 
         $expected = 'Found non-balanced call to pushSegment and popSegment';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->popSegment(true);
@@ -83,24 +85,5 @@ class SegmentStackTest extends TestCase
         $foo->popSegment(true);
         $this->assertEquals(0, count($foo->getSegmentNames()));
         $this->assertEquals(0, count($foo->getSegmentWrappers()));
-    }
-
-    public function testPushNonStringSegmentNameAndThrowException()
-    {
-        $wrap = m::mock(RequestDescription::class)->makePartial();
-        $foo = new SegmentStack($wrap);
-
-        $segName = new \StdClass();
-        $setWrap = m::mock(ResourceSetWrapper::class);
-
-        $expected = 'segmentName must be a string';
-        $actual = null;
-        try {
-            $foo->pushSegment($segName, $setWrap);
-        } catch (InvalidOperationException $e) {
-            $actual = $e->getMessage();
-        }
-        $this->assertNotNull($actual);
-        $this->assertEquals($expected, $actual);
     }
 }

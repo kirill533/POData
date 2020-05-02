@@ -3,7 +3,7 @@
 namespace POData\Common\Messages;
 
 /**
- * Trait skipTokenInfo
+ * Trait skipTokenInfo.
  * @package POData\Common\Messages
  */
 trait skipTokenInfo
@@ -25,7 +25,7 @@ trait skipTokenInfo
         $orderByValuesVarName
     ) {
         return 'Either both the arguments ' . $orderByPathsVarName . ' and ' . $orderByValuesVarName . ' should be'
-                .' null or not-null';
+                . ' null or not-null';
     }
 
     /**
@@ -51,6 +51,6 @@ trait skipTokenInfo
      */
     public static function internalSkipTokenInfoBinarySearchRequireArray($argumentName)
     {
-        return 'The argument \'' . $argumentName . '\' should be an array to perfrom binary search';
+        return 'The argument \'' . $argumentName . '\' should be an array to perform binary search';
     }
 }

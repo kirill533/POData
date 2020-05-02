@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Providers\Stream;
 
 use POData\Common\ODataException;

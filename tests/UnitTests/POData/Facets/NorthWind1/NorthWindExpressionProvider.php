@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\Facets\NorthWind1;
 
 use POData\Providers\Expression\IExpressionProvider;
@@ -106,9 +108,10 @@ class NorthWindExpressionProvider implements IExpressionProvider
      *
      * @return string
      */
-    public function onPropertyAccessExpression(PropertyAccessExpression $expression)
+    public function onPropertyAccessExpression(PropertyAccessExpression $expression): string
     {
         // TODO: Implement onPropertyAccessExpression() method.
+        return '';
     }
 
     /**

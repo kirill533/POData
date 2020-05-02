@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\UriProcessorNew;
 
 use Mockery as m;
@@ -28,6 +30,8 @@ use POData\Providers\Metadata\ResourceTypeKind;
 use POData\Providers\Metadata\Type\Int32;
 use POData\Providers\Metadata\Type\IType;
 use POData\Providers\ProvidersWrapper;
+use POData\Readers\Atom\AtomODataReader;
+use POData\Readers\ODataReaderRegistry;
 use POData\UriProcessor\RequestDescription;
 use POData\UriProcessor\ResourcePathProcessor\SegmentParser\KeyDescriptor;
 use POData\UriProcessor\ResourcePathProcessor\SegmentParser\SegmentDescriptor;
@@ -39,49 +43,10 @@ use UnitTests\POData\TestCase;
 
 class ExecuteGetTest extends TestCase
 {
-    public function testExecuteBadMethod()
-    {
-        $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc');
-
-        $host = $this->setUpMockHost($reqUrl, $baseUrl);
-        $host->shouldReceive('getRequestContentType')->andReturn(null);
-
-        $request = m::mock(IHTTPRequest::class);
-        $request->shouldReceive('getMethod')->andReturn(null);
-        $request->shouldReceive('getAllInput')->andReturn(null);
-
-        $context = m::mock(IOperationContext::class);
-        $context->shouldReceive('incomingRequest')->andReturn($request);
-
-        $wrapper = m::mock(ProvidersWrapper::class);
-
-        $config = m::mock(IServiceConfiguration::class);
-        $config->shouldReceive('getMaxDataServiceVersion')->andReturn(new Version(3, 0));
-
-        $service = $this->setUpMockService($host, $wrapper, $context, $config);
-
-        $expected = 'This release of library supports only GET (read) request, received a request with method ';
-        $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
-
-        try {
-            $remix = UriProcessorNew::process($service);
-            $remix->execute();
-        } catch (\Exception $e) {
-            $actualClass = get_class($e);
-            $actual = $e->getMessage();
-        }
-        $this->assertEquals($expectedClass, $actualClass);
-        $this->assertNotNull($actual);
-        $this->assertEquals($expected, $actual);
-    }
-
     public function testExecuteGetOnSingleton()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/whoami');
+        $reqUrl  = new Url('http://localhost/odata.svc/whoami');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -101,7 +66,7 @@ class ExecuteGetTest extends TestCase
         $singleType->shouldReceive('getCustomState')->andReturn($resourceSet);
 
         $singleResult = new \DateTime('2017-06-10');
-        $singleton = m::mock(ResourceFunctionType::class);
+        $singleton    = m::mock(ResourceFunctionType::class);
         $singleton->shouldReceive('getResourceType')->andReturn($singleType);
         $singleton->shouldReceive('get')->andReturn($singleResult);
 
@@ -132,7 +97,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnResourceSet()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -174,7 +139,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 1;
+        $segCount      = 1;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -182,7 +147,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnResourceSingle()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -230,7 +195,7 @@ class ExecuteGetTest extends TestCase
         $origSegments[0]->setSingleResult(true);
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 1;
+        $segCount      = 1;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -238,7 +203,7 @@ class ExecuteGetTest extends TestCase
     public function testGetOnResourceSingleWithExpansion()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)?expand=orders');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)?expand=orders');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -295,7 +260,7 @@ class ExecuteGetTest extends TestCase
         $origSegments[0]->setSingleResult(true);
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 1;
+        $segCount      = 1;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -303,7 +268,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnMediaResourceBadRequestVersion()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)/photo');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)/photo');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -355,16 +320,16 @@ class ExecuteGetTest extends TestCase
         $service = $this->setUpMockService($host, $wrapper, $context, $config);
 
         $expected = 'Request version \'1.0\' is not supported for the request payload. The only supported'
-                    .' version is \'3.0\'.';
+                    . ' version is \'3.0\'.';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             UriProcessorNew::process($service);
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -374,7 +339,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnMediaResourceGoodRequestVersion()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)/photo');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)/photo');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -436,7 +401,7 @@ class ExecuteGetTest extends TestCase
         $key = KeyDescriptor::tryParseKeysFromKeyPredicate('id=1', $foo);
         $foo->validate('customers(id=1)', $resourceType);
 
-        $origSegments = [ new SegmentDescriptor(), new SegmentDescriptor];
+        $origSegments = [ new SegmentDescriptor(), new SegmentDescriptor()];
         $origSegments[0]->setIdentifier('customers');
         $origSegments[0]->setTargetKind(TargetKind::RESOURCE());
         $origSegments[0]->setResult($result);
@@ -457,7 +422,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 2;
+        $segCount      = 2;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -465,7 +430,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnFirstSegmentLink()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/'.ODataConstants::URI_COUNT_SEGMENT);
+        $reqUrl  = new Url('http://localhost/odata.svc/' . ODataConstants::URI_COUNT_SEGMENT);
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -481,16 +446,16 @@ class ExecuteGetTest extends TestCase
 
         $service = $this->setUpMockService($host, $wrapper, $context, $config);
 
-        $expected = 'The request URI is not valid, the segment \'$count\' cannot be applied to the root of the service';
+        $expected      = 'The request URI is not valid, the segment \'$count\' cannot be applied to the root of the service';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             UriProcessorNew::process($service);
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -500,7 +465,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnCountAfterSingleResource()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)/'.ODataConstants::URI_COUNT_SEGMENT);
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)/' . ODataConstants::URI_COUNT_SEGMENT);
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -538,16 +503,16 @@ class ExecuteGetTest extends TestCase
         $service = $this->setUpMockService($host, $wrapper, $context, $config);
 
         $expected = 'The request URI is not valid, since the segment \'customers\' refers to a singleton,'
-                    .' and the segment \'$count\' can only follow a resource collection.';
+                    . ' and the segment \'$count\' can only follow a resource collection.';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             UriProcessorNew::process($service);
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -557,7 +522,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnCountAfterResourceSet()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers/'.ODataConstants::URI_COUNT_SEGMENT);
+        $reqUrl  = new Url('http://localhost/odata.svc/customers/' . ODataConstants::URI_COUNT_SEGMENT);
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl, '2.0', '3.0');
 
@@ -623,7 +588,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 2;
+        $segCount      = 2;
         $this->assertEquals($origSegments[0], $remixSegments[0]);
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -631,7 +596,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnNonterminalCountAfterResourceSet()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers/'.ODataConstants::URI_COUNT_SEGMENT.'/orders');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers/' . ODataConstants::URI_COUNT_SEGMENT . '/orders');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl, '2.0', '3.0');
 
@@ -673,17 +638,17 @@ class ExecuteGetTest extends TestCase
         $service = $this->setUpMockService($host, $wrapper, $context, $config);
 
         $expected = 'The request URI is not valid. The segment \'$count\' must be the last segment in the URI'
-                    .' because it is one of the following: $batch, $value, $metadata, $count, a bag property, a'
-                    .' named media resource, or a service operation that does not return a value.';
+                    . ' because it is one of the following: $batch, $value, $metadata, $count, a bag property, a'
+                    . ' named media resource, or a service operation that does not return a value.';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             UriProcessorNew::process($service);
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -693,7 +658,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnComplexType()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)/address');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)/address');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -705,7 +670,7 @@ class ExecuteGetTest extends TestCase
         $complexType = m::mock(ResourceComplexType::class);
 
         $complexProp = m::mock(ResourceProperty::class);
-        $complexProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::COMPLEX_TYPE)->atLeast(1);
+        $complexProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::COMPLEX_TYPE())->atLeast(1);
         $complexProp->shouldReceive('getResourceType')->andReturn($complexType);
 
         $iType = m::mock(IType::class);
@@ -766,7 +731,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 2;
+        $segCount      = 2;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -774,7 +739,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnBagOfPrimitivesType()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)/addresses');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)/addresses');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -787,7 +752,8 @@ class ExecuteGetTest extends TestCase
 
         $bagProp = m::mock(ResourceProperty::class);
         $bagProp->shouldReceive('getKind')
-            ->andReturn(ResourcePropertyKind::BAG | ResourcePropertyKind::PRIMITIVE)->atLeast(1);
+            ->andReturn(new ResourcePropertyKind(ResourcePropertyKind::BAG | ResourcePropertyKind::PRIMITIVE))
+            ->atLeast(1);
         $bagProp->shouldReceive('getResourceType')->andReturn($bagType);
 
         $iType = m::mock(IType::class);
@@ -848,7 +814,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 2;
+        $segCount      = 2;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -856,7 +822,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnBagOfComplexType()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)/addresses');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)/addresses');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -869,7 +835,8 @@ class ExecuteGetTest extends TestCase
 
         $bagProp = m::mock(ResourceProperty::class);
         $bagProp->shouldReceive('getKind')
-            ->andReturn(ResourcePropertyKind::BAG | ResourcePropertyKind::COMPLEX_TYPE)->atLeast(1);
+            ->andReturn(new ResourcePropertyKind(ResourcePropertyKind::BAG | ResourcePropertyKind::COMPLEX_TYPE))
+            ->atLeast(1);
         $bagProp->shouldReceive('getResourceType')->andReturn($bagType);
 
         $iType = m::mock(IType::class);
@@ -930,7 +897,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 2;
+        $segCount      = 2;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -938,7 +905,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnBatchFirstSegment()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/'.ODataConstants::URI_BATCH_SEGMENT);
+        $reqUrl  = new Url('http://localhost/odata.svc/' . ODataConstants::URI_BATCH_SEGMENT);
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -955,16 +922,16 @@ class ExecuteGetTest extends TestCase
 
         $service = $this->setUpMockService($host, $wrapper, $context, $config);
 
-        $expected = null;
+        $expected      = null;
         $expectedClass = null;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             UriProcessorNew::process($service);
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertEquals($expected, $actual);
@@ -973,7 +940,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnUnallocatedLinks()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/'.ODataConstants::URI_LINK_SEGMENT);
+        $reqUrl  = new Url('http://localhost/odata.svc/' . ODataConstants::URI_LINK_SEGMENT);
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -990,16 +957,16 @@ class ExecuteGetTest extends TestCase
 
         $service = $this->setUpMockService($host, $wrapper, $context, $config);
 
-        $expected = 'The request URI is not valid, the segment \'$links\' cannot be applied to the root of the service';
+        $expected      = 'The request URI is not valid, the segment \'$links\' cannot be applied to the root of the service';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             UriProcessorNew::process($service);
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -1009,7 +976,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnDanglingLinks()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)/'.ODataConstants::URI_LINK_SEGMENT);
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)/' . ODataConstants::URI_LINK_SEGMENT);
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -1049,16 +1016,16 @@ class ExecuteGetTest extends TestCase
         $service = $this->setUpMockService($host, $wrapper, $context, $config);
 
         $expected = 'The request URI is not valid. There must a segment specified after the \'$links\' segment'
-                    .' and the segment must refer to a entity resource.';
+                    . ' and the segment must refer to a entity resource.';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             UriProcessorNew::process($service);
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -1068,7 +1035,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnNonDanglingLinks()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)/'.ODataConstants::URI_LINK_SEGMENT.'/orders');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)/' . ODataConstants::URI_LINK_SEGMENT . '/orders');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -1086,9 +1053,11 @@ class ExecuteGetTest extends TestCase
         $keyProp->shouldReceive('getResourceTypeKind')->andReturn(ResourceTypeKind::PRIMITIVE());
 
         $ordersProp = m::mock(ResourceProperty::class);
-        $ordersProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::PRIMITIVE])->andReturn(true);
+        $ordersProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::PRIMITIVE == $arg->getValue();
+        }))->andReturn(true);
         $ordersProp->shouldReceive('isKindOf')->andReturn(false);
-        $ordersProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::PRIMITIVE);
+        $ordersProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::PRIMITIVE());
         $ordersProp->shouldReceive('getInstanceType->newInstance')->andReturn(new \stdClass())->atLeast(2);
 
         $ordersSet = m::mock(ResourceSetWrapper::class);
@@ -1111,7 +1080,7 @@ class ExecuteGetTest extends TestCase
         $bagProp = m::mock(ResourceProperty::class);
         $bagProp->shouldReceive('getResourceType')->andReturn($ordersType);
         $bagProp->shouldReceive('getTypeKind')->andReturn(ResourceTypeKind::ENTITY());
-        $bagProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE);
+        $bagProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE());
 
         $resourceType = m::mock(ResourceEntityType::class);
         $resourceType->shouldReceive('getName')->andReturn('Customer');
@@ -1181,7 +1150,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 3;
+        $segCount      = 3;
         $this->assertEquals($origSegments[2], $remixSegments[2]);
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -1189,7 +1158,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnPrimitiveValueOfEntity()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)/id/$value');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)/id/$value');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -1207,11 +1176,13 @@ class ExecuteGetTest extends TestCase
         $primType = m::mock(ResourcePrimitiveType::class);
 
         $keyProp = m::mock(ResourceProperty::class);
-        $keyProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::PRIMITIVE])->andReturn(true)->atLeast(2);
+        $keyProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::PRIMITIVE == $arg->getValue();
+        }))->andReturn(true)->atLeast(2);
         $keyProp->shouldReceive('getInstanceType')->andReturn($iType);
         $keyProp->shouldReceive('getResourceTypeKind')->andReturn(ResourceTypeKind::PRIMITIVE());
         $keyProp->shouldReceive('getResourceType')->andReturn($primType);
-        $keyProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::PRIMITIVE);
+        $keyProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::PRIMITIVE());
 
         $resourceType = m::mock(ResourceEntityType::class);
         $resourceType->shouldReceive('getName')->andReturn('Customer');
@@ -1270,7 +1241,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 3;
+        $segCount      = 3;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -1278,7 +1249,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetWhenHeadingUpToSingleResult()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/orders(id=1)/customer');
+        $reqUrl  = new Url('http://localhost/odata.svc/orders(id=1)/customer');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -1302,17 +1273,17 @@ class ExecuteGetTest extends TestCase
 
         $custProp = m::mock(ResourceProperty::class);
         $custProp->shouldReceive('getResourceType')->andReturn($custType);
-        $custProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCE_REFERENCE);
+        $custProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCE_REFERENCE());
 
         $iType = m::mock(IType::class);
         $iType->shouldReceive('isCompatibleWith')->andReturn(true)->atLeast(2);
 
         $keyProp = m::mock(ResourceProperty::class);
-        $keyProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::PRIMITIVE])->andReturn(true)->atLeast(2);
+        $keyProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::PRIMITIVE()])->andReturn(true)->atLeast(2);
         $keyProp->shouldReceive('getInstanceType')->andReturn($iType);
         $keyProp->shouldReceive('getResourceTypeKind')->andReturn(ResourceTypeKind::PRIMITIVE());
         $keyProp->shouldReceive('getResourceType')->andReturn($primType);
-        $keyProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::PRIMITIVE);
+        $keyProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::PRIMITIVE());
 
         $resourceType = m::mock(ResourceEntityType::class);
         $resourceType->shouldReceive('getName')->andReturn('Order');
@@ -1370,7 +1341,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 2;
+        $segCount      = 2;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -1378,7 +1349,7 @@ class ExecuteGetTest extends TestCase
     public function testExecuteGetOnResourceFromRelatedResourceSet()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/orders(id=1)/customer(id=1)');
+        $reqUrl  = new Url('http://localhost/odata.svc/orders(id=1)/customer(id=1)');
 
         $host = $this->setUpMockHost($reqUrl, $baseUrl);
 
@@ -1396,11 +1367,11 @@ class ExecuteGetTest extends TestCase
         $config->shouldReceive('getMaxDataServiceVersion')->andReturn(new Version(3, 0));
 
         $keyProp = m::mock(ResourceProperty::class);
-        $keyProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::PRIMITIVE])->andReturn(true)->atLeast(2);
+        $keyProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::PRIMITIVE()])->andReturn(true)->atLeast(2);
         $keyProp->shouldReceive('getInstanceType')->andReturn($iType);
         $keyProp->shouldReceive('getResourceTypeKind')->andReturn(ResourceTypeKind::PRIMITIVE());
         $keyProp->shouldReceive('getResourceType')->andReturn($primType);
-        $keyProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::PRIMITIVE);
+        $keyProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::PRIMITIVE());
 
         $custType = m::mock(ResourceEntityType::class);
         $custType->shouldReceive('getResourceTypeKind')->andReturn(ResourceTypeKind::ENTITY());
@@ -1413,7 +1384,7 @@ class ExecuteGetTest extends TestCase
 
         $custProp = m::mock(ResourceProperty::class);
         $custProp->shouldReceive('getResourceType')->andReturn($custType);
-        $custProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE);
+        $custProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCESET_REFERENCE());
 
         $resourceType = m::mock(ResourceEntityType::class);
         $resourceType->shouldReceive('getName')->andReturn('Order');
@@ -1475,7 +1446,7 @@ class ExecuteGetTest extends TestCase
 
         $remix->execute();
         $remixSegments = $remix->getRequest()->getSegments();
-        $segCount = 2;
+        $segCount      = 2;
 
         $this->checkSegmentEquality($segCount, $origSegments, $remixSegments);
     }
@@ -1497,6 +1468,9 @@ class ExecuteGetTest extends TestCase
         $service->shouldReceive('getOperationContext')->andReturn($context);
         $service->shouldReceive('getConfiguration')->andReturn($config);
         $service->shouldReceive('getMetadataProvider')->andReturn($meta);
+        $readerRegistery = new ODataReaderRegistry();
+        $readerRegistery->register(new AtomODataReader());
+        $service->shouldReceive('getODataReaderRegistry')->andReturn($readerRegistery);
         return $service;
     }
 
@@ -1540,11 +1514,12 @@ class ExecuteGetTest extends TestCase
         $this->assertEquals($segCount, count($remixSegments));
 
         for ($i = 0; $i < $segCount; $i++) {
-            $this->assertEquals($origSegments[$i]->getTargetKind(), $remixSegments[$i]->getTargetKind(), $i);
-            $this->assertEquals($origSegments[$i]->getResult(), $remixSegments[$i]->getResult(), $i);
-            $this->assertEquals($origSegments[$i]->isSingleResult(), $remixSegments[$i]->isSingleResult(), $i);
-            $this->assertEquals($origSegments[$i]->getNext(), $remixSegments[$i]->getNext(), $i);
-            $this->assertEquals($origSegments[$i]->getPrevious(), $remixSegments[$i]->getPrevious(), $i);
+            $strI = strval($i);
+            $this->assertEquals($origSegments[$i]->getTargetKind(), $remixSegments[$i]->getTargetKind(), $strI);
+            $this->assertEquals($origSegments[$i]->getResult(), $remixSegments[$i]->getResult(), $strI);
+            $this->assertEquals($origSegments[$i]->isSingleResult(), $remixSegments[$i]->isSingleResult(), $strI);
+            $this->assertEquals($origSegments[$i]->getNext(), $remixSegments[$i]->getNext(), $strI);
+            $this->assertEquals($origSegments[$i]->getPrevious(), $remixSegments[$i]->getPrevious(), $strI);
         }
     }
 }

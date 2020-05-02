@@ -1,12 +1,14 @@
 <?php
 
+
+
 namespace POData\UriProcessor;
 
 use POData\Common\InvalidOperationException;
 use POData\Providers\Metadata\ResourceSetWrapper;
 
 /**
- * Class SegmentStack
+ * Class SegmentStack.
  * @package POData\UriProcessor
  */
 class SegmentStack
@@ -40,8 +42,8 @@ class SegmentStack
      */
     public function __construct(RequestDescription $request = null)
     {
-        $this->request = $request;
-        $this->segmentNames = [];
+        $this->request                    = $request;
+        $this->segmentNames               = [];
         $this->segmentResourceSetWrappers = [];
         assert(count($this->segmentNames) == count($this->segmentResourceSetWrappers), $this->mismatch);
     }
@@ -58,11 +60,8 @@ class SegmentStack
      * @throws InvalidOperationException
      * @return bool                      true if the segment was push, false otherwise
      */
-    public function pushSegment($segmentName, ResourceSetWrapper &$resourceSetWrapper)
+    public function pushSegment(string $segmentName, ResourceSetWrapper &$resourceSetWrapper)
     {
-        if (!is_string($segmentName)) {
-            throw new InvalidOperationException('segmentName must be a string');
-        }
         $rootProjectionNode = $this->getRequest()->getRootProjectionNode();
         if (null !== $rootProjectionNode && $rootProjectionNode->isExpansionSpecified()) {
             array_push($this->segmentNames, $segmentName);

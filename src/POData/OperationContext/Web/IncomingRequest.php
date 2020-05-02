@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\OperationContext\Web;
 
 use POData\Common\ODataConstants;
@@ -54,10 +56,10 @@ class IncomingRequest implements IHTTPRequest
      */
     public function __construct()
     {
-        $this->method = new HTTPRequestMethod($_SERVER['REQUEST_METHOD']);
-        $this->queryOptions = [];
+        $this->method            = new HTTPRequestMethod($_SERVER['REQUEST_METHOD']);
+        $this->queryOptions      = [];
         $this->queryOptionsCount = [];
-        $this->headers = [];
+        $this->headers           = [];
     }
 
     /**
@@ -95,7 +97,7 @@ class IncomingRequest implements IHTTPRequest
      *
      * @return string[]
      */
-    private function getHeaders()
+    private function getHeaders(): array
     {
         if (0 == count($this->headers)) {
             $this->headers = [];
@@ -106,7 +108,7 @@ class IncomingRequest implements IHTTPRequest
                     || (0 === strpos($key, 'SERVER_'))
                     || (0 === strpos($key, 'CONTENT_'))
                 ) {
-                    $trimmedValue = trim($value);
+                    $trimmedValue        = trim(strval($value));
                     $this->headers[$key] = isset($trimmedValue) ? $trimmedValue : null;
                 }
             }
@@ -120,7 +122,7 @@ class IncomingRequest implements IHTTPRequest
      *
      * @return string RequestURI called by User with the value of QueryString
      */
-    public function getRawUrl()
+    public function getRawUrl(): string
     {
         if (null === $this->rawUrl) {
             if (false === stripos($_SERVER[ODataConstants::HTTPREQUEST_PROTOCOL], 'HTTPS')) {
@@ -144,7 +146,7 @@ class IncomingRequest implements IHTTPRequest
      *
      * @return string|null value of the header, NULL if header is absent
      */
-    public function getRequestHeader($key)
+    public function getRequestHeader(string $key): ?string
     {
         if (0 == count($this->headers)) {
             $this->getHeaders();
@@ -164,7 +166,7 @@ class IncomingRequest implements IHTTPRequest
      *
      * @return string $_header[HttpRequestHeaderQueryString]
      */
-    private function getQueryString()
+    private function getQueryString(): string
     {
         if (array_key_exists(ODataConstants::HTTPREQUEST_QUERY_STRING, $_SERVER)) {
             return utf8_decode(trim($_SERVER[ODataConstants::HTTPREQUEST_QUERY_STRING]));
@@ -176,20 +178,20 @@ class IncomingRequest implements IHTTPRequest
     /**
      * Split the QueryString and assigns them as array element in KEY=VALUE.
      *
-     * @return string[]
+     * @return string[]|array[]
      */
-    public function getQueryParameters()
+    public function getQueryParameters(): array
     {
         if (0 == count($this->queryOptions)) {
-            $queryString = $this->getQueryString();
+            $queryString        = $this->getQueryString();
             $this->queryOptions = [];
 
             foreach (explode('&', $queryString) as $queryOptionAsString) {
                 $queryOptionAsString = trim($queryOptionAsString);
                 if (!empty($queryOptionAsString)) {
-                    $result = explode('=', $queryOptionAsString, 2);
+                    $result         = explode('=', $queryOptionAsString, 2);
                     $isNamedOptions = 2 == count($result);
-                    $rawUrl = rawurldecode($result[0]);
+                    $rawUrl         = rawurldecode($result[0]);
                     if ($isNamedOptions) {
                         $this->queryOptions[] = [$rawUrl => trim(rawurldecode($result[1]))];
                     } else {
@@ -209,7 +211,7 @@ class IncomingRequest implements IHTTPRequest
      *
      * @return HTTPRequestMethod $_header[HttpRequestHeaderMethod]
      */
-    public function getMethod()
+    public function getMethod(): HTTPRequestMethod
     {
         return $this->method;
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\QueryProcessor\ExpandProjectionParser;
 
 use Mockery as m;
@@ -20,7 +22,7 @@ class RootProjectionNodeTest extends TestCase
         $node->shouldReceive('isExpansionSpecified')->andReturn(false)->once();
 
         $expected = [];
-        $actual = $node->getEagerLoadList();
+        $actual   = $node->getEagerLoadList();
         $this->assertEquals($expected, $actual);
     }
 
@@ -31,16 +33,16 @@ class RootProjectionNodeTest extends TestCase
         $node->shouldReceive('getChildNodes')->andReturn([])->once();
 
         $expected = [];
-        $actual = $node->getEagerLoadList();
+        $actual   = $node->getEagerLoadList();
         $this->assertEquals($expected, $actual);
     }
 
     public function testGetEagerListWithSingleFirstLevelExpansion()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -48,7 +50,7 @@ class RootProjectionNodeTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
 
         $node = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
@@ -64,16 +66,16 @@ class RootProjectionNodeTest extends TestCase
         $this->assertTrue($node instanceof RootProjectionNode);
         $this->assertTrue($node->isExpansionSpecified());
         $expected = ['Orders'];
-        $actual = $node->getEagerLoadList();
+        $actual   = $node->getEagerLoadList();
         $this->assertEquals($expected, $actual);
     }
 
     public function testGetEagerListWithDuplicatedFirstLevelExpansion()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -81,7 +83,7 @@ class RootProjectionNodeTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
 
         $node = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
@@ -97,16 +99,16 @@ class RootProjectionNodeTest extends TestCase
         $this->assertTrue($node instanceof RootProjectionNode);
         $this->assertTrue($node->isExpansionSpecified());
         $expected = ['Orders'];
-        $actual = $node->getEagerLoadList();
+        $actual   = $node->getEagerLoadList();
         $this->assertEquals($expected, $actual);
     }
 
     public function testGetEagerListWithSingleMultiLevelExpansion()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -114,7 +116,7 @@ class RootProjectionNodeTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Customers');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
 
         $node = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
@@ -130,7 +132,7 @@ class RootProjectionNodeTest extends TestCase
         $this->assertTrue($node instanceof RootProjectionNode);
         $this->assertTrue($node->isExpansionSpecified());
         $expected = ['Orders/Order_Details/Product', 'Orders', 'Orders/Order_Details'];
-        $actual = $node->getEagerLoadList();
+        $actual   = $node->getEagerLoadList();
         $this->assertEquals(count($expected), count($actual));
         foreach ($expected as $test) {
             $this->assertTrue(in_array($test, $actual));
@@ -143,9 +145,9 @@ class RootProjectionNodeTest extends TestCase
     public function testGetEagerListingWithTwoMultilevelExpansions()
     {
         $northWindMetadata = NorthWindMetadata::Create();
-        $queryProvider = new NorthWindQueryProvider();
-        $configuration = new ServiceConfiguration($northWindMetadata);
-        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $queryProvider     = new NorthWindQueryProvider();
+        $configuration     = new ServiceConfiguration($northWindMetadata);
+        $configuration->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $providersWrapper = new ProvidersWrapper(
             $northWindMetadata, //IMetadataProvider implementation
             $queryProvider, //IDataServiceQueryProvider implementation (set to null)
@@ -153,7 +155,7 @@ class RootProjectionNodeTest extends TestCase
             false
         );
         $customersResourceSetWrapper = $providersWrapper->resolveResourceSet('Order_Details');
-        $customerResourceType = $customersResourceSetWrapper->getResourceType();
+        $customerResourceType        = $customersResourceSetWrapper->getResourceType();
 
         $node = ExpandProjectionParser::parseExpandAndSelectClause(
             $customersResourceSetWrapper,
@@ -169,7 +171,7 @@ class RootProjectionNodeTest extends TestCase
         $this->assertTrue($node instanceof RootProjectionNode);
         $this->assertTrue($node->isExpansionSpecified());
         $expected = ['Order', 'Product', 'Order/Customer', 'Product/Order_Details'];
-        $actual = $node->getEagerLoadList();
+        $actual   = $node->getEagerLoadList();
         $this->assertEquals(count($expected), count($actual));
         foreach ($expected as $test) {
             $this->assertTrue(in_array($test, $actual));

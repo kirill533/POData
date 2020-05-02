@@ -1,10 +1,11 @@
 <?php
+
 namespace POData\BatchProcessor;
 
 use POData\BaseService;
 
 /**
- * Interface IBatchParser
+ * Interface IBatchParser.
  * @package POData\BatchProcessor
  */
 interface IBatchParser

@@ -7,6 +7,7 @@ use POData\Configuration\IServiceConfiguration;
 use POData\Configuration\ProtocolVersion;
 use POData\OperationContext\ServiceHost;
 use \Exception;
+use POData\Providers\Query\IQueryProvider;
 use UnitTests\POData\Facets\BaseServiceTestWrapper;
 
 class NorthWindService2 extends BaseServiceTestWrapper
@@ -27,7 +28,7 @@ class NorthWindService2 extends BaseServiceTestWrapper
     public function initialize(IServiceConfiguration $config)
     {
         $config->setEntitySetPageSize('*', 5);
-        $config->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $config->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $config->setAcceptCountRequests(true);
         $config->setAcceptProjectionRequests(true);
         $config->setMaxDataServiceVersion(ProtocolVersion::V2());

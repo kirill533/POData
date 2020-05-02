@@ -3,7 +3,7 @@
 namespace POData\Common\Messages;
 
 /**
- * Trait navigation
+ * Trait navigation.
  * @package POData\Common\Messages
  */
 trait navigation

@@ -3,7 +3,7 @@
 namespace POData\Common;
 
 /**
- * Class MimeTypes
+ * Class MimeTypes.
  * @package POData\Common
  */
 class MimeTypes

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\UriProcessorNew;
 
 use Mockery as m;
@@ -15,7 +17,10 @@ use POData\OperationContext\IOperationContext;
 use POData\OperationContext\ServiceHost;
 use POData\Providers\Metadata\IMetadataProvider;
 use POData\Providers\Metadata\ResourceProperty;
+use POData\Providers\Metadata\ResourcePropertyKind;
 use POData\Providers\ProvidersWrapper;
+use POData\Readers\Atom\AtomODataReader;
+use POData\Readers\ODataReaderRegistry;
 use POData\UriProcessor\RequestDescription;
 use POData\UriProcessor\ResourcePathProcessor\SegmentParser\SegmentDescriptor;
 use POData\UriProcessor\ResourcePathProcessor\SegmentParser\TargetKind;
@@ -30,7 +35,7 @@ class ProcessTest extends TestCase
     public function testCompareMismatchedBaseUrl()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/foodata.svc/$metadata');
+        $reqUrl  = new Url('http://localhost/foodata.svc/$metadata');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -41,25 +46,28 @@ class ProcessTest extends TestCase
         $service = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
         $service->shouldReceive('getMetadataProvider')->andReturn($metaProv);
+        $readerRegistery = new ODataReaderRegistry();
+        $readerRegistery->register(new AtomODataReader());
+        $service->shouldReceive('getODataReaderRegistry')->andReturn($readerRegistery);
 
         $expectedClass = null;
-        $expected = null;
+        $expected      = null;
 
         $actualClass = null;
-        $actual = null;
+        $actual      = null;
 
         try {
             UriProcessor::process($service);
         } catch (\Exception $e) {
             $expectedClass = get_class($e);
-            $expected = $e->getMessage();
+            $expected      = $e->getMessage();
         }
 
         try {
             UriProcessorNew::process($service);
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
 
         $this->assertEquals($expectedClass, $actualClass);
@@ -70,7 +78,7 @@ class ProcessTest extends TestCase
     public function testCompareRetrieveServiceDoc()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc');
+        $reqUrl  = new Url('http://localhost/odata.svc');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -94,7 +102,7 @@ class ProcessTest extends TestCase
         $service = $this->setUpService($host, $wrapper, $context, $config);
 
         $original = UriProcessor::process($service);
-        $remix = UriProcessorNew::process($service);
+        $remix    = UriProcessorNew::process($service);
 
         $this->assertEquals($original->getProviders(), $remix->getProviders());
         $this->assertEquals($original->getService(), $remix->getService());
@@ -127,7 +135,7 @@ class ProcessTest extends TestCase
         $remix->shouldReceive('getService')->andReturn($service);
 
         $expected = 'This release of library supports only GET (read) request, received a request with method NONE';
-        $actual = null;
+        $actual   = null;
 
         try {
             $remix->execute();
@@ -141,7 +149,7 @@ class ProcessTest extends TestCase
     public function testBadResourcePropertyKindOnRelatedResourceGet()
     {
         $property = m::mock(ResourceProperty::class);
-        $property->shouldReceive('getKind')->andReturnNull();
+        $property->shouldReceive('getKind')->andReturn(new ResourcePropertyKind(0));
 
         $segment = m::mock(SegmentDescriptor::class);
         $segment->shouldReceive('getTargetKind')->andReturn(TargetKind::RESOURCE());
@@ -162,13 +170,15 @@ class ProcessTest extends TestCase
         $service = m::mock(IService::class);
         $service->shouldReceive('getOperationContext')->andReturn($context);
         $service->shouldReceive('getMetadataProvider')->andReturn($metaProv);
-
+        $readerRegistery = new ODataReaderRegistry();
+        $readerRegistery->register(new AtomODataReader());
+        $service->shouldReceive('getODataReaderRegistry')->andReturn($readerRegistery);
         $remix = m::mock(UriProcessorNew::class)->makePartial();
         $remix->shouldReceive('getService')->andReturn($service);
         $remix->shouldReceive('getRequest')->andReturn($request);
 
         $expected = 'Invalid property kind type for resource retrieval';
-        $actual = null;
+        $actual   = null;
 
         try {
             $remix->execute();
@@ -189,12 +199,15 @@ class ProcessTest extends TestCase
     protected function setUpService($host, $wrapper, $context, $config)
     {
         $metaProv = m::mock(IMetadataProvider::class);
-        $service = m::mock(IService::class);
+        $service  = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
         $service->shouldReceive('getProvidersWrapper')->andReturn($wrapper);
         $service->shouldReceive('getOperationContext')->andReturn($context);
         $service->shouldReceive('getConfiguration')->andReturn($config);
         $service->shouldReceive('getMetadataProvider')->andReturn($metaProv);
+        $readerRegistery = new ODataReaderRegistry();
+        $readerRegistery->register(new AtomODataReader());
+        $service->shouldReceive('getODataReaderRegistry')->andReturn($readerRegistery);
         return $service;
     }
 }

@@ -38,7 +38,7 @@ class WebOperationContext implements IOperationContext
      */
     public function __construct()
     {
-        $this->incomingRequest = new IncomingRequest();
+        $this->incomingRequest  = new IncomingRequest();
         $this->outgoingResponse = new OutgoingResponse();
     }
 
@@ -47,7 +47,7 @@ class WebOperationContext implements IOperationContext
      *
      * @return OutgoingResponse
      */
-    public function outgoingResponse()
+    public function outgoingResponse(): OutgoingResponse
     {
         return $this->outgoingResponse;
     }
@@ -57,7 +57,7 @@ class WebOperationContext implements IOperationContext
      *
      * @return IHTTPRequest
      */
-    public function incomingRequest()
+    public function incomingRequest(): IHTTPRequest
     {
         return $this->incomingRequest;
     }

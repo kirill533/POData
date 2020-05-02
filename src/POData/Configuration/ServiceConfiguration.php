@@ -9,7 +9,7 @@ use POData\Providers\Metadata\IMetadataProvider;
 use POData\Providers\Metadata\ResourceSet;
 
 /**
- * Class ServiceConfiguration
+ * Class ServiceConfiguration.
  * @package POData\Configuration
  */
 class ServiceConfiguration implements IServiceConfiguration
@@ -100,16 +100,16 @@ class ServiceConfiguration implements IServiceConfiguration
      */
     public function __construct(IMetadataProvider $metadataProvider)
     {
-        $this->maxExpandCount = PHP_INT_MAX;
-        $this->maxExpandDepth = PHP_INT_MAX;
+        $this->maxExpandCount          = PHP_INT_MAX;
+        $this->maxExpandDepth          = PHP_INT_MAX;
         $this->maxResultsPerCollection = PHP_INT_MAX;
-        $this->provider = $metadataProvider;
-        $this->defaultResourceSetRight = EntitySetRights::NONE;
-        $this->defaultPageSize = 0;
-        $this->resourceRights = [];
-        $this->pageSizes = [];
-        $this->useVerboseErrors = false;
-        $this->acceptCountRequest = false;
+        $this->provider                = $metadataProvider;
+        $this->defaultResourceSetRight = EntitySetRights::NONE();
+        $this->defaultPageSize         = 0;
+        $this->resourceRights          = [];
+        $this->pageSizes               = [];
+        $this->useVerboseErrors        = false;
+        $this->acceptCountRequest      = false;
         $this->acceptProjectionRequest = false;
 
         $this->maxVersion = ProtocolVersion::V3(); //We default to the highest version
@@ -145,7 +145,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @return int
      */
-    public function getMaxExpandDepth()
+    public function getMaxExpandDepth(): int
     {
         return $this->maxExpandDepth;
     }
@@ -155,7 +155,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @param int $maxExpandDepth Maximum number of segments in a single $expand path
      */
-    public function setMaxExpandDepth($maxExpandDepth)
+    public function setMaxExpandDepth($maxExpandDepth): void
     {
         $this->maxExpandDepth = $this->checkIntegerNonNegativeParameter(
             $maxExpandDepth,
@@ -225,7 +225,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @return EntitySetRights
      */
-    public function getEntitySetAccessRule(ResourceSet $resourceSet)
+    public function getEntitySetAccessRule(ResourceSet $resourceSet): EntitySetRights
     {
         if (!array_key_exists($resourceSet->getName(), $this->resourceRights)) {
             return $this->defaultResourceSetRight;
@@ -242,9 +242,9 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @throws \InvalidArgumentException when the entity set rights are not known or the resource set is not known
      */
-    public function setEntitySetAccessRule($name, $rights)
+    public function setEntitySetAccessRule(string $name, EntitySetRights $rights): void
     {
-        if ($rights < EntitySetRights::NONE || $rights > EntitySetRights::ALL) {
+        if ($rights->getValue() < EntitySetRights::NONE || $rights->getValue() > EntitySetRights::ALL) {
             $msg = Messages::configurationRightsAreNotInRange('$rights', 'setEntitySetAccessRule');
             throw new \InvalidArgumentException($msg);
         }
@@ -424,14 +424,8 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @return int
      */
-    private function checkIntegerNonNegativeParameter($value, $functionName)
+    private function checkIntegerNonNegativeParameter(int $value, string $functionName): int
     {
-        if (!is_int($value)) {
-            throw new \InvalidArgumentException(
-                Messages::commonArgumentShouldBeInteger($value, $functionName)
-            );
-        }
-
         if ($value < 0) {
             throw new \InvalidArgumentException(
                 Messages::commonArgumentShouldBeNonNegative($value, $functionName)

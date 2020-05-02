@@ -206,10 +206,10 @@ class JsonWriterTest extends TestCase
     public function testWriteValueEdmGuid()
     {
         $writer = new JsonWriter('');
-        $g = uniqid();
+        $g      = uniqid();
         $result = $writer->writeValue($g, 'Edm.Guid');
         $this->assertSame($result, $writer);
-        $this->assertEquals('"'.$g.'"', $writer->getJsonOutput());
+        $this->assertEquals('"' . $g . '"', $writer->getJsonOutput());
     }
 
     public function testWriteValueEdmDecimal()
@@ -284,7 +284,7 @@ class JsonWriterTest extends TestCase
         $this->assertEquals('"null"', $writer->getJsonOutput());
 
         $writer = new JsonWriter('');
-        $val = 'http://yahoo.com/some/path';
+        $val    = 'http://yahoo.com/some/path';
         $result = $writer->writeValue($val, 'Edm.String');
         $this->assertSame($result, $writer);
         $this->assertEquals('"http://yahoo.com/some/path"', $writer->getJsonOutput());
@@ -298,14 +298,14 @@ class JsonWriterTest extends TestCase
         $writer->writeValue('1', 'Edm.String');
         $writer->writeValue(2, 'Edm.Int16');
 
-        $expected = "[\n    \"1\",2";
+        $expected = '[' . PHP_EOL . '    "1",2';
         $this->assertEquals($expected, $writer->getJsonOutput());
 
         $result = $writer->endScope();
         $this->assertSame($result, $writer);
 
-        $expected = "[\n    \"1\",2\n]";
-        $this->assertEquals($expected, $writer->getJsonOutput());
+        $expected = '[' . PHP_EOL . '    "1",2' . PHP_EOL . ']';
+        $this->assertJsonStringEqualsJsonString($expected, $writer->getJsonOutput());
     }
 
     public function testStartObjectScope()
@@ -316,14 +316,14 @@ class JsonWriterTest extends TestCase
         $writer->writeName('1');
         $writer->writeValue(2, 'Edm.Int16');
 
-        $expected = "{\n    \"1\":2";
+        $expected = '{' . PHP_EOL . '    "1":2';
         $this->assertEquals($expected, $writer->getJsonOutput());
 
         $result = $writer->endScope();
         $this->assertSame($result, $writer);
 
-        $expected = "{\n    \"1\":2\n}";
-        $this->assertEquals($expected, $writer->getJsonOutput());
+        $expected = '{' . PHP_EOL . '    "1":2' . PHP_EOL . '}';
+        $this->assertJsonStringEqualsJsonString($expected, $writer->getJsonOutput());
     }
 
     public function testComplexObject()

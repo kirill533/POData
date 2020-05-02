@@ -1,9 +1,11 @@
 <?php
 
+
+
 namespace POData\Common\Messages;
 
 /**
- * Trait uriProcessor
+ * Trait uriProcessor.
  * @package POData\Common\Messages
  */
 trait uriProcessor

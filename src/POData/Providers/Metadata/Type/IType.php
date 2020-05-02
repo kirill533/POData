@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Providers\Metadata\Type;
 
 /**
@@ -45,7 +47,7 @@ interface IType
     public function getFullTypeName();
 
     /**
-     * Convers the given string value to this type.
+     * Converts the given string value to this type.
      *
      * @param string $stringValue value to convert
      *

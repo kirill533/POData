@@ -3,7 +3,7 @@
 namespace POData\Common\Messages;
 
 /**
- * Trait streamProviderWrapper
+ * Trait streamProviderWrapper.
  * @package POData\Common\Messages
  */
 trait streamProviderWrapper
@@ -56,7 +56,7 @@ trait streamProviderWrapper
     public static function streamProviderWrapperMustImplementIStreamProviderToSupportStreaming()
     {
         return 'To support streaming, the data service must implement IService::getStreamProviderX() to return'
-               .' an implementation of IStreamProvider or IStreamProvider2';
+               . ' an implementation of IStreamProvider or IStreamProvider2';
     }
 
     /**
@@ -67,7 +67,7 @@ trait streamProviderWrapper
     public static function streamProviderWrapperMaxProtocolVersionMustBeV3OrAboveToSupportNamedStreams()
     {
         return 'To support named streams, the MaxProtocolVersion of the data service must be set to'
-               .' ProtocolVersion.V3 or above.';
+               . ' ProtocolVersion.V3 or above.';
     }
 
     /**
@@ -79,7 +79,7 @@ trait streamProviderWrapper
     public static function streamProviderWrapperMustImplementStreamProvider2ToSupportNamedStreams()
     {
         return 'To support named streams, the data service must implement IServiceProvider.GetService() to'
-               .' return an implementation of IStreamProvider2 or the data source must implement IStreamProvider2.';
+               . ' return an implementation of IStreamProvider2 or the data source must implement IStreamProvider2.';
     }
 
     /**
@@ -91,11 +91,11 @@ trait streamProviderWrapper
      */
     public static function streamProviderWrapperMustNotSetContentTypeAndEtag($methodName)
     {
-        return 'The method '.$methodName.' must not set the HTTP response headers \'Content-Type\' and \'ETag\'';
+        return 'The method ' . $methodName . ' must not set the HTTP response headers \'Content-Type\' and \'ETag\'';
     }
 
     /**
-     * Message to show error when IServiceProvider.GetService implementation returns invaild object when request for
+     * Message to show error when IServiceProvider.GetService implementation returns invalid object when request for
      * IStreamProvider implementation.
      *
      * @return string The message
@@ -106,7 +106,7 @@ trait streamProviderWrapper
     }
 
     /**
-     * Message to show error when IServiceProvider.GetService implementation returns invaild object when request for
+     * Message to show error when IServiceProvider.GetService implementation returns invalid object when request for
      * IStreamProvider2 implementation.
      *
      * @return string The message

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\QueryProcessor\OrderByParser;
 
 use Mockery as m;
@@ -18,7 +20,7 @@ class OrderByParserMockeryTest extends TestCase
     public function testBuildOrderByTreeWithNullProperty()
     {
         $expected = 'Error in the \'orderby\' clause. Type Edm.None does not have a property named \'Customers\'.';
-        $actual = null;
+        $actual   = null;
 
         $wrapper = m::mock(ResourceSetWrapper::class);
         $wrapper->shouldReceive('getName')->andReturn('resourceSet');
@@ -31,7 +33,7 @@ class OrderByParserMockeryTest extends TestCase
         $type->shouldReceive('getFullName')->andReturn('Edm.None')->once();
         $type->shouldReceive('getInstanceType')->andReturn($rClass);
         $provider = m::mock(ProvidersWrapper::class);
-        $orderBy = 'Customers asc';
+        $orderBy  = 'Customers asc';
 
         try {
             OrderByParser::parseOrderByClause($wrapper, $type, $orderBy, $provider);
@@ -49,7 +51,7 @@ class OrderByParserMockeryTest extends TestCase
     public function testBuildOrderByTreeWithPrimitiveAsIntermediateSegment()
     {
         $expected = 'The primitive property \'rProp\' cannot be used as intermediate segment, it should'
-                    .' be last segment';
+                    . ' be last segment';
         $actual = null;
 
         $wrapper = m::mock(ResourceSetWrapper::class);
@@ -59,18 +61,22 @@ class OrderByParserMockeryTest extends TestCase
         $rClass->shouldReceive('newInstanceArgs')->andReturn(new \stdClass());
 
         $rProp = m::mock(ResourceProperty::class);
-        $rProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::PRIMITIVE])->andReturn(true);
-        $rProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::BAG])->andReturn(false);
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::PRIMITIVE == $arg->getValue();
+        }))->andReturn(true);
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::BAG == $arg->getValue();
+        }))->andReturn(false);
         $rProp->shouldReceive('isKindOf')->withAnyArgs()->andReturn(false);
         $rProp->shouldReceive('getInstanceType')->andReturn($rClass);
         $rProp->shouldReceive('getName')->andReturn('rProp');
-        $rProp->shouldReceive('getKind')->andReturnNull();
+        $rProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::PRIMITIVE());
 
         $type = m::mock(ResourceType::class);
         $type->shouldReceive('resolveProperty')->andReturn($rProp)->once();
         $type->shouldReceive('getInstanceType')->andReturn($rClass);
         $provider = m::mock(ProvidersWrapper::class);
-        $orderBy = 'Customers/Id asc, Orders desc, Id asc';
+        $orderBy  = 'Customers/Id asc, Orders desc, Id asc';
 
         try {
             OrderByParser::parseOrderByClause($wrapper, $type, $orderBy, $provider);
@@ -84,7 +90,7 @@ class OrderByParserMockeryTest extends TestCase
     public function testBuildOrderByTreeWithUnexpectedPropertyType()
     {
         $expected = 'Property type unexpected';
-        $actual = null;
+        $actual   = null;
 
         $wrapper = m::mock(ResourceSetWrapper::class);
         $wrapper->shouldReceive('getName')->andReturn('resourceSet');
@@ -94,6 +100,7 @@ class OrderByParserMockeryTest extends TestCase
 
         $rProp = m::mock(ResourceProperty::class);
         $rProp->shouldReceive('isKindOf')->withAnyArgs()->andReturn(false);
+        $rProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::NONE());
         $rProp->shouldReceive('getInstanceType')->andReturn($rClass);
         $rProp->shouldReceive('getName')->andReturn('rProp');
         $rProp->shouldReceive('getKind')->andReturn(null);
@@ -102,7 +109,7 @@ class OrderByParserMockeryTest extends TestCase
         $type->shouldReceive('resolveProperty')->andReturn($rProp)->once();
         $type->shouldReceive('getInstanceType')->andReturn($rClass);
         $provider = m::mock(ProvidersWrapper::class);
-        $orderBy = 'Customers/Id asc, Orders desc, Id asc';
+        $orderBy  = 'Customers/Id asc, Orders desc, Id asc';
 
         try {
             OrderByParser::parseOrderByClause($wrapper, $type, $orderBy, $provider);
@@ -116,7 +123,7 @@ class OrderByParserMockeryTest extends TestCase
     public function testBuildOrderByTreeWithReflectionExceptionOnResourceRefPropertyInit()
     {
         $expected = 'OrderBy parser failed to access or initialize the property rProp of type';
-        $actual = null;
+        $actual   = null;
 
         $wrapper = m::mock(ResourceSetWrapper::class);
         $wrapper->shouldReceive('getName')->andReturn('resourceSet');
@@ -129,7 +136,7 @@ class OrderByParserMockeryTest extends TestCase
         $rProp->shouldReceive('isKindOf')->withAnyArgs()->andReturn(false);
         $rProp->shouldReceive('getInstanceType')->andReturn($rClass);
         $rProp->shouldReceive('getName')->andReturn('rProp');
-        $rProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCE_REFERENCE);
+        $rProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::RESOURCE_REFERENCE());
 
         $type = m::mock(ResourceType::class);
         $type->shouldReceive('resolveProperty')->andReturn($rProp)->once();
@@ -137,21 +144,18 @@ class OrderByParserMockeryTest extends TestCase
         $type->shouldReceive('setPropertyValue')->andThrow(new \ReflectionException());
         $type->shouldReceive('getName')->andReturn('type');
         $provider = m::mock(ProvidersWrapper::class);
-        $orderBy = 'Customers asc, Orders desc, Id asc';
+        $orderBy  = 'Customers asc, Orders desc, Id asc';
 
-        try {
-            OrderByParser::parseOrderByClause($wrapper, $type, $orderBy, $provider);
-        } catch (ODataException $e) {
-            $actual = $e->getMessage();
-        }
-        $this->assertNotNull($actual);
-        $this->assertEquals($expected, $actual);
+        $this->expectException(\TypeError::class);
+        //$this->expectExceptionMessage('OrderBy parser failed to access or initialize the property rProp of type');
+
+        OrderByParser::parseOrderByClause($wrapper, $type, $orderBy, $provider);
     }
 
     public function testBuildOrderByTreeWithReflectionExceptionOnComplexTypePropertyInit()
     {
         $expected = 'OrderBy parser failed to access or initialize the property prop of rType';
-        $actual = null;
+        $actual   = null;
 
         $wrapper = m::mock(ResourceSetWrapper::class);
         $wrapper->shouldReceive('getName')->andReturn('resourceSet');
@@ -160,11 +164,13 @@ class OrderByParserMockeryTest extends TestCase
         $rClass->shouldReceive('newInstanceArgs')->andReturn(new \stdClass());
 
         $rProp = m::mock(ResourceProperty::class);
-        $rProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::PRIMITIVE])->andReturn(true, false);
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::PRIMITIVE == $arg->getValue();
+        }))->andReturn(true, false);
         $rProp->shouldReceive('isKindOf')->withAnyArgs()->andReturn(false);
         $rProp->shouldReceive('getInstanceType')->andReturn($rClass);
         $rProp->shouldReceive('getName')->andReturn('prop');
-        $rProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::COMPLEX_TYPE);
+        $rProp->shouldReceive('getKind')->andReturn(ResourcePropertyKind::COMPLEX_TYPE());
 
         $type = m::mock(ResourceType::class);
         $type->shouldReceive('resolveProperty')->andReturn($rProp)->once();
@@ -172,7 +178,7 @@ class OrderByParserMockeryTest extends TestCase
         $type->shouldReceive('setPropertyValue')->andThrow(new \ReflectionException());
         $type->shouldReceive('getName')->andReturn('rType');
         $provider = m::mock(ProvidersWrapper::class);
-        $orderBy = 'Customers asc, Orders desc, Id asc';
+        $orderBy  = 'Customers asc, Orders desc, Id asc';
 
         try {
             OrderByParser::parseOrderByClause($wrapper, $type, $orderBy, $provider);

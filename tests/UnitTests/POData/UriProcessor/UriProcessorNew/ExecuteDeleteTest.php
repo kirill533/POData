@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\UriProcessor\UriProcessorNew;
 
 use Mockery as m;
@@ -29,6 +31,8 @@ use POData\Providers\Metadata\ResourceTypeKind;
 use POData\Providers\Metadata\Type\Int32;
 use POData\Providers\Metadata\Type\IType;
 use POData\Providers\ProvidersWrapper;
+use POData\Readers\Atom\AtomODataReader;
+use POData\Readers\ODataReaderRegistry;
 use POData\UriProcessor\RequestDescription;
 use POData\UriProcessor\ResourcePathProcessor\SegmentParser\SegmentDescriptor;
 use POData\UriProcessor\UriProcessor;
@@ -40,7 +44,7 @@ class ExecuteDeleteTest extends TestCase
     public function testExecuteDeleteOnResourceSet()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -88,19 +92,22 @@ class ExecuteDeleteTest extends TestCase
         $service->shouldReceive('getOperationContext')->andReturn($context);
         $service->shouldReceive('getConfiguration')->andReturn($config);
         $service->shouldReceive('getMetadataProvider')->andReturn($metaProv);
+        $readerRegistery = new ODataReaderRegistry();
+        $readerRegistery->register(new AtomODataReader());
+        $service->shouldReceive('getODataReaderRegistry')->andReturn($readerRegistery);
 
         $remix = UriProcessorNew::process($service);
 
-        $expected = 'The URI \'http://localhost/odata.svc/customers\' is not valid for DELETE method.';
+        $expected      = 'The URI \'http://localhost/odata.svc/customers\' is not valid for DELETE method.';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             $remix->execute();
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -110,7 +117,7 @@ class ExecuteDeleteTest extends TestCase
     public function testExecuteDeleteOnResourceSetWithCount()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers/$count');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers/$count');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -160,19 +167,22 @@ class ExecuteDeleteTest extends TestCase
         $service->shouldReceive('getOperationContext')->andReturn($context);
         $service->shouldReceive('getConfiguration')->andReturn($config);
         $service->shouldReceive('getMetadataProvider')->andReturn($metaProv);
+        $readerRegistery = new ODataReaderRegistry();
+        $readerRegistery->register(new AtomODataReader());
+        $service->shouldReceive('getODataReaderRegistry')->andReturn($readerRegistery);
 
         $remix = UriProcessorNew::process($service);
 
-        $expected = 'The URI \'http://localhost/odata.svc/customers/$count\' is not valid for DELETE method.';
+        $expected      = 'The URI \'http://localhost/odata.svc/customers/$count\' is not valid for DELETE method.';
         $expectedClass = ODataException::class;
-        $actual = null;
-        $actualClass = null;
+        $actual        = null;
+        $actualClass   = null;
 
         try {
             $remix->execute();
         } catch (\Exception $e) {
             $actualClass = get_class($e);
-            $actual = $e->getMessage();
+            $actual      = $e->getMessage();
         }
         $this->assertEquals($expectedClass, $actualClass);
         $this->assertNotNull($actual);
@@ -182,7 +192,7 @@ class ExecuteDeleteTest extends TestCase
     public function testExecuteDeleteOnResourceSingle()
     {
         $baseUrl = new Url('http://localhost/odata.svc');
-        $reqUrl = new Url('http://localhost/odata.svc/customers(id=1)');
+        $reqUrl  = new Url('http://localhost/odata.svc/customers(id=1)');
 
         $host = m::mock(ServiceHost::class);
         $host->shouldReceive('getAbsoluteRequestUri')->andReturn($reqUrl);
@@ -238,6 +248,9 @@ class ExecuteDeleteTest extends TestCase
         $service->shouldReceive('getOperationContext')->andReturn($context);
         $service->shouldReceive('getConfiguration')->andReturn($config);
         $service->shouldReceive('getMetadataProvider')->andReturn($metaProv);
+        $readerRegistery = new ODataReaderRegistry();
+        $readerRegistery->register(new AtomODataReader());
+        $service->shouldReceive('getODataReaderRegistry')->andReturn($readerRegistery);
 
         $remix = UriProcessorNew::process($service);
 

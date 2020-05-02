@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData;
 
 use POData\Configuration\IServiceConfiguration;
@@ -8,10 +10,11 @@ use POData\OperationContext\ServiceHost;
 use POData\Providers\Metadata\IMetadataProvider;
 use POData\Providers\ProvidersWrapper;
 use POData\Providers\Stream\StreamProviderWrapper;
+use POData\Readers\ODataReaderRegistry;
 use POData\Writers\ODataWriterRegistry;
 
 /**
- * Interface IService
+ * Interface IService.
  * @package POData
  */
 interface IService
@@ -84,6 +87,13 @@ interface IService
      * @return ODataWriterRegistry
      */
     public function getODataWriterRegistry();
+
+    /**
+     * Returns the ODataWriterRegistry to use when writing the response to a service document or resource request.
+     *
+     * @return ODataReaderRegistry
+     */
+    public function getODataReaderRegistry();
 
     /**
      * Returns the service's metadata provider.

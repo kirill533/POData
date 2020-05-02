@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\Providers\Metadata;
 
 use AlgoWeb\ODataMetadata\MetadataV3\edm\TComplexTypeType;
@@ -27,7 +29,7 @@ class ResourceTypeTest extends TestCase
 {
     public function testGetPrimitiveResourceTypeByte()
     {
-        $type = EdmPrimitiveType::BYTE();
+        $type   = EdmPrimitiveType::BYTE();
         $result = ResourceType::getPrimitiveResourceType($type);
         $this->assertTrue($result instanceof ResourceType);
         $this->assertEquals('Byte', $result->getName());
@@ -37,7 +39,7 @@ class ResourceTypeTest extends TestCase
 
     public function testGetPrimitiveResourceTypeSByte()
     {
-        $type = EdmPrimitiveType::SBYTE();
+        $type   = EdmPrimitiveType::SBYTE();
         $result = ResourceType::getPrimitiveResourceType($type);
         $this->assertTrue($result instanceof ResourceType);
         $this->assertEquals('SByte', $result->getName());
@@ -62,7 +64,9 @@ class ResourceTypeTest extends TestCase
     public function testGetETagProperties()
     {
         $property = m::mock(ResourceType::class);
-        $property->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::ETAG])->andReturn(true);
+        $property->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::ETAG == $arg->getValue();
+        }))->andReturn(true);
         $property->shouldReceive('getName')->andReturn('property');
 
         $foo = m::mock(ResourceType::class)->makePartial();
@@ -76,10 +80,10 @@ class ResourceTypeTest extends TestCase
     public function testAddNamedStreamWhenNotEntityThrowException()
     {
         $info = m::mock(ResourceStreamInfo::class);
-        $foo = m::mock(ResourceType::class)->makePartial();
+        $foo  = m::mock(ResourceType::class)->makePartial();
 
         $expected = 'Named streams can only be added to entity types.';
-        $actual = null;
+        $actual   = null;
 
         try {
             $foo->addNamedStream($info);
@@ -108,8 +112,8 @@ class ResourceTypeTest extends TestCase
     {
         $instanceType = m::mock(IType::class);
         $instanceType->shouldReceive('getName')->andReturn('label');
-        $resourceTypeKind = ResourceTypeKind::PRIMITIVE;
-        $foo = new ResourcePrimitiveType($instanceType);
+        $resourceTypeKind = ResourceTypeKind::PRIMITIVE();
+        $foo              = new ResourcePrimitiveType($instanceType);
 
         $result = $foo->__sleep();
 
@@ -129,9 +133,9 @@ class ResourceTypeTest extends TestCase
     {
         $complex = m::mock(TComplexTypeType::class);
         $complex->shouldReceive('getName')->andReturn('label');
-        $instanceType = new reusableEntityClass2('foo', 'bar');
+        $instanceType     = new reusableEntityClass2('foo', 'bar');
         $resourceTypeKind = ResourceTypeKind::COMPLEX();
-        $foo = new ResourceComplexType(new ReflectionClass($instanceType), $complex);
+        $foo              = new ResourceComplexType(new ReflectionClass($instanceType), $complex);
 
         $result = $foo->__sleep();
 
@@ -164,7 +168,7 @@ class ResourceTypeTest extends TestCase
 
     public function testGetNamedStreamsOnPrimitiveType()
     {
-        $foo = ResourceType::getPrimitiveResourceType(EdmPrimitiveType::BINARY());
+        $foo    = ResourceType::getPrimitiveResourceType(EdmPrimitiveType::BINARY());
         $result = $foo->getNamedStreamsDeclaredOnThisType();
         $this->assertTrue(is_array($result));
         $this->assertEquals(0, count($result));
@@ -222,18 +226,60 @@ class ResourceTypeTest extends TestCase
 
         $rProp = m::mock(ResourceProperty::class);
         $rProp->shouldReceive('getName')->andReturn('RType');
-        $rProp->shouldReceive('isKindOf')->withArgs([ResourcePropertyKind::KEY])->andReturn(true);
-        $rProp->shouldReceive('isKindOf')->withAnyArgs()->andReturn(false);
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::KEY === $arg->getValue();
+        }))
+            ->andReturn(true)->atLeast(1);
 
-        $expected = 'Key properties cannot be defined in derived types';
-        $actual = null;
+        $this->expectException(InvalidOperationException::class);
+        $this->expectExceptionMessage('Key properties cannot be defined in derived types');
 
-        try {
-            $foo->addProperty($rProp);
-        } catch (InvalidOperationException $e) {
-            $actual = $e->getMessage();
-        }
-        $this->assertEquals($expected, $actual);
+        $foo->addProperty($rProp);
+    }
+
+    public function testAddPropertyTwiceWithKaboomSuppressed()
+    {
+        $rType = m::mock(ResourceEntityType::class)->makePartial();
+
+        $rProp = m::mock(ResourceProperty::class);
+        $rProp->shouldReceive('getName')->andReturn('number')->twice();
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::ETAG == $arg->getValue();
+        }))->andReturn(false);
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::KEY == $arg->getValue();
+        }))->andReturn(false);
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::PRIMITIVE == $arg->getValue();
+        }))->andReturn(true);
+
+        $this->assertEquals(0, count($rType->getAllProperties()));
+        $rType->addProperty($rProp, false);
+        $this->assertEquals(1, count($rType->getAllProperties()));
+        $rType->addProperty($rProp, false);
+        $this->assertEquals(1, count($rType->getAllProperties()));
+    }
+
+    public function testAddETagToNonResourceEntityProperty()
+    {
+        $rType = m::mock(ResourceEntityType::class)->makePartial();
+
+        $rProp = m::mock(ResourceProperty::class);
+        $rProp->shouldReceive('getName')->andReturn('number')->once();
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::ETAG == $arg->getValue();
+        }))->andReturn(true);
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::KEY == $arg->getValue();
+        }))->andReturn(false);
+        $rProp->shouldReceive('isKindOf')->with(m::on(function (ResourcePropertyKind $arg) {
+            return ResourcePropertyKind::PRIMITIVE == $arg->getValue();
+        }))->andReturn(false);
+
+        $this->expectException(InvalidOperationException::class);
+        $this->expectExceptionMessage('ETag properties can only be added to ResourceType instances with a ResourceTypeKind equal to \'EntityType\'');
+
+        $rType->addProperty($rProp, false);
     }
 
     public function testGetInt64Type()
@@ -251,13 +297,13 @@ class ResourceTypeTest extends TestCase
         $meta = NorthWindMetadata::create();
         $type = $meta->resolveResourceType('Customer');
 
-        $entity = new QueryResult();
+        $entity          = new QueryResult();
         $entity->results = [];
-        $propName = 'CompanyName';
-        $value = 'Company';
+        $propName        = 'CompanyName';
+        $value           = 'Company';
 
         $expected = 'The parameter class is expected to be either a string or an object';
-        $actual = null;
+        $actual   = null;
 
         try {
             $type->setPropertyValue($entity, $propName, $value);
@@ -272,12 +318,12 @@ class ResourceTypeTest extends TestCase
         $meta = NorthWindMetadata::create();
         $type = $meta->resolveResourceType('Customer');
 
-        $entity = null;
+        $entity   = null;
         $propName = 'CompanyName';
-        $value = 'Company';
+        $value    = 'Company';
 
         $expected = 'The parameter class is expected to be either a string or an object';
-        $actual = null;
+        $actual   = null;
 
         try {
             $type->setPropertyValue($entity, $propName, $value);
@@ -292,12 +338,12 @@ class ResourceTypeTest extends TestCase
         $meta = NorthWindMetadata::create();
         $type = $meta->resolveResourceType('Customer');
 
-        $entity = new QueryResult();
+        $entity          = new QueryResult();
         $entity->results = [];
-        $propName = 'CompanyName';
+        $propName        = 'CompanyName';
 
         $expected = 'Property POData\Common\ReflectionHandler::$CompanyName does not exist';
-        $actual = null;
+        $actual   = null;
 
         try {
             $type->getPropertyValue($entity, $propName);
@@ -312,11 +358,11 @@ class ResourceTypeTest extends TestCase
         $meta = NorthWindMetadata::create();
         $type = $meta->resolveResourceType('Customer');
 
-        $entity = null;
+        $entity   = null;
         $propName = 'CompanyName';
 
         $expected = 'Property POData\Common\ReflectionHandler::$CompanyName does not exist';
-        $actual = null;
+        $actual   = null;
 
         try {
             $type->getPropertyValue($entity, $propName);
@@ -334,9 +380,60 @@ class ResourceTypeTest extends TestCase
         $meta = NorthWindMetadata::create();
         $this->assertEquals('NorthWind', $meta->getContainerNamespace());
 
-        $type = $meta->resolveResourceType('Customer');
+        $type             = $meta->resolveResourceType('Customer');
         $expectedFullName = 'NorthWind.Customer';
-        $actualFullName = $type->getFullName();
+        $actualFullName   = $type->getFullName();
         $this->assertEquals($expectedFullName, $actualFullName);
+    }
+
+    /**
+     * @return array
+     */
+    public function propertyTypeMatchProvider(): array
+    {
+        $result = [];
+        $result[] = [2, 1, true];
+        $result[] = [2, 2, false];
+        $result[] = [2, 3, false];
+        $result[] = [3, 1, true];
+        $result[] = [3, 2, false];
+        $result[] = [3, 3, false];
+        $result[] = [16, 1, false];
+        $result[] = [16, 2, false];
+        $result[] = [16, 3, true];
+        $result[] = [17, 1, false];
+        $result[] = [17, 2, false];
+        $result[] = [17, 3, true];
+        $result[] = [20, 1, false];
+        $result[] = [20, 2, false];
+        $result[] = [20, 3, true];
+        $result[] = [24, 1, false];
+        $result[] = [24, 2, false];
+        $result[] = [24, 3, true];
+        $result[] = [32, 1, false];
+        $result[] = [32, 2, true];
+        $result[] = [32, 3, false];
+        $result[] = [64, 1, false];
+        $result[] = [64, 2, true];
+        $result[] = [64, 3, false];
+        return $result;
+    }
+
+    /**
+     * @dataProvider propertyTypeMatchProvider
+     *
+     * @param int $propKind
+     * @param int $typeKind
+     * @param bool $expected
+     */
+    public function testisResourceKindValidForPropertyKind(int $propKind, int $typeKind, bool $expected)
+    {
+        $resourcePropKind = new ResourcePropertyKind($propKind);
+        $resourceTypeKind = new ResourceTypeKind($typeKind);
+
+        $actual = ResourceProperty::isResourceKindValidForPropertyKind($resourcePropKind, $resourceTypeKind);
+
+        $this->assertNotNull($expected);
+        $this->assertEquals($expected, $actual);
     }
 }

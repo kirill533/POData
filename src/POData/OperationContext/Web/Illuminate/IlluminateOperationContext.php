@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\OperationContext\Web\Illuminate;
 
 use Illuminate\Http\Request;
@@ -7,7 +9,7 @@ use POData\OperationContext\IOperationContext;
 use POData\OperationContext\Web\OutgoingResponse;
 
 /**
- * Class IlluminateOperationContext
+ * Class IlluminateOperationContext.
  * @package POData\OperationContext\Web\Illuminate
  */
 class IlluminateOperationContext implements IOperationContext
@@ -36,7 +38,7 @@ class IlluminateOperationContext implements IOperationContext
      */
     public function __construct(Request $request)
     {
-        $this->incomingRequest = new IncomingIlluminateRequest($request);
+        $this->incomingRequest  = new IncomingIlluminateRequest($request);
         $this->outgoingResponse = new OutgoingResponse();
     }
 
@@ -45,7 +47,7 @@ class IlluminateOperationContext implements IOperationContext
      *
      * @return OutgoingResponse
      */
-    public function outgoingResponse()
+    public function outgoingResponse(): OutgoingResponse
     {
         return $this->outgoingResponse;
     }
@@ -55,7 +57,7 @@ class IlluminateOperationContext implements IOperationContext
      *
      * @return IncomingIlluminateRequest
      */
-    public function incomingRequest()
+    public function incomingRequest(): IncomingIlluminateRequest
     {
         return $this->incomingRequest;
     }

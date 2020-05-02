@@ -56,10 +56,10 @@ class ResponseWriter
         ) {
             // Binary property or media resource
             if (TargetKind::MEDIA_RESOURCE() == $request->getTargetKind()) {
-                $result = $request->getTargetResult();
+                $result     = $request->getTargetResult();
                 $streamInfo = $request->getResourceStreamInfo();
-                $provider = $service->getStreamProviderWrapper();
-                $eTag = $provider->getStreamETag($result, $streamInfo);
+                $provider   = $service->getStreamProviderWrapper();
+                $eTag       = $provider->getStreamETag($result, $streamInfo);
                 $service->getHost()->setResponseETag($eTag);
                 $responseBody = $provider->getReadStream($result, $streamInfo);
             } else {
@@ -78,7 +78,7 @@ class ResponseWriter
                 throw new \Exception(Messages::noWriterToHandleRequest());
             }
             $segments = $request->getSegments();
-            $numSeg = count($segments);
+            $numSeg   = count($segments);
             if (1 < $numSeg && '$links' == $segments[$numSeg - 2]->getIdentifier()) {
                 if (null !== $entityModel) {
                     throw new \Exception(Messages::modelPayloadOnLinkModification());
@@ -92,6 +92,7 @@ class ResponseWriter
         $responseContentType = trim($responseContentType, ';');
         /** @var array|null $headers */
         $headers = $service->getHost()->getResponseHeaders();
+        /** @var int $rawCode */
         $rawCode = (null !== $headers) && isset($headers[ODataConstants::HTTPRESPONSE_HEADER_STATUS_CODE]) ?
             $headers[ODataConstants::HTTPRESPONSE_HEADER_STATUS_CODE] : HttpStatus::CODE_OK;
         $service->getHost()->setResponseStatusCode($rawCode);

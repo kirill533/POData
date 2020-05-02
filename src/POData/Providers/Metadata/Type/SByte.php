@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\Providers\Metadata\Type;
 
 /**
@@ -65,7 +67,7 @@ class SByte implements IType
 
     /**
      * Converts the given string value to sbyte type.
-     * Note: This function will not perfrom any conversion.
+     * Note: This function will not perform any conversion.
      *
      * @param string $stringValue value to convert
      *

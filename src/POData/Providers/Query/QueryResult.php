@@ -1,11 +1,13 @@
 <?php
 
+
+
 namespace POData\Providers\Query;
 
 use \POData\ObjectModel\EntryProviderInterface;
 
 /**
- * Class QueryResult
+ * Class QueryResult.
  * @package POData\Providers\Query
  */
 class QueryResult implements EntryProviderInterface
@@ -39,12 +41,8 @@ class QueryResult implements EntryProviderInterface
      *
      * @return int the paging adjusted count
      */
-    public static function adjustCountForPaging($count, $top, $skip)
+    public static function adjustCountForPaging(int $count, ?int $top, ?int $skip)
     {
-        if (!is_numeric($count)) {
-            throw new \InvalidArgumentException('$count');
-        }
-
         //treat nulls like 0
         if (null === $skip) {
             $skip = 0;

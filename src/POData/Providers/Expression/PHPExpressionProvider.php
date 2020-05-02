@@ -14,26 +14,26 @@ use POData\UriProcessor\QueryProcessor\FunctionDescription;
  */
 class PHPExpressionProvider implements IExpressionProvider
 {
-    const ADD = '+';
-    const CLOSE_BRACKET = ')';
-    const COMMA = ',';
-    const DIVIDE = '/';
-    const SUBTRACT = '-';
-    const EQUAL = '==';
-    const GREATER_THAN = '>';
+    const ADD                   = '+';
+    const CLOSE_BRACKET         = ')';
+    const COMMA                 = ',';
+    const DIVIDE                = '/';
+    const SUBTRACT              = '-';
+    const EQUAL                 = '==';
+    const GREATER_THAN          = '>';
     const GREATER_THAN_OR_EQUAL = '>=';
-    const LESS_THAN = '<';
-    const LESS_THAN_OR_EQUAL = '<=';
-    const LOGICAL_AND = '&&';
-    const LOGICAL_NOT = '!';
-    const LOGICAL_OR = '||';
-    const MEMBER_ACCESS = '->';
-    const MODULO = '%';
-    const MULTIPLY = '*';
-    const NEGATE = '-';
-    const NOT_EQUAL = '!=';
-    const OPEN_BRACKET = '(';
-    const TYPE_NAMESPACE = 'POData\\Providers\\Metadata\\Type\\';
+    const LESS_THAN             = '<';
+    const LESS_THAN_OR_EQUAL    = '<=';
+    const LOGICAL_AND           = '&&';
+    const LOGICAL_NOT           = '!';
+    const LOGICAL_OR            = '||';
+    const MEMBER_ACCESS         = '->';
+    const MODULO                = '%';
+    const MULTIPLY              = '*';
+    const NEGATE                = '-';
+    const NOT_EQUAL             = '!=';
+    const OPEN_BRACKET          = '(';
+    const TYPE_NAMESPACE        = 'POData\\Providers\\Metadata\\Type\\';
 
     /**
      * The name of iterator.
@@ -218,7 +218,7 @@ class PHPExpressionProvider implements IExpressionProvider
      *
      * @return string
      */
-    public function onPropertyAccessExpression(PropertyAccessExpression $expression)
+    public function onPropertyAccessExpression(PropertyAccessExpression $expression): string
     {
         if (null == $this->resourceType) {
             throw new \InvalidArgumentException('onPropertyAccessExpression - resourceType null');
@@ -229,12 +229,12 @@ class PHPExpressionProvider implements IExpressionProvider
         if (null == $expression->getResourceProperty()) {
             throw new \InvalidArgumentException('onPropertyAccessExpression - expression has no resource property');
         }
-        $parent = $expression;
+        $parent   = $expression;
         $variable = null;
 
         do {
             $variable = $parent->getResourceProperty()->getName() . self::MEMBER_ACCESS . $variable;
-            $parent = $parent->getParent();
+            $parent   = $parent->getParent();
         } while ($parent != null);
 
         $variable = rtrim($variable, self::MEMBER_ACCESS);
@@ -259,7 +259,7 @@ class PHPExpressionProvider implements IExpressionProvider
 
             case ODataConstants::STRFUN_ENDSWITH:
                 return '(strcmp(substr(' . $params[0] . ', strlen(' . $params[0] . ') - strlen(' . $params[1] . ')), '
-                        .$params[1] . ') === 0)';
+                        . $params[1] . ') === 0)';
 
             case ODataConstants::STRFUN_INDEXOF:
                 return 'strpos(' . $params[0] . ', ' . $params[1] . ')';

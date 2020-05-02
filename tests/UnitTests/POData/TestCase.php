@@ -1,11 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData;
 
 use POData\ObjectModel\ModelDeserialiser;
 use POData\Providers\Metadata\SimpleMetadataProvider;
 
-class TestCase extends \PHPUnit_Framework_TestCase
+/**
+ * Class TestCase.
+ * @package UnitTests\POData
+ */
+class TestCase extends \PHPUnit\Framework\TestCase
 {
     public function setUp()
     {
@@ -18,8 +24,6 @@ class TestCase extends \PHPUnit_Framework_TestCase
 
     public function tearDown()
     {
-        if (class_exists('Mockery')) {
-            \Mockery::close();
-        }
+        \Mockery::close();
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace POData\OperationContext;
 
 use Illuminate\Http\Request;
@@ -63,7 +65,7 @@ class ServiceHost
     /**
      * array of query-string parameters.
      *
-     * @var array<string>
+     * @var array<string|array>
      */
     private $queryOptions;
 
@@ -111,12 +113,12 @@ class ServiceHost
      * Gets the absolute request Uri as Url instance
      * Note: This method will be called first time from constructor.
      *
-     * @throws ODataException if AbsoluteRequestUri is not a valid URI
+     * @throws ODataException     if AbsoluteRequestUri is not a valid URI
      * @throws UrlFormatException
      *
      * @return Url
      */
-    public function getAbsoluteRequestUri()
+    public function getAbsoluteRequestUri(): Url
     {
         if (null === $this->absoluteRequestUri) {
             $this->absoluteRequestUriAsString = $this->getOperationContext()->incomingRequest()->getRawUrl();
@@ -138,7 +140,7 @@ class ServiceHost
 
             // We need the absolute uri only not associated components
             // (query, fragments etc..)
-            $this->absoluteRequestUri = new Url($this->absoluteRequestUriAsString);
+            $this->absoluteRequestUri         = new Url($this->absoluteRequestUriAsString);
             $this->absoluteRequestUriAsString = rtrim($this->absoluteRequestUriAsString, '/');
         }
 
@@ -151,7 +153,7 @@ class ServiceHost
      *
      * @return string
      */
-    public function getAbsoluteRequestUriAsString()
+    public function getAbsoluteRequestUriAsString(): string
     {
         return $this->absoluteRequestUriAsString;
     }
@@ -161,10 +163,10 @@ class ServiceHost
      *
      * @param string $serviceUri The service url, absolute or relative
      *
-     * @throws ODataException If the base uri in the configuration is malformed
+     * @throws ODataException     If the base uri in the configuration is malformed
      * @throws UrlFormatException
      */
-    public function setServiceUri($serviceUri)
+    public function setServiceUri($serviceUri): void
     {
         $builtServiceUri = null;
         if (null === $this->absoluteServiceUri) {
@@ -175,9 +177,9 @@ class ServiceHost
                 throw ODataException::createInternalServerError(Messages::hostMalFormedBaseUriInConfig(false));
             }
 
-            $segments = $this->absoluteServiceUri->getSegments();
+            $segments    = $this->absoluteServiceUri->getSegments();
             $lastSegment = $segments[count($segments) - 1];
-            $sLen = strlen('.svc');
+            $sLen        = strlen('.svc');
             $endsWithSvc = (0 === substr_compare($lastSegment, '.svc', -$sLen, $sLen));
             if (!$endsWithSvc
                 || null !== $this->absoluteServiceUri->getQuery()
@@ -188,9 +190,9 @@ class ServiceHost
 
             if (!$isAbsoluteServiceUri) {
                 $requestUriSegments = $this->getAbsoluteRequestUri()->getSegments();
-                $requestUriScheme = $this->getAbsoluteRequestUri()->getScheme();
-                $requestUriPort = $this->getAbsoluteRequestUri()->getPort();
-                $i = count($requestUriSegments) - 1;
+                $requestUriScheme   = $this->getAbsoluteRequestUri()->getScheme();
+                $requestUriPort     = $this->getAbsoluteRequestUri()->getPort();
+                $i                  = count($requestUriSegments) - 1;
                 // Find index of segment in the request uri that end with .svc
                 // There will be always a .svc segment in the request uri otherwise
                 // uri redirection will not happen.
@@ -226,7 +228,7 @@ class ServiceHost
                     );
                 }
 
-                $builtServiceUri = $requestUriScheme .'://' . $this->getAbsoluteRequestUri()->getHost();
+                $builtServiceUri = $requestUriScheme . '://' . $this->getAbsoluteRequestUri()->getHost();
 
                 if (($requestUriScheme == 'http' && $requestUriPort != '80') ||
                     ($requestUriScheme == 'https' && $requestUriPort != '443')
@@ -251,7 +253,7 @@ class ServiceHost
      *
      * @return Url
      */
-    public function getAbsoluteServiceUri()
+    public function getAbsoluteServiceUri(): Url
     {
         return $this->absoluteServiceUri;
     }
@@ -262,7 +264,7 @@ class ServiceHost
      *
      * @return string
      */
-    public function getAbsoluteServiceUriAsString()
+    public function getAbsoluteServiceUriAsString(): string
     {
         return $this->absoluteServiceUriAsString;
     }
@@ -279,17 +281,17 @@ class ServiceHost
      *
      * @throws ODataException
      */
-    public function validateQueryParameters()
+    public function validateQueryParameters(): void
     {
         $queryOptions = $this->getOperationContext()->incomingRequest()->getQueryParameters();
 
         reset($queryOptions);
         $namesFound = [];
         while ($queryOption = current($queryOptions)) {
-            $optionName = key($queryOption);
+            $optionName  = key($queryOption);
             $optionValue = current($queryOption);
             if (!is_string($optionValue)) {
-                $optionName = array_keys($optionValue)[0];
+                $optionName  = array_keys($optionValue)[0];
                 $optionValue = $optionValue[$optionName];
             }
             if (empty($optionName)) {
@@ -343,9 +345,9 @@ class ServiceHost
      * Currently it doesn't seem that the service URI is ever being built
      * so I am doing that here.
      *
-     * return void
+     * return string
      */
-    private function getServiceUri()
+    private function getServiceUri(): string
     {
         if (($pos = strpos($this->absoluteRequestUriAsString, '.svc')) !== false) {
             $serviceUri = substr($this->absoluteRequestUriAsString, 0, $pos + strlen('.svc'));
@@ -363,7 +365,7 @@ class ServiceHost
      *
      * @return bool True if the given option is a valid odata option False otherwise
      */
-    private function isODataQueryOption($optionName)
+    private function isODataQueryOption($optionName): bool
     {
         return $optionName === ODataConstants::HTTPQUERY_STRING_FILTER ||
                $optionName === ODataConstants::HTTPQUERY_STRING_EXPAND ||
@@ -386,7 +388,7 @@ class ServiceHost
      * @return string|null The value for the specified item in the request
      *                     query string NULL if the query option is absent
      */
-    public function getQueryStringItem($item)
+    public function getQueryStringItem(string $item): ?string
     {
         foreach ($this->queryOptions as $queryOption) {
             if (array_key_exists($item, $queryOption)) {
@@ -401,7 +403,7 @@ class ServiceHost
      *
      * @return string|null
      */
-    public function getRequestVersion()
+    public function getRequestVersion(): ?string
     {
         $headerType = ODataConstants::HTTPREQUEST_HEADER_DATA_SERVICE_VERSION;
         return $this->getRequestHeader($headerType);
@@ -412,7 +414,7 @@ class ServiceHost
      *
      * @return string|null
      */
-    public function getRequestMaxVersion()
+    public function getRequestMaxVersion(): ?string
     {
         $headerType = ODataConstants::HTTPREQUEST_HEADER_MAX_DATA_SERVICE_VERSION;
         return $this->getRequestHeader($headerType);
@@ -423,7 +425,7 @@ class ServiceHost
      *
      * @return string|null
      */
-    public function getRequestAccept()
+    public function getRequestAccept(): ?string
     {
         $headerType = ODataConstants::HTTPREQUEST_HEADER_ACCEPT;
         return $this->getRequestHeader($headerType);
@@ -434,7 +436,7 @@ class ServiceHost
      *
      * @return string|null
      */
-    public function getRequestAcceptCharSet()
+    public function getRequestAcceptCharSet(): ?string
     {
         $headerType = ODataConstants::HTTPREQUEST_HEADER_ACCEPT_CHARSET;
         return $this->getRequestHeader($headerType);
@@ -445,7 +447,7 @@ class ServiceHost
      *
      * @return string|null
      */
-    public function getRequestIfMatch()
+    public function getRequestIfMatch(): ?string
     {
         $headerType = ODataConstants::HTTPREQUEST_HEADER_IF_MATCH;
         return $this->getRequestHeader($headerType);
@@ -456,7 +458,7 @@ class ServiceHost
      *
      * @return string|null
      */
-    public function getRequestIfNoneMatch()
+    public function getRequestIfNoneMatch(): ?string
     {
         $headerType = ODataConstants::HTTPREQUEST_HEADER_IF_NONE;
         return $this->getRequestHeader($headerType);
@@ -467,7 +469,7 @@ class ServiceHost
      *
      * @return string|null
      */
-    public function getRequestContentType()
+    public function getRequestContentType(): ?string
     {
         $headerType = ODataConstants::HTTP_CONTENTTYPE;
         return $this->getRequestHeader($headerType);
@@ -478,7 +480,7 @@ class ServiceHost
      *
      * @param string $value The cache-control value
      */
-    public function setResponseCacheControl($value)
+    public function setResponseCacheControl($value): void
     {
         $this->getOperationContext()->outgoingResponse()->setCacheControl($value);
     }
@@ -488,7 +490,7 @@ class ServiceHost
      *
      * @return string
      */
-    public function getResponseContentType()
+    public function getResponseContentType(): string
     {
         return $this->getOperationContext()->outgoingResponse()->getContentType();
     }
@@ -499,7 +501,7 @@ class ServiceHost
      * @param  string $value The HTTP MIME type
      * @return void
      */
-    public function setResponseContentType($value)
+    public function setResponseContentType($value): void
     {
         $this->getOperationContext()->outgoingResponse()->setContentType($value);
     }
@@ -512,13 +514,13 @@ class ServiceHost
      * @throws ODataException
      * @return void
      */
-    public function setResponseContentLength($value)
+    public function setResponseContentLength($value): void
     {
         if (preg_match('/[0-9]+/', $value)) {
             $this->getOperationContext()->outgoingResponse()->setContentLength($value);
         } else {
             throw ODataException::notAcceptableError(
-                'ContentLength: '.$value.' is invalid'
+                'ContentLength: ' . $value . ' is invalid'
             );
         }
     }
@@ -528,7 +530,7 @@ class ServiceHost
      *
      * @return string|null
      */
-    public function getResponseETag()
+    public function getResponseETag(): ?string
     {
         return $this->getOperationContext()->outgoingResponse()->getETag();
     }
@@ -538,7 +540,7 @@ class ServiceHost
      *
      * @param string $value The ETag value
      */
-    public function setResponseETag($value)
+    public function setResponseETag(string $value): void
     {
         $this->getOperationContext()->outgoingResponse()->setETag($value);
     }
@@ -548,7 +550,7 @@ class ServiceHost
      *
      * @param string $value The location
      */
-    public function setResponseLocation($value)
+    public function setResponseLocation(string $value): void
     {
         $this->getOperationContext()->outgoingResponse()->setLocation($value);
     }
@@ -556,16 +558,12 @@ class ServiceHost
     /**
      * Sets the value status code header on the response.
      *
-     * @param string $value The status code
+     * @param int $value The status code
      *
      * @throws ODataException
      */
-    public function setResponseStatusCode($value)
+    public function setResponseStatusCode(int $value): void
     {
-        if (!is_numeric($value)) {
-            $msg = 'Invalid, non-numeric, status code: '.$value;
-            throw ODataException::createInternalServerError($msg);
-        }
         $floor = floor($value/100);
         if ($floor >= 1 && $floor <= 5) {
             $statusDescription = HttpStatus::getStatusDescription($value);
@@ -585,7 +583,7 @@ class ServiceHost
      *
      * @param string $value The status description
      */
-    public function setResponseStatusDescription($value)
+    public function setResponseStatusDescription(string $value): void
     {
         $this->getOperationContext()->outgoingResponse()->setStatusDescription($value);
     }
@@ -595,7 +593,7 @@ class ServiceHost
      *
      * @param string &$value The stream
      */
-    public function setResponseStream(&$value)
+    public function setResponseStream(string &$value): void
     {
         $this->getOperationContext()->outgoingResponse()->setStream($value);
     }
@@ -605,7 +603,7 @@ class ServiceHost
      *
      * @param string $value The version
      */
-    public function setResponseVersion($value)
+    public function setResponseVersion(string $value): void
     {
         $this->getOperationContext()->outgoingResponse()->setServiceVersion($value);
     }
@@ -615,7 +613,7 @@ class ServiceHost
      *
      * @return array<string,string>
      */
-    public function &getResponseHeaders()
+    public function &getResponseHeaders(): array
     {
         return $this->getOperationContext()->outgoingResponse()->getHeaders();
     }
@@ -626,7 +624,7 @@ class ServiceHost
      * @param string $headerName  The name of the header
      * @param string $headerValue The value of the header
      */
-    public function addResponseHeader($headerName, $headerValue)
+    public function addResponseHeader(string $headerName, string $headerValue): void
     {
         $this->getOperationContext()->outgoingResponse()->addHeader($headerName, $headerValue);
     }
@@ -639,7 +637,7 @@ class ServiceHost
      *
      * @return string the full mime type corresponding to the short format form for the given version
      */
-    public static function translateFormatToMime(Version $responseVersion, $format)
+    public static function translateFormatToMime(Version $responseVersion, string $format): string
     {
         //TODO: should the version switches be off of the requestVersion, not the response version? see #91
 
@@ -672,10 +670,10 @@ class ServiceHost
     }
 
     /**
-     * @param $headerType
+     * @param string $headerType
      * @return null|string
      */
-    private function getRequestHeader($headerType)
+    private function getRequestHeader(string $headerType): ?string
     {
         $result = $this->getOperationContext()->incomingRequest()->getRequestHeader($headerType);
         assert(null === $result || is_string($result));

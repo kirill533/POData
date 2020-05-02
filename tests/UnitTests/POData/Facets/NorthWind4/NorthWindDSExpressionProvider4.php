@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\Facets\NorthWind4;
 
 use POData\Common\NotImplementedException;
@@ -14,25 +16,25 @@ use POData\UriProcessor\QueryProcessor\FunctionDescription;
 
 class NorthWindDSExpressionProvider4 implements IExpressionProvider
 {
-    const ADD = '+';
-    const CLOSE_BRACKET = ')';
-    const COMMA = ',';
-    const DIVIDE = '/';
-    const SUBTRACT = '-';
-    const EQUAL = '=';
-    const GREATERTHAN = '>';
+    const ADD                  = '+';
+    const CLOSE_BRACKET        = ')';
+    const COMMA                = ',';
+    const DIVIDE               = '/';
+    const SUBTRACT             = '-';
+    const EQUAL                = '=';
+    const GREATERTHAN          = '>';
     const GREATERTHAN_OR_EQUAL = '>=';
-    const LESSTHAN = '<';
-    const LESSTHAN_OR_EQUAL = '<=';
-    const LOGICAL_AND = 'AND';
-    const LOGICAL_NOT = 'not';
-    const LOGICAL_OR = 'OR';
-    const MEMBERACCESS = '';
-    const MODULO = '%';
-    const MULTIPLY = '*';
-    const NEGATE = '-';
-    const NOTEQUAL = '!=';
-    const OPEN_BRAKET = '(';
+    const LESSTHAN             = '<';
+    const LESSTHAN_OR_EQUAL    = '<=';
+    const LOGICAL_AND          = 'AND';
+    const LOGICAL_NOT          = 'not';
+    const LOGICAL_OR           = 'OR';
+    const MEMBERACCESS         = '';
+    const MODULO               = '%';
+    const MULTIPLY             = '*';
+    const NEGATE               = '-';
+    const NOTEQUAL             = '!=';
+    const OPEN_BRAKET          = '(';
     // The default parameter for ROUND sql function-call
     private $_default_round = 0;
 
@@ -210,10 +212,10 @@ class NorthWindDSExpressionProvider4 implements IExpressionProvider
      *
      * @return string
      */
-    public function onPropertyAccessExpression(PropertyAccessExpression $expression)
+    public function onPropertyAccessExpression(PropertyAccessExpression $expression): string
     {
-        $parent = $expression;
-        $variable = null;
+        $parent                = $expression;
+        $variable              = null;
         $isFirstLevelPrimitive = null === $parent->getParent();
         if (!$isFirstLevelPrimitive) {
             // This propery access sub-expression in the $filter need access
@@ -228,11 +230,11 @@ class NorthWindDSExpressionProvider4 implements IExpressionProvider
             $parent2 = null;
             do {
                 $parent2 = $parent;
-                $parent = $parent->getParent();
+                $parent  = $parent->getParent();
             } while ($parent != null);
 
             $resourceProperty = $parent2->getResourceProperty();
-            if ($resourceProperty->isKindOf(ResourcePropertyKind::RESOURCE_REFERENCE)) {
+            if ($resourceProperty->isKindOf(ResourcePropertyKind::RESOURCE_REFERENCE())) {
                 // Orders?$filter=Customer/CustomerID eq 'ALFKI'
                 throw new NotImplementedException(
                     'This implementation not supports Resource reference in the filter',
@@ -244,7 +246,7 @@ class NorthWindDSExpressionProvider4 implements IExpressionProvider
                 // Customers?$filter=Address/City eq 'Seattle'
                 $propertyName = $parent2->getResourceProperty()->getName();
                 if ('Address' == $propertyName) {
-                    $child = $parent2->getChild();
+                    $child        = $parent2->getChild();
                     $propertyName = $child->getResourceProperty()->getName();
                     if ('AltAddress' != $propertyName) {
                         return $propertyName;
@@ -260,8 +262,8 @@ class NorthWindDSExpressionProvider4 implements IExpressionProvider
         } else {
             // This is a first level property access
             $resourceProperty = $parent->getResourceProperty();
-            if ($resourceProperty->isKindOf(ResourcePropertyKind::COMPLEX_TYPE)
-                || $resourceProperty->isKindOf(ResourcePropertyKind::RESOURCE_REFERENCE)) {
+            if ($resourceProperty->isKindOf(ResourcePropertyKind::COMPLEX_TYPE())
+                || $resourceProperty->isKindOf(ResourcePropertyKind::RESOURCE_REFERENCE())) {
                 // Customers?$filter=Address eq null
                 // Orders?$filter=Customer ne null
                 // First level property access to a complex or resource reference
@@ -401,7 +403,7 @@ class NorthWindDSExpressionProvider4 implements IExpressionProvider
     private function _prepareBinaryExpression($operator, $left, $right)
     {
         if (!substr_compare($left, 'STRCMP', 0, 6)) {
-            $str = explode(';', $left, 2);
+            $str    = explode(';', $left, 2);
             $str[0] = str_replace('STRCMP', '', $str[0]);
             if ($right == 'false' and $right != '0') {
                 if (!substr_compare($operator, '!', 0, 1)) {
@@ -411,22 +413,22 @@ class NorthWindDSExpressionProvider4 implements IExpressionProvider
                 } elseif ($operator == '<=') {
                     $operator = '>';
                 } else {
-                    $operator = '!'.$operator;
+                    $operator = '!' . $operator;
                 }
 
                 return self::OPEN_BRAKET
-                    .$str[0].' '.$operator
-                    .' '.$str[1].self::CLOSE_BRACKET;
+                    . $str[0] . ' ' . $operator
+                    . ' ' . $str[1] . self::CLOSE_BRACKET;
             } else {
                 return self::OPEN_BRAKET
-                    .$str[0].' '.$operator
-                    .' '.$str[1].self::CLOSE_BRACKET;
+                    . $str[0] . ' ' . $operator
+                    . ' ' . $str[1] . self::CLOSE_BRACKET;
             }
         }
 
         //DATETIMECMP
         if (!substr_compare($left, 'DATETIMECMP', 0, 11)) {
-            $str = explode(';', $left, 2);
+            $str    = explode(';', $left, 2);
             $str[0] = str_replace('DATETIMECMP', '', $str[0]);
             if ($right == 'false' and $right != '0') {
                 if (!substr_compare($operator, '!', 0, 1)) {
@@ -436,23 +438,23 @@ class NorthWindDSExpressionProvider4 implements IExpressionProvider
                 } elseif ($operator == '<=') {
                     $operator = '>';
                 } else {
-                    $operator = '!'.$operator;
+                    $operator = '!' . $operator;
                 }
 
                 return self::OPEN_BRAKET
-                .$str[0].' '.$operator
-                .' '.$str[1].self::CLOSE_BRACKET;
+                . $str[0] . ' ' . $operator
+                . ' ' . $str[1] . self::CLOSE_BRACKET;
             } else {
                 return self::OPEN_BRAKET
-                .$str[0].' '.$operator
-                .' '.$str[1].self::CLOSE_BRACKET;
+                . $str[0] . ' ' . $operator
+                . ' ' . $str[1] . self::CLOSE_BRACKET;
             }
         }
 
         return
             self::OPEN_BRAKET
-            .$left.' '.$operator
-            .' '.$right.self::CLOSE_BRACKET;
+            . $left . ' ' . $operator
+            . ' ' . $right . self::CLOSE_BRACKET;
     }
 
     /**
@@ -465,6 +467,6 @@ class NorthWindDSExpressionProvider4 implements IExpressionProvider
      */
     private function _prepareUnaryExpression($operator, $child)
     {
-        return $operator.self::OPEN_BRAKET.$child.self::CLOSE_BRACKET;
+        return $operator . self::OPEN_BRAKET . $child . self::CLOSE_BRACKET;
     }
 }
