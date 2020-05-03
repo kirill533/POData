@@ -94,14 +94,14 @@ class HttpProcessUtility
     /**
      * Selects an acceptable MIME type that satisfies the Accepts header.
      *
-     * @param string   $acceptTypesText Text for Accepts header
-     * @param string[] $availableTypes  Types that the server is willing to return, in descending order of preference
+     * @param null|string $acceptTypesText Text for Accepts header
+     * @param string[]    $availableTypes  Types that the server is willing to return, in descending order of preference
      *
      * @throws HttpHeaderFailure
      *
      * @return string|null The best MIME type for the client
      */
-    public static function selectMimeType(string $acceptTypesText, array $availableTypes): ?string
+    public static function selectMimeType(?string $acceptTypesText, array $availableTypes): ?string
     {
         $selectedContentType     = null;
         $selectedMatchingParts   = -1;
@@ -159,13 +159,13 @@ class HttpProcessUtility
     /**
      * Returns all MIME types from the $text.
      *
-     * @param string $text Text as it appears on an HTTP Accepts header
+     * @param null|string $text Text as it appears on an HTTP Accepts header
      *
      * @throws HttpHeaderFailure If found any syntax error in the given text
      *
      * @return MediaType[] Array of media (MIME) type description
      */
-    public static function mimeTypesFromAcceptHeaders(string $text): array
+    public static function mimeTypesFromAcceptHeaders(?string $text): array
     {
         $mediaTypes = [];
         $textIndex  = 0;
@@ -211,7 +211,7 @@ class HttpProcessUtility
      *
      * @return bool true if the end of the string was reached, false otherwise
      */
-    public static function skipWhiteSpace(string $text, int &$textIndex): bool
+    public static function skipWhiteSpace(?string $text, int &$textIndex): bool
     {
         $textLen = strlen(strval($text));
         while (($textIndex < $textLen) && Char::isWhiteSpace($text[$textIndex])) {
@@ -232,7 +232,7 @@ class HttpProcessUtility
      * @throws HttpHeaderFailure If failed to read type and sub-type
      */
     public static function readMediaTypeAndSubtype(
-        string $text,
+        ?string $text,
         int &$textIndex,
         &$type,
         &$subType
@@ -275,7 +275,7 @@ class HttpProcessUtility
      *
      * @return bool true if the end of the text was reached; false otherwise
      */
-    public static function readToken(string $text, int &$textIndex): bool
+    public static function readToken(?string $text, int &$textIndex): bool
     {
         $textLen = strlen($text);
         while (($textIndex < $textLen) && self::isHttpTokenChar($text[$textIndex])) {
@@ -294,7 +294,7 @@ class HttpProcessUtility
      * @return bool True if the given character is a valid HTTP token
      *              character, False otherwise
      */
-    public static function isHttpTokenChar(string $char): bool
+    public static function isHttpTokenChar(?string $char): bool
     {
         return 126 > ord($char) && 31 < ord($char) && !self::isHttpSeparator($char);
     }
@@ -326,7 +326,7 @@ class HttpProcessUtility
      *
      * @throws HttpHeaderFailure If found parameter value missing
      */
-    public static function readMediaTypeParameter(string $text, int &$textIndex, array &$parameters)
+    public static function readMediaTypeParameter(?string $text, int &$textIndex, array &$parameters)
     {
         $textStart = $textIndex;
         if (self::readToken($text, $textIndex)) {
@@ -437,7 +437,7 @@ class HttpProcessUtility
      *
      * @return int                  The normalised qvalue
      */
-    public static function readQualityValue(string $text, int &$textIndex): int
+    public static function readQualityValue(?string $text, int &$textIndex): int
     {
         $digit = $text[$textIndex++];
         if ('0' == $digit) {

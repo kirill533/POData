@@ -46,7 +46,7 @@ class ProvidersQueryWrapper
     /**
      * @return IQueryProvider
      */
-    public function getQueryProvider()
+    public function getQueryProvider(): ?IQueryProvider
     {
         return $this->queryProvider;
     }

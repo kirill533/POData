@@ -45,7 +45,7 @@ class NorthWindService2 extends BaseServiceTestWrapper
     /**
      * @return \POData\Providers\Query\IQueryProvider
      */
-    public function getQueryProvider()
+    public function getQueryProvider(): ?IQueryProvider
     {
         return new NorthWindQueryProvider();
     }

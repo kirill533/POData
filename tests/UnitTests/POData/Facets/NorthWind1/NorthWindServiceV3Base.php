@@ -6,6 +6,7 @@ use POData\Configuration\EntitySetRights;
 use POData\Configuration\IServiceConfiguration;
 use POData\Configuration\ProtocolVersion;
 use POData\OperationContext\ServiceHost;
+use POData\Providers\Query\IQueryProvider;
 
 class NorthWindServiceV3Base extends \POData\BaseService
 {
@@ -23,7 +24,7 @@ class NorthWindServiceV3Base extends \POData\BaseService
     public function initialize(IServiceConfiguration $config)
     {
         $config->setEntitySetPageSize('*', 5);
-        $config->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $config->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $config->setAcceptCountRequests(true);
         //Disable projection request for testing purpose
         $config->setAcceptProjectionRequests(false);
@@ -41,7 +42,7 @@ class NorthWindServiceV3Base extends \POData\BaseService
     /**
      * @return \POData\Providers\Query\IQueryProvider
      */
-    public function getQueryProvider()
+    public function getQueryProvider(): ?IQueryProvider
     {
         return new NorthWindQueryProvider();
     }

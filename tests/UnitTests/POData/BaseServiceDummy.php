@@ -80,7 +80,7 @@ class BaseServiceDummy extends BaseServiceTestWrapper
      */
     public function initialize(IServiceConfiguration $config)
     {
-        $config->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $config->setEntitySetAccessRule('*', EntitySetRights::ALL());
     }
 
     public function handleRequest()

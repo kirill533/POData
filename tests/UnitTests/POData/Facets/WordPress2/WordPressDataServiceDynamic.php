@@ -10,6 +10,7 @@ use POData\Configuration\IServiceConfiguration;
 use POData\Configuration\ProtocolVersion;
 use POData\OperationContext\HTTPRequestMethod;
 use POData\OperationContext\ServiceHost;
+use POData\Providers\Query\IQueryProvider;
 use POData\UriProcessor\UriProcessor;
 use \Exception;
 
@@ -33,7 +34,7 @@ class WordPressDataServiceDynamic extends BaseService
     public function initialize(IServiceConfiguration $config)
     {
         $config->setEntitySetPageSize('*', 5);
-        $config->setEntitySetAccessRule('*', EntitySetRights::ALL);
+        $config->setEntitySetAccessRule('*', EntitySetRights::ALL());
         $config->setAcceptCountRequests(true);
         $config->setAcceptProjectionRequests(true);
         $config->setMaxDataServiceVersion(ProtocolVersion::V3());
@@ -55,7 +56,7 @@ class WordPressDataServiceDynamic extends BaseService
     /**
      * @return \POData\Providers\Query\IQueryProvider
      */
-    public function getQueryProvider()
+    public function getQueryProvider(): ?IQueryProvider
     {
         if (null === $this->_wordPressQueryProvider) {
             $this->_wordPressQueryProvider = new WordPressQueryProvider();

@@ -208,7 +208,7 @@ class ObjectModelSerializerTest extends TestCase
         $this->assertEquals('data', $ret->selfLink->title);
         $this->assertEquals('Entity', $ret->selfLink->url);
 
-        $this->assertEquals(2, count($ret->entries));
+        $this->assertEquals(2, count($ret->getEntries()));
 
         $this->assertTrue($ret->entries[0] instanceof \POData\ObjectModel\ODataEntry);
         $this->assertTrue($ret->entries[1] instanceof \POData\ObjectModel\ODataEntry);
@@ -307,7 +307,7 @@ class ObjectModelSerializerTest extends TestCase
         $this->assertEquals('data', $ret->selfLink->title);
         $this->assertEquals('Entity', $ret->selfLink->url);
 
-        $this->assertEquals(2, count($ret->entries));
+        $this->assertEquals(2, count($ret->getEntries()));
 
         $this->assertTrue($ret->entries[0] instanceof \POData\ObjectModel\ODataEntry);
         $this->assertTrue($ret->entries[1] instanceof \POData\ObjectModel\ODataEntry);

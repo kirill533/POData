@@ -760,12 +760,12 @@ class SimpleMetadataProvider implements IMetadataProvider
         $targetMultiplicity = '*';
 
         $sourceKind = ('*' == $sourceMultiplicity)
-            ? ResourcePropertyKind::RESOURCESET_REFERENCE
-            : ResourcePropertyKind::RESOURCE_REFERENCE;
+            ? ResourcePropertyKind::RESOURCESET_REFERENCE()
+            : ResourcePropertyKind::RESOURCE_REFERENCE();
 
         $targetKind = ('*' == $targetMultiplicity)
-            ? ResourcePropertyKind::RESOURCESET_REFERENCE
-            : ResourcePropertyKind::RESOURCE_REFERENCE;
+            ? ResourcePropertyKind::RESOURCESET_REFERENCE()
+            : ResourcePropertyKind::RESOURCE_REFERENCE();
 
         // Add navigation properties
         $sourceResourceNavProperty = new ResourceProperty($sourceNavProperty, null, $targetKind, $targetResourceType);

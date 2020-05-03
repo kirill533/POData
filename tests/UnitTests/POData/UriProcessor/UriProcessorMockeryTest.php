@@ -42,7 +42,6 @@ use UnitTests\POData\Facets\NorthWind1\NorthWindService2;
 use UnitTests\POData\Facets\NorthWind1\NorthWindServiceV1;
 use UnitTests\POData\Facets\NorthWind1\NorthWindServiceV3;
 use UnitTests\POData\Facets\ServiceHostTestFake;
-use UnitTests\POData\Providers\Metadata\reusableEntityClass4;
 use UnitTests\POData\TestCase;
 
 class UriProcessorMockeryTest extends TestCase
@@ -2333,7 +2332,7 @@ class UriProcessorMockeryTest extends TestCase
         $db   = m::mock(IQueryProvider::class);
 
         $functionName = [get_class($this), 'exampleSingleton'];
-        $forward      = new reusableEntityClass4('foo', 'bar');
+        $forward      = new UriPMTreusableEntityClass4('foo', 'bar');
 
         $meta = NorthWindMetadata::Create();
         $fore = $meta->addEntityType(new \ReflectionClass($forward), 'fore');
@@ -2350,7 +2349,7 @@ class UriProcessorMockeryTest extends TestCase
         $this->assertEquals(null, $foo->getHost()->getResponseContentType());
         $foo->handleRequest();
 
-        $this->assertEquals('application/atom+xml;charset=UTF-8', $foo->getHost()->getResponseContentType());
+        $this->assertEquals('application/atom+xml;charset=utf-8', $foo->getHost()->getResponseContentType());
         $stream = $foo->getHost()->getOperationContext()->outgoingResponse()->getStream();
         $this->assertEquals('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>', trim($stream));
     }
@@ -2359,5 +2358,26 @@ class UriProcessorMockeryTest extends TestCase
     public static function exampleSingleton()
     {
         return [];
+    }
+}
+
+
+
+
+class UriPMTreusableEntityClass4
+{
+    private $name;
+    private $type;
+    private $relation;
+
+    public function __construct($n, $t)
+    {
+        $this->name = $n;
+        $this->type = $t;
+    }
+
+    public function __get($name)
+    {
+        return $this->{$name};
     }
 }
