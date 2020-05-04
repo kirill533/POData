@@ -132,7 +132,7 @@ class ChangeSetParser implements IBatchParser
             $gotRequestPathParts = false;
             $match               = trim($match);
             $match               = str_replace("\r", '', $match); // removes windows specific character
-            $lines               = explode(PHP_EOL, $match);
+            $lines               = explode("\n", $match);
 
             $requestPathParts = [];
             $serverParts      = [];

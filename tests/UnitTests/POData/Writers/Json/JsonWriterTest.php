@@ -2,12 +2,18 @@
 
 namespace UnitTests\POData\Writers\Json;
 
-use POData\Providers\Metadata\Type\Guid;
+use POData\Writers\Json\IndentedTextWriter;
 use POData\Writers\Json\JsonWriter;
 use UnitTests\POData\TestCase;
 
 class JsonWriterTest extends TestCase
 {
+    function tearDown()
+    {
+        parent::tearDown();
+        IndentedTextWriter::$PHP_EOL = "\n";
+    }
+
     public function testWriteValueNoType()
     {
         $writer = new JsonWriter('');
@@ -290,44 +296,62 @@ class JsonWriterTest extends TestCase
         $this->assertEquals('"http://yahoo.com/some/path"', $writer->getJsonOutput());
     }
 
-    public function testStartArrayScope()
+    /**
+     * @dataProvider getEOL()
+     * @param $eol
+     * @throws \Exception
+     */
+    public function testStartArrayScope($eol)
     {
+        IndentedTextWriter::$PHP_EOL = $eol;
         $writer = new JsonWriter('');
         $result = $writer->startArrayScope();
         $this->assertSame($result, $writer);
         $writer->writeValue('1', 'Edm.String');
         $writer->writeValue(2, 'Edm.Int16');
 
-        $expected = '[' . PHP_EOL . '    "1",2';
+        $expected = '[' . IndentedTextWriter::$PHP_EOL . '    "1",2';
         $this->assertEquals($expected, $writer->getJsonOutput());
 
         $result = $writer->endScope();
         $this->assertSame($result, $writer);
 
-        $expected = '[' . PHP_EOL . '    "1",2' . PHP_EOL . ']';
+        $expected = '[' . IndentedTextWriter::$PHP_EOL . '    "1",2' . IndentedTextWriter::$PHP_EOL . ']';
         $this->assertJsonStringEqualsJsonString($expected, $writer->getJsonOutput());
     }
 
-    public function testStartObjectScope()
+    /**
+     * @dataProvider getEOL()
+     * @param $eol
+     * @throws \Exception
+     */
+    public function testStartObjectScope($eol)
     {
+        IndentedTextWriter::$PHP_EOL = $eol;
         $writer = new JsonWriter('');
         $result = $writer->startObjectScope();
         $this->assertSame($result, $writer);
         $writer->writeName('1');
         $writer->writeValue(2, 'Edm.Int16');
 
-        $expected = '{' . PHP_EOL . '    "1":2';
+        $expected = '{' . $eol . '    "1":2';
         $this->assertEquals($expected, $writer->getJsonOutput());
 
         $result = $writer->endScope();
         $this->assertSame($result, $writer);
 
-        $expected = '{' . PHP_EOL . '    "1":2' . PHP_EOL . '}';
+        $expected = '{' . $eol . '    "1":2' . $eol . '}';
         $this->assertJsonStringEqualsJsonString($expected, $writer->getJsonOutput());
     }
 
-    public function testComplexObject()
+    /**
+     * @dataProvider getEOL()
+     * @param $eol
+     * @throws \Exception
+     */
+    public function testComplexObject($eol)
     {
+        IndentedTextWriter::$PHP_EOL = $eol;
         $writer = new JsonWriter('');
         $writer->startObjectScope();
         $writer->writeName('1');
@@ -346,7 +370,15 @@ class JsonWriterTest extends TestCase
         $writer->endScope();
         $writer->endScope();
 
-        $expected = "{\n    \"1\":2,\"child\":{\n        \"array\":[\n            \"100.00155\",\"2012-03-03T11:14:32\"\n        ]\n    }\n}";
+        $expected = '{' . $eol . '    "1":2,"child":{'
+            . $eol . '        "array":[' . $eol . '            "100.00155","2012-03-03T11:14:32"'
+            . $eol . '        ]' . $eol . '    }' . $eol . '}';
+
         $this->assertEquals($expected, $writer->getJsonOutput());
+    }
+
+    function getEOL()
+    {
+        return [["\n"],["\r\n"]];
     }
 }

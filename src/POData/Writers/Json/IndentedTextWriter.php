@@ -37,6 +37,8 @@ class IndentedTextWriter
      */
     private $tabString;
 
+    public static $PHP_EOL = "\n";
+
     /**
      * Creates a new instance of IndentedTextWriter.
      *
@@ -70,7 +72,7 @@ class IndentedTextWriter
      */
     public function writeLine()
     {
-        $this->write("\n");
+        $this->write(self::$PHP_EOL);
         $this->tabsPending = true;
 
         return $this;
@@ -118,11 +120,10 @@ class IndentedTextWriter
 
     /**
      * @return string the current written text
-     *                strReplace as json_encode does not always respect PHP_EOL
      */
     public function getResult()
     {
-        return str_replace("\n", PHP_EOL, $this->result);
+        return $this->result;
     }
 
     /**

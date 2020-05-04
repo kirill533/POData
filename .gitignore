@@ -5,3 +5,4 @@ vendor*
 atlassian-ide-plugin.xml
 composer.lock
 composer.phar
+phpunit.xml

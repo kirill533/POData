@@ -9,21 +9,20 @@ use POData\BaseService;
 use POData\BatchProcessor\BatchProcessor;
 use POData\BatchProcessor\ChangeSetParser;
 use POData\BatchProcessor\QueryParser;
-use POData\Common\ErrorHandler;
-use POData\Common\HttpStatus;
-use POData\Common\MimeTypes;
-use POData\Common\ODataConstants;
-use POData\Common\ODataException;
-use POData\IService;
-use POData\OperationContext\IOperationContext;
 use POData\OperationContext\ServiceHost;
-use POData\OperationContext\Web\OutgoingResponse;
 use POData\UriProcessor\RequestDescription;
+use POData\Writers\Json\IndentedTextWriter;
 use UnitTests\POData\BatchProcessor\BatchProcessorDummy;
 use UnitTests\POData\TestCase;
 
 class BatchProcessorTest extends TestCase
 {
+    function tearDown()
+    {
+        parent::tearDown();
+        IndentedTextWriter::$PHP_EOL = "\n";
+    }
+
     public function testBatchRequestPartitioning()
     {
         // take the sample batch request in paragraph 2.2 of the OData v3 batch processing docs, feed it into
@@ -216,10 +215,15 @@ Host: host
         $this->assertTrue($result instanceof QueryParser);
     }
 
-    public function testGetResponse()
+    /**
+     * @dataProvider getEOL()
+     * @param $eol
+     */
+    public function testGetResponse($eol)
     {
+        IndentedTextWriter::$PHP_EOL = $eol;
         $resp = m::mock(ChangeSetParser::class)->makePartial();
-        $resp->shouldReceive('getResponse')->andReturn(PHP_EOL . 'response' . PHP_EOL);
+        $resp->shouldReceive('getResponse')->andReturn(IndentedTextWriter::$PHP_EOL . 'response' . IndentedTextWriter::$PHP_EOL);
 
         $service = m::mock(BaseService::class);
         $request = m::mock(RequestDescription::class);
@@ -231,5 +235,10 @@ Host: host
 
         $bitz = explode('response', $actual);
         $this->assertEquals(3, count($bitz));
+    }
+
+    function getEOL()
+    {
+        return [["\n"],["\r\n"]];
     }
 }

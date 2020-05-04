@@ -7,19 +7,10 @@ namespace UnitTests\POData\Common;
 use Illuminate\Http\Request;
 use Mockery as m;
 use POData\BaseService;
-use POData\BatchProcessor\BatchProcessor;
 use POData\BatchProcessor\ChangeSetParser;
 use POData\BatchProcessor\QueryParser;
-use POData\Common\ErrorHandler;
-use POData\Common\HttpStatus;
-use POData\Common\MimeTypes;
-use POData\Common\ODataConstants;
-use POData\Common\ODataException;
-use POData\IService;
-use POData\OperationContext\IOperationContext;
-use POData\OperationContext\ServiceHost;
 use POData\OperationContext\Web\OutgoingResponse;
-use POData\UriProcessor\RequestDescription;
+use POData\Writers\Json\IndentedTextWriter;
 use UnitTests\POData\BatchProcessor\ChangeSetParserDummy;
 use UnitTests\POData\TestCase;
 
@@ -173,8 +164,13 @@ Content-ID: 2
         $this->assertEquals($second, $result[2]);
     }
 
-    public function testHandleDataWithMalformedHeaderLine()
+    /**
+     * @dataProvider getEOL()
+     * @param $eol
+     */
+    public function testHandleDataWithMalformedHeaderLine($eol)
     {
+        IndentedTextWriter::$PHP_EOL = $eol;
         $service = m::mock(BaseService::class);
         $body    = ' 
 Content-Type: multipart/mixed; boundary=changeset_77162fcd-b8da-41ac-a9f8-9357efbbd621 
@@ -207,10 +203,16 @@ Content-Length: ###
         $this->assertEquals($expected, $actual);
     }
 
-    public function testHandleDataWithTooManySegments()
+    /**
+     * @dataProvider getEOL()
+     * @param $eol
+     */
+    public function testHandleDataWithTooManySegments($eol)
     {
-        $bigPayload = '--.--' . PHP_EOL . PHP_EOL . PHP_EOL . PHP_EOL . '.--.--.--.';
+        IndentedTextWriter::$PHP_EOL = $eol;
+        $bigPayload = '--.--' . $eol . $eol . $eol . $eol . '.--.--.--.';
 
+        /** @var ChangeSetParser|\Mockery\Mock $foo */
         $foo = m::mock(ChangeSetParser::class)->makePartial();
         $foo->shouldReceive('getData')->andReturn('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.', $bigPayload);
 
@@ -366,5 +368,10 @@ Stream II: ELECTRIC BOOGALOO--
         $foo = new ChangeSetParserDummy($service, $body);
         $foo->processSubRequest($first);
         $this->assertNotNull($first->Response);
+    }
+
+    function getEOL()
+    {
+        return [["\n"],["\r\n"]];
     }
 }

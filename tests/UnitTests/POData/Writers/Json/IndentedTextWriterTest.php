@@ -9,13 +9,30 @@ use UnitTests\POData\TestCase;
 
 class IndentedTextWriterTest extends TestCase
 {
-    public function testWriteLine()
+
+    function tearDown()
     {
+        IndentedTextWriter::$PHP_EOL = "\n";
+        parent::tearDown();
+    }
+
+    function getEOL()
+    {
+        return [["\n"],["\r\n"]];
+    }
+
+    /**
+     * @dataProvider getEOL()
+     * @param $eol
+     */
+    public function testWriteLine($eol)
+    {
+        IndentedTextWriter::$PHP_EOL = $eol;
         $writer = new IndentedTextWriter('');
 
         $result = $writer->writeLine();
         $this->assertSame($writer, $result);
-        $this->assertEquals(PHP_EOL, $writer->getResult());
+        $this->assertEquals(IndentedTextWriter::$PHP_EOL, $writer->getResult());
     }
 
     public function testWrite()
@@ -38,8 +55,13 @@ class IndentedTextWriterTest extends TestCase
         $this->assertEquals('doggy', $writer->getResult());
     }
 
-    public function testWriteIndents()
+    /**
+     * @dataProvider getEOL()
+     * @param $eol
+     */
+    public function testWriteIndents($eol)
     {
+        IndentedTextWriter::$PHP_EOL = $eol;
         $writer = new IndentedTextWriter('');
 
         $result = $writer->increaseIndent();
@@ -67,7 +89,8 @@ class IndentedTextWriterTest extends TestCase
         $writer->decreaseIndent();
 
         $writer->writeValue('indented0x');
-        $expected = 'indented1x' . PHP_EOL . '        indented2x' . PHP_EOL . '    indented1xtrimmed' . PHP_EOL . 'indented0x';
+        $expected = 'indented1x' . IndentedTextWriter::$PHP_EOL . '        indented2x' . IndentedTextWriter::$PHP_EOL
+            . '    indented1xtrimmed' . IndentedTextWriter::$PHP_EOL . 'indented0x';
 
         $this->assertEquals($expected, $writer->getResult());
     }

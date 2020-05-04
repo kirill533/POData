@@ -15,6 +15,7 @@ use POData\IService;
 use POData\OperationContext\IOperationContext;
 use POData\OperationContext\ServiceHost;
 use POData\OperationContext\Web\OutgoingResponse;
+use POData\Writers\Json\IndentedTextWriter;
 use UnitTests\POData\TestCase;
 
 /**
@@ -23,6 +24,12 @@ use UnitTests\POData\TestCase;
  */
 class ErrorHandlerTest extends TestCase
 {
+    function tearDown()
+    {
+        parent::tearDown();
+        IndentedTextWriter::$PHP_EOL = "\n";
+    }
+
     public function testHandleODataException()
     {
         $exception = new ODataException('FAIL', 500);
@@ -121,8 +128,20 @@ class ErrorHandlerTest extends TestCase
         ErrorHandler::handleException($exception, $service);
     }
 
-    public function testHandleExceptionBadMimeTypes()
+    function getEOL()
     {
+        return [["\n"],["\r\n"]];
+    }
+
+    /**
+     * @dataProvider getEOL()
+     * @throws ODataException
+     * @param $eol
+     */
+    public function testHandleExceptionBadMimeTypes($eol)
+    {
+        IndentedTextWriter::$PHP_EOL = $eol;
+
         $exception = new ODataException('FAIL', 500);
 
         $outgoing = m::mock(OutgoingResponse::class);
@@ -154,8 +173,14 @@ class ErrorHandlerTest extends TestCase
         $this->assertXmlStringEqualsXmlString($expected, $actual);
     }
 
-    public function testHandleNonODataExceptionWithValidMimeType()
+    /**
+     * @dataProvider getEOL()
+     * @throws ODataException
+     * @param $eol
+     */
+    public function testHandleNonODataExceptionWithValidMimeType($eol)
     {
+        IndentedTextWriter::$PHP_EOL = $eol;
         $exception = new Exception('FAIL', 500);
 
         $outgoing = m::mock(OutgoingResponse::class);
