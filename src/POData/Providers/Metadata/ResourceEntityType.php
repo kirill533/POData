@@ -1,10 +1,12 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\Providers\Metadata;
 
 use AlgoWeb\ODataMetadata\MetadataV3\edm\TEntityTypeType;
+use InvalidArgumentException;
+use ReflectionClass;
 
 /**
  * Class ResourceEntityType.
@@ -18,7 +20,7 @@ class ResourceEntityType extends ResourceType
      * @param TEntityTypeType   $entity       Object containing complex type metadata
      * @param IMetadataProvider $meta         Application's metadata provider
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct($instanceType, TEntityTypeType $entity, IMetadataProvider $meta)
     {

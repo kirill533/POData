@@ -1,10 +1,10 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\Providers\Metadata;
 
-use AlgoWeb\ODataMetadata\IsOK;
+use Exception;
 
 /**
  * Class IMetadataProvider.
@@ -31,7 +31,7 @@ interface IMetadataProvider
     /**
      *  To get all entity set information.
      *
-     *  @return ResourceSet[]
+     * @return ResourceSet[]
      */
     public function getResourceSets();
 
@@ -125,7 +125,7 @@ interface IMetadataProvider
     public function callSingleton($name);
 
     /**
-     * @throws \Exception
+     * @throws Exception
      * @return string|null
      */
     public function getXML();

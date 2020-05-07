@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 namespace POData\BatchProcessor;
 
@@ -45,9 +46,9 @@ class BatchProcessor
         if (is_array($rawData)) {
             $rawData = $rawData[0];
         }
-
+        $ODataEOL            = $this->getService()->getConfiguration()->getLineEndings();
         $this->data          = trim($rawData);
-        $this->data          = preg_replace('~\r\n?~', "\n", $this->data);
+        $this->data          = preg_replace('~\r\n?~', $ODataEOL, $this->data);
         $this->batchBoundary = substr($contentType, 26);
 
         $matches = explode('--' . $this->batchBoundary, $this->data);
@@ -56,7 +57,7 @@ class BatchProcessor
             if ('' === $match || '--' === $match) {
                 continue;
             }
-            $header                      = explode("\n\n", $match)[0];
+            $header                      = explode($ODataEOL . $ODataEOL, $match)[0];
             $isChangeset                 = false === strpos($header, 'Content-Type: application/http');
             $this->changeSetProcessors[] = $this->getParser($this->getService(), $match, $isChangeset);
         }
@@ -68,19 +69,19 @@ class BatchProcessor
     }
 
     /**
-     * @return string
+     * @return BaseService
      */
-    public function getResponse()
+    public function getService()
     {
-        $response = '';
-        $splitter =  '--' . $this->batchBoundary . "\r\n";
-        $raw      = $this->changeSetProcessors;
-        foreach ($raw as $contentID => &$workingObject) {
-            $response .= $splitter;
-            $response .= $workingObject->getResponse() . "\r\n";
-        }
-        $response .= trim($splitter) . "--\r\n";
-        return $response;
+        return $this->service;
+    }
+
+    /**
+     * @return RequestDescription
+     */
+    public function getRequest()
+    {
+        return $this->request;
     }
 
     /**
@@ -98,18 +99,20 @@ class BatchProcessor
     }
 
     /**
-     * @return BaseService
+     * @return string
      */
-    public function getService()
+    public function getResponse()
     {
-        return $this->service;
-    }
+        $ODataEOL = $this->getService()->getConfiguration()->getLineEndings();
 
-    /**
-     * @return RequestDescription
-     */
-    public function getRequest()
-    {
-        return $this->request;
+        $response = '';
+        $splitter = '--' . $this->batchBoundary . $ODataEOL;
+        $raw      = $this->changeSetProcessors;
+        foreach ($raw as $contentID => &$workingObject) {
+            $response .= $splitter;
+            $response .= $workingObject->getResponse() . $ODataEOL;
+        }
+        $response .= trim($splitter) . '--' . $ODataEOL;
+        return $response;
     }
 }

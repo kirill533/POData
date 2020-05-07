@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace POData\Providers\Metadata;
 
 use POData\Providers\Metadata\Entity\Dynamic;
@@ -24,6 +26,8 @@ use POData\Providers\Metadata\Type\SByte;
 use POData\Providers\Metadata\Type\Single;
 use POData\Providers\Metadata\Type\StringType;
 use POData\Providers\Query\QueryResult;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Class ResourceType.
@@ -151,7 +155,7 @@ abstract class ResourceType
      * ReflectionClass (for complex/Entity) or IType (for Primitive) instance for
      * the resource (type) described by this class instance.
      *
-     * @var \ReflectionClass|IType|string|IDynamic
+     * @var ReflectionClass|IType|string|IDynamic
      */
     protected $type;
 
@@ -172,7 +176,7 @@ abstract class ResourceType
     /**
      * Create new instance of ResourceType.
      *
-     * @param \ReflectionClass|IType|IDynamic $instanceType     Instance type for the resource,
+     * @param ReflectionClass|IType|IDynamic $instanceType     Instance type for the resource,
      *                                                 for entity and
      *                                                 complex this will
      *                                                 be 'ReflectionClass' and for
@@ -184,7 +188,7 @@ abstract class ResourceType
      * @param ResourceType|null      $baseType         Base type of the resource, if exists
      * @param bool                   $isAbstract       Whether resource is abstract
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     protected function __construct(
         $instanceType,
@@ -205,6 +209,53 @@ abstract class ResourceType
         $this->customState                   = null;
         $this->arrayToDetectLoopInComplexBag = [];
         //TODO: Set MLE if base type has MLE Set
+    }
+
+    /**
+     * Get predefined ResourceType for a primitive type.
+     *
+     * @param EdmPrimitiveType $typeCode Type code of primitive type
+     *
+     * @throws InvalidArgumentException
+     * @return ResourcePrimitiveType
+     */
+    public static function getPrimitiveResourceType(EdmPrimitiveType $typeCode)
+    {
+        switch ($typeCode) {
+            case EdmPrimitiveType::BINARY():
+                return new ResourcePrimitiveType(new Binary());
+            case EdmPrimitiveType::BOOLEAN():
+                return new ResourcePrimitiveType(new Boolean());
+            case EdmPrimitiveType::BYTE():
+                return new ResourcePrimitiveType(new Byte());
+            case EdmPrimitiveType::DATETIME():
+                return new ResourcePrimitiveType(new DateTime());
+            case EdmPrimitiveType::DECIMAL():
+                return new ResourcePrimitiveType(new Decimal());
+            case EdmPrimitiveType::DOUBLE():
+                return new ResourcePrimitiveType(new Double());
+            case EdmPrimitiveType::GUID():
+                return new ResourcePrimitiveType(new Guid());
+            case EdmPrimitiveType::INT16():
+                return new ResourcePrimitiveType(new Int16());
+            case EdmPrimitiveType::INT32():
+                return new ResourcePrimitiveType(new Int32());
+            case EdmPrimitiveType::INT64():
+                return new ResourcePrimitiveType(new Int64());
+            case EdmPrimitiveType::SBYTE():
+                return new ResourcePrimitiveType(new SByte());
+            case EdmPrimitiveType::SINGLE():
+                return new ResourcePrimitiveType(new Single());
+            case EdmPrimitiveType::STRING():
+                return new ResourcePrimitiveType(new StringType());
+            default:
+                throw new InvalidArgumentException(
+                    Messages::commonNotValidPrimitiveEDMType(
+                        '$typeCode',
+                        'getPrimitiveResourceType'
+                    )
+                );
+        }
     }
 
     /**
@@ -252,19 +303,36 @@ abstract class ResourceType
      * then this function returns reference to ReflectionClass instance for the type.
      * If resource type describes a primitive type, then this function returns ITYpe.
      *
-     * @return \ReflectionClass|IType|IDynamic
-     * @throws \ReflectionException
-     * @return \ReflectionClass|IType
+     * @return ReflectionClass|IType|IDynamic
+     * @throws ReflectionException
+     * @return ReflectionClass|IType
      */
     public function getInstanceType()
     {
         if (is_string($this->type)) {
             $this->__wakeup();
         }
-        assert($this->type instanceof \ReflectionClass || $this->type instanceof IType
+        assert($this->type instanceof ReflectionClass || $this->type instanceof IType
             || $this->type instanceof IDynamic);
 
         return $this->type;
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function __wakeup()
+    {
+        if (is_string($this->type)) {
+            $this->type = new ReflectionClass($this->type);
+        } else if (is_array($this->type) && !empty($this->type['isDynamic'])) {
+            $this->type = new Dynamic($this->type['properties']);
+        }
+
+        assert(
+            $this->type instanceof ReflectionClass || $this->type instanceof IType || $this->type instanceof IDynamic,
+            'type neither instance of reflection class nor IType nor IDynamic'
+        );
     }
 
     /**
@@ -286,27 +354,6 @@ abstract class ResourceType
     public function getNamespace()
     {
         return $this->namespaceName;
-    }
-
-    /**
-     * Get full name (namespacename.typename) of the type described by this resource
-     * type.
-     *
-     * @return string
-     */
-    public function getFullName()
-    {
-        return $this->fullName;
-    }
-
-    /**
-     * To check whether the type described by this resource type is abstract or not.
-     *
-     * @return bool True if type is abstract else False
-     */
-    public function isAbstract()
-    {
-        return $this->abstractType;
     }
 
     /**
@@ -415,6 +462,16 @@ abstract class ResourceType
     }
 
     /**
+     * To check whether the type described by this resource type is abstract or not.
+     *
+     * @return bool True if type is abstract else False
+     */
+    public function isAbstract()
+    {
+        return $this->abstractType;
+    }
+
+    /**
      * Get collection properties belongs to this resource type (excluding base class
      * properties). This function returns  empty array in case of resource type
      * for primitive types.
@@ -424,6 +481,36 @@ abstract class ResourceType
     public function getPropertiesDeclaredOnThisType()
     {
         return $this->propertiesDeclaredOnThisType;
+    }
+
+    /**
+     * To check this type has any eTag properties.
+     *
+     * @return bool
+     */
+    public function hasETagProperties()
+    {
+        $properties = $this->getETagProperties();
+
+        return !empty($properties);
+    }
+
+    /**
+     * Get collection of e-tag properties belongs to this type.
+     *
+     * @return ResourceProperty[]
+     */
+    public function getETagProperties()
+    {
+        if (empty($this->eTagProperties)) {
+            foreach ($this->getAllProperties() as $propertyName => $resourceProperty) {
+                if ($resourceProperty->isKindOf(ResourcePropertyKind::ETAG())) {
+                    $this->eTagProperties[$propertyName] = $resourceProperty;
+                }
+            }
+        }
+
+        return $this->eTagProperties;
     }
 
     /**
@@ -447,61 +534,6 @@ abstract class ResourceType
         }
 
         return $this->allProperties;
-    }
-
-    /**
-     * Get collection key properties belongs to this resource type. This
-     * function returns non-empty array only for resource type representing
-     * an entity type.
-     *
-     * @return ResourceProperty[]
-     */
-    public function getKeyProperties()
-    {
-        if (empty($this->keyProperties)) {
-            $baseType = $this;
-            while (null != $baseType->baseType) {
-                $baseType = $baseType->baseType;
-            }
-
-            foreach ($baseType->propertiesDeclaredOnThisType as $propertyName => $resourceProperty) {
-                if ($resourceProperty->isKindOf(ResourcePropertyKind::KEY())) {
-                    $this->keyProperties[$propertyName] = $resourceProperty;
-                }
-            }
-        }
-
-        return $this->keyProperties;
-    }
-
-    /**
-     * Get collection of e-tag properties belongs to this type.
-     *
-     * @return ResourceProperty[]
-     */
-    public function getETagProperties()
-    {
-        if (empty($this->eTagProperties)) {
-            foreach ($this->getAllProperties() as $propertyName => $resourceProperty) {
-                if ($resourceProperty->isKindOf(ResourcePropertyKind::ETAG())) {
-                    $this->eTagProperties[$propertyName] = $resourceProperty;
-                }
-            }
-        }
-
-        return $this->eTagProperties;
-    }
-
-    /**
-     * To check this type has any eTag properties.
-     *
-     * @return bool
-     */
-    public function hasETagProperties()
-    {
-        $properties = $this->getETagProperties();
-
-        return !empty($properties);
     }
 
     /**
@@ -585,29 +617,6 @@ abstract class ResourceType
     }
 
     /**
-     * Get collection of ResourceStreamInfo describing the named streams belongs
-     * to this resource type including base class named streams.
-     *
-     * @return ResourceStreamInfo[]
-     */
-    public function getAllNamedStreams()
-    {
-        if (empty($this->allNamedStreams)) {
-            if (null != $this->baseType) {
-                $this->allNamedStreams = $this->baseType->getAllNamedStreams();
-            }
-
-            $this->allNamedStreams
-                = array_merge(
-                    $this->allNamedStreams,
-                    $this->namedStreamsDeclaredOnThisType
-                );
-        }
-
-        return $this->allNamedStreams;
-    }
-
-    /**
      * Try to get ResourceStreamInfo for a named stream defined for this
      * resource type excluding base class named streams.
      *
@@ -637,6 +646,29 @@ abstract class ResourceType
             return $this->allNamedStreams[$namedStreamName];
         }
         return null;
+    }
+
+    /**
+     * Get collection of ResourceStreamInfo describing the named streams belongs
+     * to this resource type including base class named streams.
+     *
+     * @return ResourceStreamInfo[]
+     */
+    public function getAllNamedStreams()
+    {
+        if (empty($this->allNamedStreams)) {
+            if (null != $this->baseType) {
+                $this->allNamedStreams = $this->baseType->getAllNamedStreams();
+            }
+
+            $this->allNamedStreams
+                = array_merge(
+                    $this->allNamedStreams,
+                    $this->namedStreamsDeclaredOnThisType
+                );
+        }
+
+        return $this->allNamedStreams;
     }
 
     /**
@@ -763,6 +795,42 @@ abstract class ResourceType
     }
 
     /**
+     * Get collection key properties belongs to this resource type. This
+     * function returns non-empty array only for resource type representing
+     * an entity type.
+     *
+     * @return ResourceProperty[]
+     */
+    public function getKeyProperties()
+    {
+        if (empty($this->keyProperties)) {
+            $baseType = $this;
+            while (null != $baseType->baseType) {
+                $baseType = $baseType->baseType;
+            }
+
+            foreach ($baseType->propertiesDeclaredOnThisType as $propertyName => $resourceProperty) {
+                if ($resourceProperty->isKindOf(ResourcePropertyKind::KEY())) {
+                    $this->keyProperties[$propertyName] = $resourceProperty;
+                }
+            }
+        }
+
+        return $this->keyProperties;
+    }
+
+    /**
+     * Get full name (namespacename.typename) of the type described by this resource
+     * type.
+     *
+     * @return string
+     */
+    public function getFullName()
+    {
+        return $this->fullName;
+    }
+
+    /**
      * To check the type described by this resource type is assignable from
      * a type described by another resource type. Or this type is a sub-type
      * of (derived from the) given resource type.
@@ -786,59 +854,11 @@ abstract class ResourceType
     }
 
     /**
-     * Get predefined ResourceType for a primitive type.
-     *
-     * @param EdmPrimitiveType $typeCode Type code of primitive type
-     *
-     * @throws InvalidArgumentException
-     *
-     * @return ResourcePrimitiveType
-     */
-    public static function getPrimitiveResourceType(EdmPrimitiveType $typeCode)
-    {
-        switch ($typeCode) {
-            case EdmPrimitiveType::BINARY():
-                return new ResourcePrimitiveType(new Binary());
-            case EdmPrimitiveType::BOOLEAN():
-                return new ResourcePrimitiveType(new Boolean());
-            case EdmPrimitiveType::BYTE():
-                return new ResourcePrimitiveType(new Byte());
-            case EdmPrimitiveType::DATETIME():
-                return new ResourcePrimitiveType(new DateTime());
-            case EdmPrimitiveType::DECIMAL():
-                return new ResourcePrimitiveType(new Decimal());
-            case EdmPrimitiveType::DOUBLE():
-                return new ResourcePrimitiveType(new Double());
-            case EdmPrimitiveType::GUID():
-                return new ResourcePrimitiveType(new Guid());
-            case EdmPrimitiveType::INT16():
-                return new ResourcePrimitiveType(new Int16());
-            case EdmPrimitiveType::INT32():
-                return new ResourcePrimitiveType(new Int32());
-            case EdmPrimitiveType::INT64():
-                return new ResourcePrimitiveType(new Int64());
-            case EdmPrimitiveType::SBYTE():
-                return new ResourcePrimitiveType(new SByte());
-            case EdmPrimitiveType::SINGLE():
-                return new ResourcePrimitiveType(new Single());
-            case EdmPrimitiveType::STRING():
-                return new ResourcePrimitiveType(new StringType());
-            default:
-                throw new \InvalidArgumentException(
-                    Messages::commonNotValidPrimitiveEDMType(
-                        '$typeCode',
-                        'getPrimitiveResourceType'
-                    )
-                );
-        }
-    }
-
-    /**
      * @param string $property
      * @param mixed  $entity
      * @param mixed  $value
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @return ResourceType
      */
     public function setPropertyValue($entity, $property, $value)
@@ -855,8 +875,20 @@ abstract class ResourceType
 
     /**
      * @param $entity
+     * @return mixed|null
+     */
+    private function unpackEntityForPropertyGetSet($entity)
+    {
+        $targ = ($entity instanceof QueryResult)
+            ? (is_array($entity->results) && 0 < count($entity->results)) ? $entity->results[0] : null
+            : $entity;
+        return $targ;
+    }
+
+    /**
+     * @param $entity
      * @param $property
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @return mixed
      */
     public function getPropertyValue($entity, $property)
@@ -892,34 +924,5 @@ abstract class ResourceType
         $result = array_keys(get_object_vars($this));
 
         return $result;
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
-    public function __wakeup()
-    {
-        if (is_string($this->type)) {
-            $this->type = new \ReflectionClass($this->type);
-        } else if (is_array($this->type) && !empty($this->type['isDynamic'])) {
-            $this->type = new Dynamic($this->type['properties']);
-        }
-
-        assert(
-            $this->type instanceof \ReflectionClass || $this->type instanceof IType || $this->type instanceof IDynamic,
-            'type neither instance of reflection class nor IType nor IDynamic'
-        );
-    }
-
-    /**
-     * @param $entity
-     * @return mixed|null
-     */
-    private function unpackEntityForPropertyGetSet($entity)
-    {
-        $targ = ($entity instanceof QueryResult)
-            ? (is_array($entity->results) && 0 < count($entity->results)) ? $entity->results[0] : null
-            : $entity;
-        return $targ;
     }
 }

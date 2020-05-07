@@ -1,9 +1,10 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\Writers\Json;
 
+use Exception;
 use POData\Common\MimeTypes;
 use POData\Common\ODataConstants;
 use POData\Common\Version;
@@ -40,16 +41,16 @@ class JsonLightODataWriter extends JsonODataV2Writer
      * @param JsonLightMetadataLevel $metadataLevel
      * @param string                 $absoluteServiceUri
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct(JsonLightMetadataLevel $metadataLevel, $absoluteServiceUri)
+    public function __construct(string $eol, bool $prettyPrint, JsonLightMetadataLevel $metadataLevel = null, $absoluteServiceUri = '')
     {
         if (strlen($absoluteServiceUri) == 0) {
-            throw new \Exception('absoluteServiceUri must not be empty or null');
+            throw new Exception('absoluteServiceUri must not be empty or null');
         }
         $this->baseUri = $absoluteServiceUri;
 
-        $this->writer        = new JsonWriter('');
+        $this->writer        = new JsonWriter('', $eol, $prettyPrint);
         $this->urlKey        = ODataConstants::JSON_URL_STRING;
         $this->dataArrayName = ODataConstants::JSON_LIGHT_VALUE_NAME;
         $this->rowCountName  = ODataConstants::JSON_LIGHT_ROWCOUNT_STRING;
@@ -82,7 +83,7 @@ class JsonLightODataWriter extends JsonODataV2Writer
      *
      * @param ODataURL|ODataURLCollection|ODataPropertyContent|ODataFeed|ODataEntry $model Object of requested content
      *
-     * @throws \Exception
+     * @throws Exception
      * @return JsonLightODataWriter
      */
     public function write($model)
@@ -119,9 +120,24 @@ class JsonLightODataWriter extends JsonODataV2Writer
     }
 
     /**
+     * @param  string    $fragment
+     * @throws Exception
+     */
+    protected function writeTopLevelMeta($fragment)
+    {
+        if ($this->metadataLevel == JsonLightMetadataLevel::NONE()) {
+            return;
+        }
+
+        $this->writer
+            ->writeName(ODataConstants::JSON_LIGHT_METADATA_STRING)
+            ->writeValue($this->baseUri . '/' . ODataConstants::URI_METADATA_SEGMENT . '#' . $fragment);
+    }
+
+    /**
      * @param ODataProperty $property
      *
-     * @throws \Exception
+     * @throws Exception
      * @return JsonLightODataWriter
      */
     protected function writeTopLevelProperty(ODataProperty $property)
@@ -147,23 +163,8 @@ class JsonLightODataWriter extends JsonODataV2Writer
     }
 
     /**
-     * @param  string     $fragment
-     * @throws \Exception
-     */
-    protected function writeTopLevelMeta($fragment)
-    {
-        if ($this->metadataLevel == JsonLightMetadataLevel::NONE()) {
-            return;
-        }
-
-        $this->writer
-            ->writeName(ODataConstants::JSON_LIGHT_METADATA_STRING)
-            ->writeValue($this->baseUri . '/' . ODataConstants::URI_METADATA_SEGMENT . '#' . $fragment);
-    }
-
-    /**
      * @param  ODataProperty           $property
-     * @throws \Exception
+     * @throws Exception
      * @return $this|JsonODataV2Writer
      */
     protected function writePropertyMeta(ODataProperty $property)
@@ -193,9 +194,51 @@ class JsonLightODataWriter extends JsonODataV2Writer
     }
 
     /**
+     * @param  ODataProperty $property
+     * @throws Exception
+     * @return $this
+     */
+    protected function writeComplexPropertyMeta(ODataProperty $property)
+    {
+        if ($this->metadataLevel == JsonLightMetadataLevel::FULL()) {
+            $this->writer
+                ->writeName(ODataConstants::JSON_LIGHT_METADATA_TYPE_STRING)
+                ->writeValue($property->typeName);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param  ODataBagContent         $bag
+     * @throws Exception
+     * @return $this|JsonODataV1Writer
+     */
+    protected function writeBagContent(ODataBagContent $bag)
+    {
+        $this->writer->startArrayScope();
+
+        foreach ($bag->propertyContents as $content) {
+            if ($content instanceof ODataPropertyContent) {
+                $this->writer->startObjectScope();
+                $this->writeProperties($content);
+                $this->writer->endScope();
+            } else {
+                // retrieving the collection datatype in order
+                //to write in json specific format, with in chords or not
+                preg_match('#\((.*?)\)#', $bag->type, $type);
+                $this->writer->writeValue($content, $type[1]);
+            }
+        }
+
+        $this->writer->endScope();
+        return $this;
+    }
+
+    /**
      * @param ODataEntry $entry Entry to write metadata for
      *
-     * @throws \Exception
+     * @throws Exception
      * @return JsonLightODataWriter
      */
     protected function writeEntryMetadata(ODataEntry $entry)
@@ -224,7 +267,7 @@ class JsonLightODataWriter extends JsonODataV2Writer
     /**
      * @param ODataLink $link Link to write
      *
-     * @throws \Exception
+     * @throws Exception
      * @return JsonLightODataWriter
      */
     protected function writeLink(ODataLink $link)
@@ -250,17 +293,17 @@ class JsonLightODataWriter extends JsonODataV2Writer
     }
 
     /**
-     * @param  ODataLink  $link
-     * @throws \Exception
+     * @param  ODataLink $link
+     * @throws Exception
      */
     protected function writeExpandedLink(ODataLink $link)
     {
         if ($link->isCollection) {
             $this->writer->startArrayScope();
-            $this->writeFeed(/* @scrutinizer ignore-type */$link->expandedResult);
+            $this->writeFeed(/* @scrutinizer ignore-type */ $link->expandedResult);
         } else {
             $this->writer->startObjectScope();
-            $this->writeEntry(/* @scrutinizer ignore-type */$link->expandedResult);
+            $this->writeEntry(/* @scrutinizer ignore-type */ $link->expandedResult);
         }
 
         $this->writer->endScope();
@@ -289,7 +332,7 @@ class JsonLightODataWriter extends JsonODataV2Writer
      *
      * @param ODataProperty $property property to write
      *
-     * @throws \Exception
+     * @throws Exception
      * @return JsonLightODataWriter
      */
     protected function writeComplexProperty(ODataProperty $property)
@@ -301,48 +344,6 @@ class JsonLightODataWriter extends JsonODataV2Writer
 
         $this->writer->endScope();
 
-        return $this;
-    }
-
-    /**
-     * @param  ODataProperty $property
-     * @throws \Exception
-     * @return $this
-     */
-    protected function writeComplexPropertyMeta(ODataProperty $property)
-    {
-        if ($this->metadataLevel == JsonLightMetadataLevel::FULL()) {
-            $this->writer
-                ->writeName(ODataConstants::JSON_LIGHT_METADATA_TYPE_STRING)
-                ->writeValue($property->typeName);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param  ODataBagContent         $bag
-     * @throws \Exception
-     * @return $this|JsonODataV1Writer
-     */
-    protected function writeBagContent(ODataBagContent $bag)
-    {
-        $this->writer->startArrayScope();
-
-        foreach ($bag->propertyContents as $content) {
-            if ($content instanceof ODataPropertyContent) {
-                $this->writer->startObjectScope();
-                $this->writeProperties($content);
-                $this->writer->endScope();
-            } else {
-                // retrieving the collection datatype in order
-                //to write in json specific format, with in chords or not
-                preg_match('#\((.*?)\)#', $bag->type, $type);
-                $this->writer->writeValue($content, $type[1]);
-            }
-        }
-
-        $this->writer->endScope();
         return $this;
     }
 

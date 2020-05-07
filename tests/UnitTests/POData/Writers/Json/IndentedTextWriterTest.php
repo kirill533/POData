@@ -25,19 +25,18 @@ class IndentedTextWriterTest extends TestCase
      * @dataProvider getEOL()
      * @param $eol
      */
-    public function testWriteLine($eol)
+    function testWriteLine($eol)
     {
-        IndentedTextWriter::$PHP_EOL = $eol;
-        $writer = new IndentedTextWriter('');
+        $writer = new IndentedTextWriter('', $eol, true);
 
         $result = $writer->writeLine();
         $this->assertSame($writer, $result);
-        $this->assertEquals(IndentedTextWriter::$PHP_EOL, $writer->getResult());
+        $this->assertEquals($eol, $writer->getResult());
     }
 
     public function testWrite()
     {
-        $writer = new IndentedTextWriter('');
+        $writer = new IndentedTextWriter('', PHP_EOL, true);
 
         $result = $writer->writeValue(' doggy ');
 
@@ -47,7 +46,7 @@ class IndentedTextWriterTest extends TestCase
 
     public function testWriteTrimmed()
     {
-        $writer = new IndentedTextWriter('');
+        $writer = new IndentedTextWriter('', PHP_EOL, true);
 
         $result = $writer->writeTrimmed(' doggy ');
 
@@ -61,8 +60,7 @@ class IndentedTextWriterTest extends TestCase
      */
     public function testWriteIndents($eol)
     {
-        IndentedTextWriter::$PHP_EOL = $eol;
-        $writer = new IndentedTextWriter('');
+        $writer = new IndentedTextWriter('', $eol, true);
 
         $result = $writer->increaseIndent();
         $this->assertSame($writer, $result);
@@ -89,8 +87,8 @@ class IndentedTextWriterTest extends TestCase
         $writer->decreaseIndent();
 
         $writer->writeValue('indented0x');
-        $expected = 'indented1x' . IndentedTextWriter::$PHP_EOL . '        indented2x' . IndentedTextWriter::$PHP_EOL
-            . '    indented1xtrimmed' . IndentedTextWriter::$PHP_EOL . 'indented0x';
+        $expected = 'indented1x' . $eol . '        indented2x' . $eol
+            . '    indented1xtrimmed' . $eol . 'indented0x';
 
         $this->assertEquals($expected, $writer->getResult());
     }

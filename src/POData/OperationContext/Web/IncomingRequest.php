@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\OperationContext\Web;
 
@@ -21,12 +21,12 @@ class IncomingRequest implements IHTTPRequest
      *
      * @var array
      */
-    private $headers;
+    private $headers = [];
 
     /**
      * The incoming url in raw format.
      *
-     * @var string
+     * @var string|null
      */
     private $rawUrl = null;
 
@@ -42,24 +42,101 @@ class IncomingRequest implements IHTTPRequest
      *
      * @var array(string, string);
      */
-    private $queryOptions;
+    private $queryOptions = [];
 
     /**
      * A collection that represents mapping between query option and its count.
      *
      * @var array(string, int)
      */
-    private $queryOptionsCount;
+    private $queryOptionsCount = [];
 
     /**
-     * Initialize a new instance of IncomingWebRequestContext.
+     * The raw query string.
+     *
+     * @var string|null;
      */
-    public function __construct()
+    private $queryString = null;
+
+    /**
+     * The raw input.
+     *
+     * @var string|null;
+     */
+    private $rawInput = null;
+
+    /**
+     * Initialize a new instance of IHTTPRequest.
+     *
+     * @param HttpRequestMethod|null $method
+     * @param array                  $queryOptions
+     * @param array                  $queryOptionsCount
+     * @param array                  $headers
+     * @param string|null            $queryString
+     * @param string|null            $rawInput
+     * @param string|null            $rawUrl
+     */
+    public function __construct(
+        HTTPRequestMethod $method = null,
+        array $queryOptions = [],
+        array $queryOptionsCount = [],
+        array $headers = [],
+        string $queryString = null,
+        string $rawInput = null,
+        string $rawUrl = null
+    ) {
+        $this->method            = $method ?? new HTTPRequestMethod($_SERVER['REQUEST_METHOD']);
+        $this->queryOptions      = $queryOptions;
+        $this->queryOptionsCount = $queryOptionsCount;
+        $this->headers           = $headers;
+        $this->queryString       = $queryString;
+        $this->rawInput          = $rawInput;
+        $this->rawUrl            = $rawUrl;
+    }
+
+    /**
+     * get the raw incoming url.
+     *
+     * @return string RequestURI called by User with the value of QueryString
+     */
+    public function getRawUrl(): string
     {
-        $this->method            = new HTTPRequestMethod($_SERVER['REQUEST_METHOD']);
-        $this->queryOptions      = [];
-        $this->queryOptionsCount = [];
-        $this->headers           = [];
+        if (null === $this->rawUrl) {
+            $rawProtocol = $_SERVER[ODataConstants::HTTPREQUEST_PROTOCOL] ?? '';
+            if (false === stripos($rawProtocol, 'HTTPS')) {
+                $this->rawUrl = ODataConstants::HTTPREQUEST_PROTOCOL_HTTP;
+            } else {
+                $this->rawUrl = ODataConstants::HTTPREQUEST_PROTOCOL_HTTPS;
+            }
+
+            $rawHost = $_SERVER[HttpProcessUtility::headerToServerKey(ODataConstants::HTTPREQUEST_HEADER_HOST)] ?? '';
+            $rawUri  = $_SERVER[ODataConstants::HTTPREQUEST_URI] ?? '';
+            $this->rawUrl .= '://' . $rawHost;
+            $this->rawUrl .= utf8_decode(urldecode($rawUri));
+        }
+
+        return $this->rawUrl;
+    }
+
+    /**
+     * get the specific request headers.
+     *
+     * @param string $key The header name
+     *
+     * @return string|null value of the header, NULL if header is absent
+     */
+    public function getRequestHeader(string $key): ?string
+    {
+        if (0 == count($this->headers)) {
+            $this->getHeaders();
+        }
+        //PHP normalizes header keys
+        $trimmedKey = HttpProcessUtility::headerToServerKey(trim($key));
+
+        if (array_key_exists($trimmedKey, $this->headers)) {
+            return $this->headers[$trimmedKey];
+        }
+        return null;
     }
 
     /**
@@ -118,64 +195,6 @@ class IncomingRequest implements IHTTPRequest
     }
 
     /**
-     * get the raw incoming url.
-     *
-     * @return string RequestURI called by User with the value of QueryString
-     */
-    public function getRawUrl(): string
-    {
-        if (null === $this->rawUrl) {
-            if (false === stripos($_SERVER[ODataConstants::HTTPREQUEST_PROTOCOL], 'HTTPS')) {
-                $this->rawUrl = ODataConstants::HTTPREQUEST_PROTOCOL_HTTP;
-            } else {
-                $this->rawUrl = ODataConstants::HTTPREQUEST_PROTOCOL_HTTPS;
-            }
-
-            $this->rawUrl .= '://' .
-                             $_SERVER[HttpProcessUtility::headerToServerKey(ODataConstants::HTTPREQUEST_HEADER_HOST)];
-            $this->rawUrl .= utf8_decode(urldecode($_SERVER[ODataConstants::HTTPREQUEST_URI]));
-        }
-
-        return $this->rawUrl;
-    }
-
-    /**
-     * get the specific request headers.
-     *
-     * @param string $key The header name
-     *
-     * @return string|null value of the header, NULL if header is absent
-     */
-    public function getRequestHeader(string $key): ?string
-    {
-        if (0 == count($this->headers)) {
-            $this->getHeaders();
-        }
-        //PHP normalizes header keys
-        $trimmedKey = HttpProcessUtility::headerToServerKey(trim($key));
-
-        if (array_key_exists($trimmedKey, $this->headers)) {
-            return $this->headers[$trimmedKey];
-        }
-        return null;
-    }
-
-    /**
-     * Get the QUERY_STRING
-     * Note: This method will return empty string if no query string present.
-     *
-     * @return string $_header[HttpRequestHeaderQueryString]
-     */
-    private function getQueryString(): string
-    {
-        if (array_key_exists(ODataConstants::HTTPREQUEST_QUERY_STRING, $_SERVER)) {
-            return utf8_decode(trim($_SERVER[ODataConstants::HTTPREQUEST_QUERY_STRING]));
-        } else {
-            return '';
-        }
-    }
-
-    /**
      * Split the QueryString and assigns them as array element in KEY=VALUE.
      *
      * @return string[]|array[]
@@ -205,6 +224,25 @@ class IncomingRequest implements IHTTPRequest
     }
 
     /**
+     * Get the QUERY_STRING
+     * Note: This method will return empty string if no query string present.
+     *
+     * @return string $_header[HttpRequestHeaderQueryString]
+     */
+    private function getQueryString(): string
+    {
+        if (null === $this->queryString) {
+            if (array_key_exists(ODataConstants::HTTPREQUEST_QUERY_STRING, $_SERVER)) {
+                $rawString         = $_SERVER[ODataConstants::HTTPREQUEST_QUERY_STRING] ?? '';
+                $this->queryString = utf8_decode(trim($rawString));
+            } else {
+                $this->queryString = '';
+            }
+        }
+        return $this->queryString;
+    }
+
+    /**
      * Get the HTTP method
      * Value will be set from the value of the HTTP method of the
      * incoming Web request.
@@ -217,10 +255,13 @@ class IncomingRequest implements IHTTPRequest
     }
 
     /**
-     * @return false|mixed|string|null
+     * @return string|null
      */
-    public function getAllInput()
+    public function getAllInput(): ?string
     {
-        return file_get_contents('php://input');
+        if (null === $this->rawInput) {
+            $this->rawInput = file_get_contents('php://input');
+        }
+        return $this->rawInput;
     }
 }

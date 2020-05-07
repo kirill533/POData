@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\ObjectModel;
 
@@ -17,7 +17,7 @@ class ODataPropertyContent
     public $properties = [];
 
     /**
-     * @return \POData\ObjectModel\ODataProperty[]
+     * @return ODataProperty[]
      */
     public function getPropertys()
     {
@@ -25,7 +25,7 @@ class ODataPropertyContent
     }
 
     /**
-     * @param $newProperties \POData\ObjectModel\ODataProperty[]
+     * @param $newProperties ODataProperty[]
      */
     public function setPropertys(array $newProperties)
     {

@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 /**
  * Created by PhpStorm.
  * User: Barnso
@@ -7,8 +8,6 @@
  * Time: 4:25 AM.
  */
 namespace POData\ObjectModel\AtomObjectModel;
-
-use POData\ObjectModel\ODataProperty;
 
 /**
  * Class AtomContent.

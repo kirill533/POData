@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace POData\Common\Messages;
 
 /**
@@ -25,7 +27,7 @@ trait skipTokenInfo
         $orderByValuesVarName
     ) {
         return 'Either both the arguments ' . $orderByPathsVarName . ' and ' . $orderByValuesVarName . ' should be'
-                . ' null or not-null';
+            . ' null or not-null';
     }
 
     /**

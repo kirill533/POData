@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\Writers;
 
@@ -17,6 +17,8 @@ use POData\Providers\ProvidersWrapper;
  */
 interface IODataWriter
 {
+    public function __construct(string $eol, bool $prettyPrint);
+
     /**
      * Determines if the given writer is capable of writing the response or not.
      *

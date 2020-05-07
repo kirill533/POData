@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\UriProcessor\QueryProcessor\OrderByParser;
 
@@ -43,9 +43,8 @@ class OrderByRootNode extends OrderByNode
     /**
      * (non-PHPdoc).
      *
-     * @see library/POData/QueryProcessorOrderByParser.OrderByNode::getResourceType()
-     *
      * @return ResourceType
+     * @see library/POData/QueryProcessorOrderByParser.OrderByNode::getResourceType()
      */
     public function getResourceType()
     {

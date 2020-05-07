@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\Common\Messages;
 
@@ -50,7 +50,7 @@ trait skipTokenParser
         $expectedCount
     ) {
         return 'The number of keys \'' . $skipTokenValuesCount . '\' in skip token with value \'' . $skipToken .
-               '\' did not match the number of ordering constraints \'' . $expectedCount . '\' for the resource type.';
+            '\' did not match the number of ordering constraints \'' . $expectedCount . '\' for the resource type.';
     }
 
     /**
@@ -86,7 +86,7 @@ trait skipTokenParser
         $typeProvidedInSkipTokenName
     ) {
         return 'The skiptoken value \'' . $skipToken . '\' contains a value of type \'' . $typeProvidedInSkipTokenName
-                . '\' at position ' . $position . ' which is not compatible with the type \'' . $expectedTypeName
-                . '\' of corresponding orderby constraint.';
+            . '\' at position ' . $position . ' which is not compatible with the type \'' . $expectedTypeName
+            . '\' of corresponding orderby constraint.';
     }
 }

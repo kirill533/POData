@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace POData\OperationContext\Web;
 
 use POData\OperationContext\IHTTPRequest;
@@ -35,11 +37,13 @@ class WebOperationContext implements IOperationContext
      * This function will perform the following tasks:
      *  (1) Retrieve the current HTTP method,headers and stream.
      *  (2) Populate $_incomingRequest using these.
+     * @param IHTTPRequest|null     $incomingRequest
+     * @param OutgoingResponse|null $outgoingResponse
      */
-    public function __construct()
+    public function __construct(IHTTPRequest $incomingRequest = null, OutgoingResponse $outgoingResponse = null)
     {
-        $this->incomingRequest  = new IncomingRequest();
-        $this->outgoingResponse = new OutgoingResponse();
+        $this->incomingRequest  = $incomingRequest ?? new IncomingRequest();
+        $this->outgoingResponse = $outgoingResponse ?? new OutgoingResponse();
     }
 
     /**

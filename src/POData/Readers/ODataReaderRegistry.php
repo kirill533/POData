@@ -1,15 +1,14 @@
 <?php
 
-
+declare(strict_types=1);
 
 
 namespace POData\Readers;
 
 use POData\Common\Version;
-use POData\Writers\IODataWriter;
 
 /**
- * Class ODataReaderRegistry
+ * Class ODataReaderRegistry.
  * @package POData\Readers
  */
 class ODataReaderRegistry

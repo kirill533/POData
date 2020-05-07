@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\Common\Messages;
 
@@ -31,7 +31,7 @@ trait queryProcessor
     public static function queryProcessorNoQueryOptionsApplicable()
     {
         return 'Query options $select, $expand, $filter, $orderby, $inlinecount, $skip, $skiptoken and $top are not' .
-               ' supported by this request method or cannot be applied to the requested resource.';
+            ' supported by this request method or cannot be applied to the requested resource.';
     }
 
     /**
@@ -128,7 +128,7 @@ trait queryProcessor
     public static function queryProcessorSkipTokenCannotBeAppliedForNonPagedResourceSet($resourceSetName)
     {
         return '$skiptoken cannot be applied to the resource set \'' . $resourceSetName
-               . '\', since paging is not enabled for this resource set';
+            . '\', since paging is not enabled for this resource set';
     }
 
     /**

@@ -1,10 +1,9 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\OperationContext;
 
-use Illuminate\Http\Request;
 use POData\Common\HttpStatus;
 use POData\Common\Messages;
 use POData\Common\MimeTypes;
@@ -13,7 +12,6 @@ use POData\Common\ODataException;
 use POData\Common\Url;
 use POData\Common\UrlFormatException;
 use POData\Common\Version;
-use POData\OperationContext\Web\Illuminate\IlluminateOperationContext;
 
 /**
  * Class ServiceHost.
@@ -70,33 +68,16 @@ class ServiceHost
     private $queryOptions;
 
     /**
-     * Gets reference to the operation context.
-     *
-     * @return IOperationContext
-     */
-    public function getOperationContext()
-    {
-        return $this->operationContext;
-    }
-
-    /**
-     * @param IOperationContext|null $context the OperationContext implementation to use.
-     *                                        If null the IlluminateOperationContext will be used.  Default null.
+     * @param IOperationContext $context the OperationContext implementation to use.
      *
      * Currently we are forcing the input request to be of type
      * \Illuminate\Http\Request but in the future we could make this more flexible if needed
-     * @param Request $incomingRequest
-     *
      * @throws ODataException
      * @throws UrlFormatException
      */
-    public function __construct(IOperationContext $context = null, Request $incomingRequest)
+    public function __construct(IOperationContext $context)
     {
-        if (null === $context) {
-            $this->operationContext = new IlluminateOperationContext($incomingRequest);
-        } else {
-            $this->operationContext = $context;
-        }
+        $this->operationContext = $context;
 
         // getAbsoluteRequestUri can throw UrlFormatException
         // let Dispatcher handle it
@@ -113,9 +94,8 @@ class ServiceHost
      * Gets the absolute request Uri as Url instance
      * Note: This method will be called first time from constructor.
      *
-     * @throws ODataException     if AbsoluteRequestUri is not a valid URI
      * @throws UrlFormatException
-     *
+     * @throws ODataException     if AbsoluteRequestUri is not a valid URI
      * @return Url
      */
     public function getAbsoluteRequestUri(): Url
@@ -148,14 +128,13 @@ class ServiceHost
     }
 
     /**
-     * Gets the absolute request Uri as string
-     * Note: This will not contain query string.
+     * Gets reference to the operation context.
      *
-     * @return string
+     * @return IOperationContext
      */
-    public function getAbsoluteRequestUriAsString(): string
+    public function getOperationContext()
     {
-        return $this->absoluteRequestUriAsString;
+        return $this->operationContext;
     }
 
     /**
@@ -245,6 +224,77 @@ class ServiceHost
 
             $this->absoluteServiceUriAsString = $isAbsoluteServiceUri ? $serviceUri : $builtServiceUri;
         }
+    }
+
+    /**
+     * Dev Note: Andrew Clinton
+     * 5/19/16.
+     *
+     * Currently it doesn't seem that the service URI is ever being built
+     * so I am doing that here.
+     *
+     * return string
+     */
+    private function getServiceUri(): string
+    {
+        if (($pos = strpos($this->absoluteRequestUriAsString, '.svc')) !== false) {
+            $serviceUri = substr($this->absoluteRequestUriAsString, 0, $pos + strlen('.svc'));
+
+            return $serviceUri;
+        }
+
+        return $this->absoluteRequestUriAsString;
+    }
+
+    /**
+     * Translates the short $format forms into the full mime type forms.
+     *
+     * @param Version $responseVersion the version scheme to interpret the short form with
+     * @param string  $format          the short $format form
+     *
+     * @return string the full mime type corresponding to the short format form for the given version
+     */
+    public static function translateFormatToMime(Version $responseVersion, string $format): string
+    {
+        //TODO: should the version switches be off of the requestVersion, not the response version? see #91
+
+        switch ($format) {
+            case ODataConstants::FORMAT_XML:
+                $format = MimeTypes::MIME_APPLICATION_XML;
+                break;
+
+            case ODataConstants::FORMAT_ATOM:
+                $format = MimeTypes::MIME_APPLICATION_ATOM;
+                break;
+
+            case ODataConstants::FORMAT_VERBOSE_JSON:
+                if ($responseVersion == Version::v3()) {
+                    //only translatable in 3.0 systems
+                    $format = MimeTypes::MIME_APPLICATION_JSON_VERBOSE;
+                }
+                break;
+
+            case ODataConstants::FORMAT_JSON:
+                if ($responseVersion == Version::v3()) {
+                    $format = MimeTypes::MIME_APPLICATION_JSON_MINIMAL_META;
+                } else {
+                    $format = MimeTypes::MIME_APPLICATION_JSON;
+                }
+                break;
+        }
+
+        return $format . ';q=1.0';
+    }
+
+    /**
+     * Gets the absolute request Uri as string
+     * Note: This will not contain query string.
+     *
+     * @return string
+     */
+    public function getAbsoluteRequestUriAsString(): string
+    {
+        return $this->absoluteRequestUriAsString;
     }
 
     /**
@@ -339,26 +389,6 @@ class ServiceHost
     }
 
     /**
-     * Dev Note: Andrew Clinton
-     * 5/19/16.
-     *
-     * Currently it doesn't seem that the service URI is ever being built
-     * so I am doing that here.
-     *
-     * return string
-     */
-    private function getServiceUri(): string
-    {
-        if (($pos = strpos($this->absoluteRequestUriAsString, '.svc')) !== false) {
-            $serviceUri = substr($this->absoluteRequestUriAsString, 0, $pos + strlen('.svc'));
-
-            return $serviceUri;
-        }
-
-        return $this->absoluteRequestUriAsString;
-    }
-
-    /**
      * Verifies the given url option is a valid odata query option.
      *
      * @param string $optionName option to validate
@@ -368,14 +398,14 @@ class ServiceHost
     private function isODataQueryOption($optionName): bool
     {
         return $optionName === ODataConstants::HTTPQUERY_STRING_FILTER ||
-               $optionName === ODataConstants::HTTPQUERY_STRING_EXPAND ||
-               $optionName === ODataConstants::HTTPQUERY_STRING_INLINECOUNT ||
-               $optionName === ODataConstants::HTTPQUERY_STRING_ORDERBY ||
-               $optionName === ODataConstants::HTTPQUERY_STRING_SELECT ||
-               $optionName === ODataConstants::HTTPQUERY_STRING_SKIP ||
-               $optionName === ODataConstants::HTTPQUERY_STRING_SKIPTOKEN ||
-               $optionName === ODataConstants::HTTPQUERY_STRING_TOP ||
-               $optionName === ODataConstants::HTTPQUERY_STRING_FORMAT;
+            $optionName === ODataConstants::HTTPQUERY_STRING_EXPAND ||
+            $optionName === ODataConstants::HTTPQUERY_STRING_INLINECOUNT ||
+            $optionName === ODataConstants::HTTPQUERY_STRING_ORDERBY ||
+            $optionName === ODataConstants::HTTPQUERY_STRING_SELECT ||
+            $optionName === ODataConstants::HTTPQUERY_STRING_SKIP ||
+            $optionName === ODataConstants::HTTPQUERY_STRING_SKIPTOKEN ||
+            $optionName === ODataConstants::HTTPQUERY_STRING_TOP ||
+            $optionName === ODataConstants::HTTPQUERY_STRING_FORMAT;
     }
 
     /**
@@ -410,6 +440,17 @@ class ServiceHost
     }
 
     /**
+     * @param  string      $headerType
+     * @return null|string
+     */
+    private function getRequestHeader(string $headerType): ?string
+    {
+        $result = $this->getOperationContext()->incomingRequest()->getRequestHeader($headerType);
+        assert(null === $result || is_string($result));
+        return $result;
+    }
+
+    /**
      * Gets the value of MaxDataServiceVersion header of the request.
      *
      * @return string|null
@@ -428,7 +469,7 @@ class ServiceHost
     public function getRequestAccept(): ?string
     {
         $headerType = ODataConstants::HTTPREQUEST_HEADER_ACCEPT;
-        return $this->getRequestHeader($headerType);
+        return $this->getRequestHeader($headerType) ?? '*/*';
     }
 
     /**
@@ -564,7 +605,7 @@ class ServiceHost
      */
     public function setResponseStatusCode(int $value): void
     {
-        $floor = floor($value/100);
+        $floor = floor($value / 100);
         if ($floor >= 1 && $floor <= 5) {
             $statusDescription = HttpStatus::getStatusDescription($value);
             if (null !== $statusDescription) {
@@ -627,56 +668,5 @@ class ServiceHost
     public function addResponseHeader(string $headerName, string $headerValue): void
     {
         $this->getOperationContext()->outgoingResponse()->addHeader($headerName, $headerValue);
-    }
-
-    /**
-     * Translates the short $format forms into the full mime type forms.
-     *
-     * @param Version $responseVersion the version scheme to interpret the short form with
-     * @param string  $format          the short $format form
-     *
-     * @return string the full mime type corresponding to the short format form for the given version
-     */
-    public static function translateFormatToMime(Version $responseVersion, string $format): string
-    {
-        //TODO: should the version switches be off of the requestVersion, not the response version? see #91
-
-        switch ($format) {
-            case ODataConstants::FORMAT_XML:
-                $format = MimeTypes::MIME_APPLICATION_XML;
-                break;
-
-            case ODataConstants::FORMAT_ATOM:
-                $format = MimeTypes::MIME_APPLICATION_ATOM;
-                break;
-
-            case ODataConstants::FORMAT_VERBOSE_JSON:
-                if ($responseVersion == Version::v3()) {
-                    //only translatable in 3.0 systems
-                    $format = MimeTypes::MIME_APPLICATION_JSON_VERBOSE;
-                }
-                break;
-
-            case ODataConstants::FORMAT_JSON:
-                if ($responseVersion == Version::v3()) {
-                    $format = MimeTypes::MIME_APPLICATION_JSON_MINIMAL_META;
-                } else {
-                    $format = MimeTypes::MIME_APPLICATION_JSON;
-                }
-                break;
-        }
-
-        return $format . ';q=1.0';
-    }
-
-    /**
-     * @param string $headerType
-     * @return null|string
-     */
-    private function getRequestHeader(string $headerType): ?string
-    {
-        $result = $this->getOperationContext()->incomingRequest()->getRequestHeader($headerType);
-        assert(null === $result || is_string($result));
-        return $result;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\UriProcessor\QueryProcessor\ExpressionParser;
 
@@ -13,19 +13,17 @@ use POData\Common\ODataException;
 class ExpressionToken
 {
     /**
-     * @var ExpressionTokenId
-     */
-    protected $Id;
-
-    /**
      * @var string
      */
     public $Text;
-
     /**
      * @var int
      */
     public $Position;
+    /**
+     * @var ExpressionTokenId
+     */
+    protected $Id;
 
     /**
      * Checks whether this token is a comparison operator.
@@ -56,9 +54,9 @@ class ExpressionToken
     {
         return
             $this->Id == ExpressionTokenId::IDENTIFIER() &&
-                is_string($this->Text) &&
-                    (strcmp($this->Text, ODataConstants::KEYWORD_EQUAL) === 0 ||
-                        strcmp($this->Text, ODataConstants::KEYWORD_NOT_EQUAL) === 0);
+            is_string($this->Text) &&
+            (strcmp($this->Text, ODataConstants::KEYWORD_EQUAL) === 0 ||
+                strcmp($this->Text, ODataConstants::KEYWORD_NOT_EQUAL) === 0);
     }
 
     /**

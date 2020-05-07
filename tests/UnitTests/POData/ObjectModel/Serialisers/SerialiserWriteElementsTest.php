@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UnitTests\POData\ObjectModel\Serialisers;
 
 use Carbon\Carbon;
@@ -19,7 +21,8 @@ use POData\ObjectModel\ODataProperty;
 use POData\ObjectModel\ODataPropertyContent;
 use POData\ObjectModel\ODataTitle;
 use POData\OperationContext\ServiceHost;
-use POData\OperationContext\Web\Illuminate\IlluminateOperationContext as OperationContextAdapter;
+use POData\OperationContext\Web\IncomingRequest;
+use POData\OperationContext\Web\WebOperationContext as OperationContextAdapter;
 use POData\Providers\Metadata\IMetadataProvider;
 use POData\Providers\Metadata\ResourceProperty;
 use POData\Providers\Metadata\ResourcePropertyKind;
@@ -51,7 +54,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
 
         $request = $this->setUpRequest();
         $request->shouldReceive('prepareRequestUri')->andReturn('/odata.svc/Customers');
-        $request->shouldReceive('fullUrl')->andReturn('http://localhost/odata.svc/Customers');
+        $request->shouldReceive('getRawUrl')->andReturn('http://localhost/odata.svc/Customers');
 
         list($host, $meta, $query) = $this->setUpDataServiceDeps($request);
 
@@ -159,7 +162,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
 
         $request = $this->setUpRequest();
         $request->shouldReceive('prepareRequestUri')->andReturn('/odata.svc/Customers');
-        $request->shouldReceive('fullUrl')->andReturn('http://localhost/odata.svc/Customers');
+        $request->shouldReceive('getRawUrl')->andReturn('http://localhost/odata.svc/Customers');
 
         list($host, $meta, $query) = $this->setUpDataServiceDeps($request);
 
@@ -247,7 +250,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
 
         $request = $this->setUpRequest();
         $request->shouldReceive('prepareRequestUri')->andReturn('/odata.svc/Orders(OrderID=1)/Order_Details');
-        $request->shouldReceive('fullUrl')->andReturn('http://localhost/odata.svc/Orders(OrderID=1)/Order_Details');
+        $request->shouldReceive('getRawUrl')->andReturn('http://localhost/odata.svc/Orders(OrderID=1)/Order_Details');
 
         list($host, $meta, $query) = $this->setUpDataServiceDeps($request);
 
@@ -357,7 +360,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
 
         $request = $this->setUpRequest();
         $request->shouldReceive('prepareRequestUri')->andReturn('/odata.svc/Customers?$expand=Orders');
-        $request->shouldReceive('fullUrl')->andReturn('http://localhost/odata.svc/Customers?$expand=Orders');
+        $request->shouldReceive('getRawUrl')->andReturn('http://localhost/odata.svc/Customers?$expand=Orders');
 
         list($host, $meta, $query) = $this->setUpDataServiceDeps($request);
 
@@ -514,7 +517,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
 
         $request = $this->setUpRequest();
         $request->shouldReceive('prepareRequestUri')->andReturn('/odata.svc/Customers');
-        $request->shouldReceive('fullUrl')->andReturn('http://localhost/odata.svc/Customers');
+        $request->shouldReceive('getRawUrl')->andReturn('http://localhost/odata.svc/Customers');
 
         list($host, $meta, $query) = $this->setUpDataServiceDeps($request);
 
@@ -553,7 +556,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
 
         $request = $this->setUpRequest();
         $request->shouldReceive('prepareRequestUri')->andReturn('/odata.svc/Customers');
-        $request->shouldReceive('fullUrl')->andReturn('http://localhost/odata.svc/Customers');
+        $request->shouldReceive('getRawUrl')->andReturn('http://localhost/odata.svc/Customers');
 
         list($host, $meta, $query) = $this->setUpDataServiceDeps($request);
 
@@ -588,7 +591,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
     {
         $request = $this->setUpRequest();
         $request->shouldReceive('prepareRequestUri')->andReturn('/odata.svc/Customers');
-        $request->shouldReceive('fullUrl')->andReturn('http://localhost/odata.svc/Customers');
+        $request->shouldReceive('getRawUrl')->andReturn('http://localhost/odata.svc/Customers');
 
         list($host, $meta, $query) = $this->setUpDataServiceDeps($request);
 
@@ -623,7 +626,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
 
         $request = $this->setUpRequest();
         $request->shouldReceive('prepareRequestUri')->andReturn('/odata.svc/Employees');
-        $request->shouldReceive('fullUrl')->andReturn('http://localhost/odata.svc/Employees');
+        $request->shouldReceive('getRawUrl')->andReturn('http://localhost/odata.svc/Employees');
 
         list($host, $meta, $query) = $this->setUpDataServiceDeps($request);
 
@@ -778,7 +781,7 @@ class SerialiserWriteElementsTest extends SerialiserTestBase
     private function setUpDataServiceDeps($request)
     {
         $op   = new OperationContextAdapter($request);
-        $host = new ServiceHost($op, $request);
+        $host = new ServiceHost($op);
 
         $meta  = NorthWindMetadata::Create();
         $query = m::mock(IQueryProvider::class);

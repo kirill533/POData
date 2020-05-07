@@ -4,11 +4,21 @@ declare(strict_types=1);
 
 namespace UnitTests\POData\Common;
 
-use Illuminate\Http\Request;
 use Mockery as m;
 use POData\BaseService;
 use POData\BatchProcessor\ChangeSetParser;
 use POData\BatchProcessor\QueryParser;
+use POData\Common\ErrorHandler;
+use POData\Common\HttpStatus;
+use POData\Common\MimeTypes;
+use POData\Common\ODataConstants;
+use POData\Common\ODataException;
+use POData\Configuration\ServiceConfiguration;
+use POData\IService;
+use POData\OperationContext\IHTTPRequest;
+use POData\OperationContext\IOperationContext;
+use POData\OperationContext\ServiceHost;
+use POData\OperationContext\Web\IncomingRequest;
 use POData\OperationContext\Web\OutgoingResponse;
 use POData\Writers\Json\IndentedTextWriter;
 use UnitTests\POData\BatchProcessor\ChangeSetParserDummy;
@@ -19,6 +29,8 @@ class ChangeSetParserTest extends TestCase
     public function testGetters()
     {
         $service = m::mock(BaseService::class);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
+
         $body    = 'body';
 
         $foo = new QueryParser($service, $body);
@@ -31,6 +43,8 @@ class ChangeSetParserTest extends TestCase
     public function testHandleData()
     {
         $service = m::mock(BaseService::class);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
+
         $body    = ' 
 Content-Type: multipart/mixed; boundary=changeset_77162fcd-b8da-41ac-a9f8-9357efbbd621 
 Content-Length: ###       
@@ -91,6 +105,12 @@ Content-Length: ###
         $this->assertEquals(2, count($result));
         $this->assertTrue(array_key_exists(-1, $result));
         $this->assertTrue(array_key_exists(-2, $result));
+        $this->assertTrue($result[-1]->Request instanceof IHTTPRequest);
+        $this->assertTrue($result[-2]->Request instanceof IHTTPRequest);
+        // For moment, confirming that Request values are instances of IHTTPRequest is enough, so we can null them out
+        // before proceeding to equality check
+        $result[-1]->Request = null;
+        $result[-2]->Request = null;
         $this->assertEquals($first, $result[-1]);
         $this->assertEquals($second, $result[-2]);
     }
@@ -98,6 +118,8 @@ Content-Length: ###
     public function testHandleDataWithContentID()
     {
         $service = m::mock(BaseService::class);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
+
         $body    = ' 
 Content-Type: multipart/mixed; boundary=changeset_77162fcd-b8da-41ac-a9f8-9357efbbd621 
 Content-Length: ###       
@@ -160,6 +182,12 @@ Content-ID: 2
         $this->assertEquals(2, count($result));
         $this->assertTrue(array_key_exists(-1, $result));
         $this->assertTrue(array_key_exists(2, $result));
+        $this->assertTrue($result[-1]->Request instanceof IHTTPRequest);
+        $this->assertTrue($result[2]->Request instanceof IHTTPRequest);
+        // For moment, confirming that Request values are instances of IHTTPRequest is enough, so we can null them out
+        // before proceeding to equality check
+        $result[-1]->Request = null;
+        $result[2]->Request  = null;
         $this->assertEquals($first, $result[-1]);
         $this->assertEquals($second, $result[2]);
     }
@@ -172,6 +200,8 @@ Content-ID: 2
     {
         IndentedTextWriter::$PHP_EOL = $eol;
         $service = m::mock(BaseService::class);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
+
         $body    = ' 
 Content-Type: multipart/mixed; boundary=changeset_77162fcd-b8da-41ac-a9f8-9357efbbd621 
 Content-Length: ###       
@@ -215,7 +245,9 @@ Content-Length: ###
         /** @var ChangeSetParser|\Mockery\Mock $foo */
         $foo = m::mock(ChangeSetParser::class)->makePartial();
         $foo->shouldReceive('getData')->andReturn('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.', $bigPayload);
-
+        $service = m::mock(BaseService::class);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
+        $foo->shouldReceive('getService')->andReturn($service);
         $expected = 'how did we end up with more than 3 stages??';
         $actual   = null;
         try {
@@ -256,6 +288,11 @@ X-Swedish-Chef: bork bork bork!
 
 Stream II: ELECTRIC BOOGALOO--
 ';
+        $service = m::mock(BaseService::class);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
+
+
+        $foo->shouldReceive('getService')->andReturn($service);
 
         $actual = $foo->getResponse();
         $this->assertTrue(false !== stripos($actual, 'Content-Type: application/http'));
@@ -347,12 +384,13 @@ Stream II: ELECTRIC BOOGALOO--
     public function testProcessSubRequest()
     {
         $service = m::mock(BaseService::class);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
         $service->shouldReceive('setHost')->andReturnNull()->atLeast(1);
         $service->shouldReceive('handleRequest')->andReturnNull()->atLeast(1);
         $body    = 'foo';
-        $request = m::mock(Request::class);
+        $request = m::mock(IncomingRequest::class);
         $request->shouldReceive('getMethod')->andReturn('POST');
-        $request->shouldReceive('fullUrl')->andReturn('http://localhost/service.svc/Customers');
+        $request->shouldReceive('getRawUrl')->andReturn('http://localhost/service.svc/Customers');
 
         $first = (object) [
             'RequestVerb' => 'POST',

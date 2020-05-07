@@ -1,13 +1,15 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\Common;
+
+use Exception;
 
 /**
  * Class HttpHeaderFailure.
  */
-class HttpHeaderFailure extends \Exception
+class HttpHeaderFailure extends Exception
 {
     private $statusCode;
 

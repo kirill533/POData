@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\Common\Messages;
 
@@ -36,7 +36,7 @@ trait metadataWriter
         $resourceTypeName
     ) {
         return 'No visible ResourceAssociationSet found for navigation property \'' . $navigationPropertyName .
-                '\' on type \'' . $resourceTypeName . '\'. There must be at least one ResourceAssociationSet for' .
-                ' each navigation property.';
+            '\' on type \'' . $resourceTypeName . '\'. There must be at least one ResourceAssociationSet for' .
+            ' each navigation property.';
     }
 }

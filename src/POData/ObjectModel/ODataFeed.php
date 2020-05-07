@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\ObjectModel;
 
@@ -64,8 +64,9 @@ class ODataFeed implements EntryProviderInterface
      * @var string
      */
     public $baseURI;
+
     /**
-     * @return \POData\ObjectModel\ODataLink
+     * @return ODataLink
      */
     public function getNextPageLink()
     {
@@ -73,7 +74,7 @@ class ODataFeed implements EntryProviderInterface
     }
 
     /**
-     * @param \POData\ObjectModel\ODataLink $nextPageLink
+     * @param ODataLink $nextPageLink
      */
     public function setNextPageLink(ODataLink $nextPageLink)
     {
@@ -87,7 +88,7 @@ class ODataFeed implements EntryProviderInterface
 
     /**
      * The method is not efficient if a lot of entries will need to be read
-     * @return \POData\ObjectModel\ODataEntry[]
+     * @return ODataEntry[]
      */
     public function getEntries()
     {
@@ -105,7 +106,7 @@ class ODataFeed implements EntryProviderInterface
     }
 
     /**
-     * @param \POData\ObjectModel\ODataEntry[] $entries
+     * @param ODataEntry[] $entries
      */
     public function setEntries(array $entries)
     {
@@ -117,7 +118,7 @@ class ODataFeed implements EntryProviderInterface
     {
         return $this->entryProvider !== null;
     }
-    
+
     public function getNextEntry()
     {
         if (isset($this->entryProvider)) {
@@ -125,7 +126,7 @@ class ODataFeed implements EntryProviderInterface
         }
         return null;
     }
-    
+
     public function setEntryProvider(EntryProviderInterface $provider)
     {
         $this->entryProvider = $provider;

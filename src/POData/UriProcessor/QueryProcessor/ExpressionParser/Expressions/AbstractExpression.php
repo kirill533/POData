@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\UriProcessor\QueryProcessor\ExpressionParser\Expressions;
 

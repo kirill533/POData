@@ -11,6 +11,7 @@ use POData\Common\HttpStatus;
 use POData\Common\MimeTypes;
 use POData\Common\ODataConstants;
 use POData\Common\ODataException;
+use POData\Configuration\ServiceConfiguration;
 use POData\IService;
 use POData\OperationContext\IOperationContext;
 use POData\OperationContext\ServiceHost;
@@ -51,6 +52,8 @@ class ErrorHandlerTest extends TestCase
 
         $service = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null));
+
 
         ErrorHandler::handleException($exception, $service);
 
@@ -85,6 +88,8 @@ class ErrorHandlerTest extends TestCase
 
         $service = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null));
+
 
         ErrorHandler::handleException($exception, $service);
 
@@ -124,6 +129,8 @@ class ErrorHandlerTest extends TestCase
 
         $service = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null));
+
 
         ErrorHandler::handleException($exception, $service);
     }
@@ -161,6 +168,8 @@ class ErrorHandlerTest extends TestCase
 
         $service = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null));
+
 
         ErrorHandler::handleException($exception, $service);
 
@@ -200,6 +209,8 @@ class ErrorHandlerTest extends TestCase
 
         $service = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
+        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null));
+
 
         ErrorHandler::handleException($exception, $service);
 

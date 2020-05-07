@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 
 namespace POData\Readers\Atom\Processors;
@@ -11,7 +11,7 @@ use POData\ObjectModel\ODataLink;
 use POData\ObjectModel\ODataTitle;
 
 /**
- * Class FeedProcessor
+ * Class FeedProcessor.
  * @package POData\Readers\Atom\Processors
  */
 class FeedProcessor extends BaseNodeHandler
@@ -43,6 +43,7 @@ class FeedProcessor extends BaseNodeHandler
         );
         parent::handleStartNode($tagNamespace, $tagName, $attributes);
     }
+
     public function handleStartAtomId()
     {
         $this->enqueueEnd(function () {
@@ -62,9 +63,10 @@ class FeedProcessor extends BaseNodeHandler
         );
         $this->enqueueEnd(function () {
             $this->oDataFeed->title = new ODataTitle($this->popCharData(), $this->titleType);
-            $this->titleType        = null;
+            $this->titleType = null;
         });
     }
+
     public function handleStartAtomUpdated()
     {
         $this->enqueueEnd(function () {
@@ -77,7 +79,7 @@ class FeedProcessor extends BaseNodeHandler
      */
     public function handleStartAtomLink($attributes)
     {
-        $rel                      = $this->arrayKeyOrDefault(
+        $rel = $this->arrayKeyOrDefault(
             $attributes,
             ODataConstants::ATOM_LINK_RELATION_ATTRIBUTE_NAME,
             ''
@@ -95,7 +97,7 @@ class FeedProcessor extends BaseNodeHandler
     public function handleStartMetadataCount()
     {
         $this->enqueueEnd(function () {
-            $this->oDataFeed->rowCount =  (int)$this->popCharData();
+            $this->oDataFeed->rowCount = (int)$this->popCharData();
         });
     }
 

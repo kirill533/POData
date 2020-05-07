@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace POData\Configuration;
 
+use InvalidArgumentException;
 use POData\Common\InvalidOperationException;
 use POData\Common\Messages;
 use POData\Common\Version;
@@ -93,12 +96,22 @@ class ServiceConfiguration implements IServiceConfiguration
     private $validateETagHeader;
 
     /**
+     * @var string value to be used as line terminator
+     */
+    private $eol;
+
+    /**
+     * @var bool value to indicate if output should be printed human readable
+     */
+    private $prettyPrint;
+
+    /**
      * Construct a new instance of ServiceConfiguration.
      *
-     * @param IMetadataProvider $metadataProvider The metadata
-     *                                            provider for the OData service
+     * @param IMetadataProvider|null $metadataProvider The metadata
+     *                                                 provider for the OData service
      */
-    public function __construct(IMetadataProvider $metadataProvider)
+    public function __construct(?IMetadataProvider $metadataProvider)
     {
         $this->maxExpandCount          = PHP_INT_MAX;
         $this->maxExpandDepth          = PHP_INT_MAX;
@@ -115,6 +128,30 @@ class ServiceConfiguration implements IServiceConfiguration
         $this->maxVersion = ProtocolVersion::V3(); //We default to the highest version
 
         $this->validateETagHeader = true;
+        // basically display errors has a development value of on and a production value of off. so if not specified
+        // use that
+        $this->setPrettyOutput(in_array(strtolower(ini_get('display_errors')), array('1', 'on', 'true')));
+        $this->setLineEndings(PHP_EOL);
+    }
+
+    /**
+     * Sets if output should be well formatted for human review.
+     *
+     * @param bool $on True if output should be well formatted
+     */
+    public function setPrettyOutput(bool $on): void
+    {
+        $this->prettyPrint = $on;
+    }
+
+    /**
+     * Sets the characters that represent line endings.
+     *
+     * @param string $eol the characters that should be used for line endings
+     */
+    public function setLineEndings(string $eol): void
+    {
+        $this->eol = $eol;
     }
 
     /**
@@ -122,7 +159,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @return int
      */
-    public function getMaxExpandCount()
+    public function getMaxExpandCount(): int
     {
         return $this->maxExpandCount;
     }
@@ -132,12 +169,32 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @param int $maxExpandCount Maximum number of segments to be expanded
      */
-    public function setMaxExpandCount($maxExpandCount)
+    public function setMaxExpandCount(int $maxExpandCount): void
     {
         $this->maxExpandCount = $this->checkIntegerNonNegativeParameter(
             $maxExpandCount,
             'setMaxExpandCount'
         );
+    }
+
+    /**
+     * Checks that the parameter to a function is numeric and is not negative.
+     *
+     * @param int    $value        The value of parameter to check
+     * @param string $functionName The name of the function that receives above value
+     *
+     * @throws InvalidArgumentException
+     * @return int
+     */
+    private function checkIntegerNonNegativeParameter(int $value, string $functionName): int
+    {
+        if ($value < 0) {
+            throw new InvalidArgumentException(
+                Messages::commonArgumentShouldBeNonNegative($value, $functionName)
+            );
+        }
+
+        return $value;
     }
 
     /**
@@ -155,7 +212,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @param int $maxExpandDepth Maximum number of segments in a single $expand path
      */
-    public function setMaxExpandDepth($maxExpandDepth): void
+    public function setMaxExpandDepth(int $maxExpandDepth): void
     {
         $this->maxExpandDepth = $this->checkIntegerNonNegativeParameter(
             $maxExpandDepth,
@@ -169,7 +226,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @return int
      */
-    public function getMaxResultsPerCollection()
+    public function getMaxResultsPerCollection(): int
     {
         return $this->maxResultsPerCollection;
     }
@@ -183,7 +240,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @throws InvalidOperationException
      */
-    public function setMaxResultsPerCollection($maxResultPerCollection)
+    public function setMaxResultsPerCollection(int $maxResultPerCollection): void
     {
         if ($this->isPageSizeDefined()) {
             throw new InvalidOperationException(
@@ -198,11 +255,21 @@ class ServiceConfiguration implements IServiceConfiguration
     }
 
     /**
+     * Whether size of a page has been defined for any entity set.
+     *
+     * @return bool
+     */
+    private function isPageSizeDefined()
+    {
+        return count($this->pageSizes) > 0 || $this->defaultPageSize > 0;
+    }
+
+    /**
      * Gets whether verbose errors should be used by default.
      *
      * @return bool
      */
-    public function getUseVerboseErrors()
+    public function getUseVerboseErrors(): bool
     {
         return $this->useVerboseErrors;
     }
@@ -212,7 +279,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @param bool $useVerboseError true to enable verbose error else false
      */
-    public function setUseVerboseErrors($useVerboseError)
+    public function setUseVerboseErrors(bool $useVerboseError): void
     {
         $this->useVerboseErrors = $useVerboseError;
     }
@@ -240,20 +307,20 @@ class ServiceConfiguration implements IServiceConfiguration
      * @param string          $name   Name of resource set to set; '*' to indicate all
      * @param EntitySetRights $rights Rights to be granted to this resource
      *
-     * @throws \InvalidArgumentException when the entity set rights are not known or the resource set is not known
+     * @throws InvalidArgumentException when the entity set rights are not known or the resource set is not known
      */
     public function setEntitySetAccessRule(string $name, EntitySetRights $rights): void
     {
         if ($rights->getValue() < EntitySetRights::NONE || $rights->getValue() > EntitySetRights::ALL) {
             $msg = Messages::configurationRightsAreNotInRange('$rights', 'setEntitySetAccessRule');
-            throw new \InvalidArgumentException($msg);
+            throw new InvalidArgumentException($msg);
         }
 
         if (strcmp($name, '*') === 0) {
             $this->defaultResourceSetRight = $rights;
         } else {
             if (!$this->provider->resolveResourceSet($name)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     Messages::configurationResourceSetNameNotFound($name)
                 );
             }
@@ -269,10 +336,10 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @return int
      */
-    public function getEntitySetPageSize(ResourceSet $resourceSet)
+    public function getEntitySetPageSize(ResourceSet $resourceSet): int
     {
         if (!array_key_exists($resourceSet->getName(), $this->pageSizes)) {
-            return $this->defaultPageSize;
+            return $this->defaultPageSize ?? 0; // TODO: defaultPageSize should never be null. it is inisalized in constructor. why is this requied?
         }
 
         return $this->pageSizes[$resourceSet->getName()];
@@ -285,9 +352,9 @@ class ServiceConfiguration implements IServiceConfiguration
      * @param int    $pageSize Page size for the entity set resource specified in name
      *
      * @throws InvalidOperationException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    public function setEntitySetPageSize($name, $pageSize)
+    public function setEntitySetPageSize(string $name, int $pageSize): void
     {
         $checkPageSize = $this->checkIntegerNonNegativeParameter(
             $pageSize,
@@ -308,7 +375,7 @@ class ServiceConfiguration implements IServiceConfiguration
             $this->defaultPageSize = $checkPageSize;
         } else {
             if (!$this->provider->resolveResourceSet($name)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     Messages::configurationResourceSetNameNotFound($name)
                 );
             }
@@ -322,7 +389,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @return bool
      */
-    public function getAcceptCountRequests()
+    public function getAcceptCountRequests(): bool
     {
         return $this->acceptCountRequest;
     }
@@ -334,7 +401,7 @@ class ServiceConfiguration implements IServiceConfiguration
      * @param bool $acceptCountRequest true to accept count request,
      *                                 false to not
      */
-    public function setAcceptCountRequests($acceptCountRequest)
+    public function setAcceptCountRequests(bool $acceptCountRequest): void
     {
         $this->acceptCountRequest = $acceptCountRequest;
     }
@@ -344,7 +411,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @return bool
      */
-    public function getAcceptProjectionRequests()
+    public function getAcceptProjectionRequests(): bool
     {
         return $this->acceptProjectionRequest;
     }
@@ -355,7 +422,7 @@ class ServiceConfiguration implements IServiceConfiguration
      * @param bool $acceptProjectionRequest true to accept projection
      *                                      request, false to not
      */
-    public function setAcceptProjectionRequests($acceptProjectionRequest)
+    public function setAcceptProjectionRequests(bool $acceptProjectionRequest): void
     {
         $this->acceptProjectionRequest = $acceptProjectionRequest;
     }
@@ -365,7 +432,7 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @return Version
      */
-    public function getMaxDataServiceVersion()
+    public function getMaxDataServiceVersion(): Version
     {
         switch ($this->maxVersion) {
             case ProtocolVersion::V1():
@@ -385,19 +452,9 @@ class ServiceConfiguration implements IServiceConfiguration
      *
      * @param ProtocolVersion $version The version to set
      */
-    public function setMaxDataServiceVersion(ProtocolVersion $version)
+    public function setMaxDataServiceVersion(ProtocolVersion $version): void
     {
         $this->maxVersion = $version;
-    }
-
-    /**
-     * Specify whether to validate the ETag or not.
-     *
-     * @param bool $validate True if ETag needs to validated, false otherwise
-     */
-    public function setValidateETagHeader($validate)
-    {
-        $this->validateETagHeader = $validate;
     }
 
     /**
@@ -409,39 +466,38 @@ class ServiceConfiguration implements IServiceConfiguration
      *              in the response even though the requested resource
      *              support ETag
      */
-    public function getValidateETagHeader()
+    public function getValidateETagHeader(): bool
     {
         return $this->validateETagHeader;
     }
 
     /**
-     * Checks that the parameter to a function is numeric and is not negative.
+     * Specify whether to validate the ETag or not.
      *
-     * @param int    $value        The value of parameter to check
-     * @param string $functionName The name of the function that receives above value
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return int
+     * @param bool $validate True if ETag needs to validated, false otherwise
      */
-    private function checkIntegerNonNegativeParameter(int $value, string $functionName): int
+    public function setValidateETagHeader(bool $validate): void
     {
-        if ($value < 0) {
-            throw new \InvalidArgumentException(
-                Messages::commonArgumentShouldBeNonNegative($value, $functionName)
-            );
-        }
-
-        return $value;
+        $this->validateETagHeader = $validate;
     }
 
     /**
-     * Whether size of a page has been defined for any entity set.
+     * Gets the value to be used for line endings.
      *
-     * @return bool
+     * @return string the value to append at the end of lines
      */
-    private function isPageSizeDefined()
+    public function getLineEndings(): string
     {
-        return count($this->pageSizes) > 0 || $this->defaultPageSize > 0;
+        return $this->eol;
+    }
+
+    /**
+     * Gets whether to format the output as human readable or single line.
+     *
+     * @return bool true if output should be formatted for human readability
+     */
+    public function getPrettyOutput(): bool
+    {
+        return $this->prettyPrint;
     }
 }

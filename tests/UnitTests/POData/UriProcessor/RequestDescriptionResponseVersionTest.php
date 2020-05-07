@@ -1443,7 +1443,6 @@ class RequestDescriptionResponseVersionTest extends TestCase
 
     /**
      * @throws ODataException
-     * @throws \Doctrine\Common\Annotations\AnnotationException
      * @throws \POData\Common\UrlFormatException
      * @throws \ReflectionException
      */

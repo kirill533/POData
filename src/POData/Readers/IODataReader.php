@@ -1,12 +1,14 @@
 <?php
 
-
+declare(strict_types=1);
 
 
 namespace POData\Readers;
 
+use POData\Common\Version;
+
 /**
- * Interface IODataReader
+ * Interface IODataReader.
  * @package POData\Readers
  */
 interface IODataReader
@@ -18,9 +20,9 @@ interface IODataReader
     public function read($data);
 
     /**
-     * @param \POData\Common\Version $responseVersion
+     * @param Version $responseVersion
      * @param $contentType
      * @return mixed
      */
-    public function canHandle(\POData\Common\Version $responseVersion, $contentType);
+    public function canHandle(Version $responseVersion, $contentType);
 }

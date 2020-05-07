@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace POData\UriProcessor\QueryProcessor\OrderByParser;
 
 use POData\Common\InvalidOperationException;
@@ -17,6 +19,7 @@ use POData\Providers\ProvidersWrapper;
 use POData\UriProcessor\QueryProcessor\ExpressionParser\ExpressionLexer;
 use POData\UriProcessor\QueryProcessor\ExpressionParser\ExpressionTokenId;
 use ReflectionClass;
+use ReflectionException;
 
 /**
  * Class OrderByParser.
@@ -107,10 +110,9 @@ class OrderByParser
      * @param string             $orderBy            The orderby clause
      * @param ProvidersWrapper   $providerWrapper    Reference to the wrapper for IDSQP and IDSMP impl
      *
-     * @throws ODataException            If any error occur while parsing orderby clause
      * @throws InvalidOperationException
-     * @throws \ReflectionException
-     *
+     * @throws ReflectionException
+     * @throws ODataException            If any error occur while parsing orderby clause
      * @return InternalOrderByInfo
      */
     public static function parseOrderByClause(
@@ -164,6 +166,58 @@ class OrderByParser
     }
 
     /**
+     * Read orderby clause.
+     *
+     * @param string $value orderby clause to read
+     *
+     * @throws ODataException If any syntax error found while reading the clause
+     * @return array<array>   An array of 'OrderByPathSegment's, each of which
+     *                        is array of 'OrderBySubPathSegment's
+     */
+    private function readOrderBy($value)
+    {
+        $orderByPathSegments = [];
+        $lexer               = new ExpressionLexer($value);
+        $i                   = 0;
+        while ($lexer->getCurrentToken()->getId() != ExpressionTokenId::END()) {
+            $orderBySubPathSegment = $lexer->readDottedIdentifier();
+            if (!array_key_exists($i, $orderByPathSegments)) {
+                $orderByPathSegments[$i] = [];
+            }
+
+            $orderByPathSegments[$i][] = $orderBySubPathSegment;
+            $tokenId                   = $lexer->getCurrentToken()->getId();
+            if ($tokenId != ExpressionTokenId::END()) {
+                if ($tokenId != ExpressionTokenId::SLASH()) {
+                    if ($tokenId != ExpressionTokenId::COMMA()) {
+                        $lexer->validateToken(ExpressionTokenId::IDENTIFIER());
+                        $identifier = $lexer->getCurrentToken()->Text;
+                        if ($identifier !== 'asc' && $identifier !== 'desc') {
+                            // force lexer to throw syntax error as we found
+                            // unexpected identifier
+                            $lexer->validateToken(ExpressionTokenId::DOT());
+                        }
+
+                        $orderByPathSegments[$i][] = '*' . $identifier;
+                        $lexer->nextToken();
+                        $tokenId = $lexer->getCurrentToken()->getId();
+                        if ($tokenId != ExpressionTokenId::END()) {
+                            $lexer->validateToken(ExpressionTokenId::COMMA());
+                            ++$i;
+                        }
+                    } else {
+                        ++$i;
+                    }
+                }
+
+                $lexer->nextToken();
+            }
+        }
+
+        return $orderByPathSegments;
+    }
+
+    /**
      * Build 'OrderBy Tree' from the given orderby path segments, also build
      * comparison function for each path segment.
      *
@@ -177,8 +231,8 @@ class OrderByParser
      *                                           2. remove duplicate orderby path
      *                                           segment
      *
-     * @throws ODataException       If any error occurs while processing the orderby path segments
-     * @throws \ReflectionException
+     * @throws ReflectionException
+     * @throws ODataException      If any error occurs while processing the orderby path segments
      * @return mixed
      */
     private function buildOrderByTree(&$orderByPathSegments)
@@ -219,7 +273,7 @@ class OrderByParser
                     );
                 }
                 /** @var ResourcePropertyKind $rKind */
-                $rKind = $resourceProperty->getKind();
+                $rKind   = $resourceProperty->getKind();
                 $rawKind = ($rKind instanceof ResourcePropertyKind) ? $rKind->getValue() : $rKind;
 
                 if ($resourceProperty->isKindOf(ResourcePropertyKind::BAG())) {
@@ -322,7 +376,7 @@ class OrderByParser
                             $object = $instance->newInstanceArgs();
                             $resourceType->setPropertyValue($currentObject, $resourceProperty->getName(), $object);
                             $currentObject = $object;
-                        } catch (\ReflectionException $reflectionException) {
+                        } catch (ReflectionException $reflectionException) {
                             $this->throwBadAccessOrInitException($resourceProperty, $resourceType);
                         }
                     } elseif ($resourceProperty->getKind() == ResourcePropertyKind::COMPLEX_TYPE()) {
@@ -335,7 +389,7 @@ class OrderByParser
                             $object = $instance->newInstanceArgs();
                             $resourceType->setPropertyValue($currentObject, $resourceProperty->getName(), $object);
                             $currentObject = $object;
-                        } catch (\ReflectionException $reflectionException) {
+                        } catch (ReflectionException $reflectionException) {
                             $this->throwBadAccessOrInitException($resourceProperty, $resourceType);
                         }
                     }
@@ -344,7 +398,7 @@ class OrderByParser
                 } else {
                     try {
                         $currentObject = ReflectionHandler::getProperty($currentObject, $resourceProperty->getName());
-                    } catch (\ReflectionException $reflectionException) {
+                    } catch (ReflectionException $reflectionException) {
                         $this->throwBadAccessOrInitException($resourceProperty, $resourceType);
                     }
 
@@ -361,12 +415,42 @@ class OrderByParser
     }
 
     /**
+     * Assert that the given condition is true, if false throw ODataException for unexpected state.
+     *
+     * @param bool $condition The condition to assert
+     *
+     * @throws ODataException
+     */
+    private function assertion($condition)
+    {
+        if (!$condition) {
+            throw ODataException::createInternalServerError(Messages::orderByParserUnExpectedState());
+        }
+    }
+
+    /**
+     * @param  ResourceProperty $resourceProperty
+     * @param  ResourceType     $resourceType
+     * @throws ODataException
+     */
+    private function throwBadAccessOrInitException(
+        ResourceProperty $resourceProperty,
+        ResourceType $resourceType
+    ): void {
+        throw ODataException::createInternalServerError(
+            Messages::orderByParserFailedToAccessOrInitializeProperty(
+                $resourceProperty->getName(),
+                $resourceType->getName()
+            )
+        );
+    }
+
+    /**
      * Traverse 'Order By Tree' and create 'OrderInfo' structure.
      *
      * @param array<array> $orderByPaths The orderby paths
      *
      * @throws ODataException If parser finds an inconsistent-tree state, throws unexpected state error
-     *
      * @return void
      */
     private function createOrderInfo(array $orderByPaths)
@@ -431,89 +515,5 @@ class OrderByParser
                 return $ret;
             };
         }
-    }
-
-    /**
-     * Read orderby clause.
-     *
-     * @param string $value orderby clause to read
-     *
-     * @throws ODataException If any syntax error found while reading the clause
-     *
-     * @return array<array> An array of 'OrderByPathSegment's, each of which
-     *                      is array of 'OrderBySubPathSegment's
-     */
-    private function readOrderBy($value)
-    {
-        $orderByPathSegments = [];
-        $lexer               = new ExpressionLexer($value);
-        $i                   = 0;
-        while ($lexer->getCurrentToken()->getId() != ExpressionTokenId::END()) {
-            $orderBySubPathSegment = $lexer->readDottedIdentifier();
-            if (!array_key_exists($i, $orderByPathSegments)) {
-                $orderByPathSegments[$i] = [];
-            }
-
-            $orderByPathSegments[$i][] = $orderBySubPathSegment;
-            $tokenId                   = $lexer->getCurrentToken()->getId();
-            if ($tokenId != ExpressionTokenId::END()) {
-                if ($tokenId != ExpressionTokenId::SLASH()) {
-                    if ($tokenId != ExpressionTokenId::COMMA()) {
-                        $lexer->validateToken(ExpressionTokenId::IDENTIFIER());
-                        $identifier = $lexer->getCurrentToken()->Text;
-                        if ($identifier !== 'asc' && $identifier !== 'desc') {
-                            // force lexer to throw syntax error as we found
-                            // unexpected identifier
-                            $lexer->validateToken(ExpressionTokenId::DOT());
-                        }
-
-                        $orderByPathSegments[$i][] = '*' . $identifier;
-                        $lexer->nextToken();
-                        $tokenId = $lexer->getCurrentToken()->getId();
-                        if ($tokenId != ExpressionTokenId::END()) {
-                            $lexer->validateToken(ExpressionTokenId::COMMA());
-                            ++$i;
-                        }
-                    } else {
-                        ++$i;
-                    }
-                }
-
-                $lexer->nextToken();
-            }
-        }
-
-        return $orderByPathSegments;
-    }
-
-    /**
-     * Assert that the given condition is true, if false throw ODataException for unexpected state.
-     *
-     * @param bool $condition The condition to assert
-     *
-     * @throws ODataException
-     */
-    private function assertion($condition)
-    {
-        if (!$condition) {
-            throw ODataException::createInternalServerError(Messages::orderByParserUnExpectedState());
-        }
-    }
-
-    /**
-     * @param ResourceProperty $resourceProperty
-     * @param ResourceType $resourceType
-     * @throws ODataException
-     */
-    private function throwBadAccessOrInitException(
-        ResourceProperty $resourceProperty,
-        ResourceType $resourceType
-    ) {
-        throw ODataException::createInternalServerError(
-            Messages::orderByParserFailedToAccessOrInitializeProperty(
-                $resourceProperty->getName(),
-                $resourceType->getName()
-            )
-        );
     }
 }

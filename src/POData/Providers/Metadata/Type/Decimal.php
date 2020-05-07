@@ -1,6 +1,6 @@
 <?php
 
-
+declare(strict_types=1);
 
 namespace POData\Providers\Metadata\Type;
 
@@ -83,17 +83,6 @@ class Decimal implements IType
     }
 
     /**
-     * Gets full name of this type in EDM namespace
-     * Note: implementation of IType::getFullTypeName.
-     *
-     * @return string
-     */
-    public function getFullTypeName()
-    {
-        return 'Edm.Decimal';
-    }
-
-    /**
      * Converts the given string value to decimal type.
      *
      * @param string $stringValue value to convert
@@ -114,5 +103,16 @@ class Decimal implements IType
     public function getName()
     {
         return $this->getFullTypeName();
+    }
+
+    /**
+     * Gets full name of this type in EDM namespace
+     * Note: implementation of IType::getFullTypeName.
+     *
+     * @return string
+     */
+    public function getFullTypeName()
+    {
+        return 'Edm.Decimal';
     }
 }
