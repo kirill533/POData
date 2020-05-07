@@ -127,7 +127,7 @@ class CynicSerialiser implements IObjectSerialiser
      */
     public function writeTopLevelElements(QueryResult &$entryObjects)
     {
-        $res = $entryObjects->results;
+        $res = &$entryObjects->results;
         if (!(is_array($res) || $res instanceof Collection)) {
             throw new InvalidOperationException('!is_array($entryObjects->results)');
         }
@@ -162,15 +162,16 @@ class CynicSerialiser implements IObjectSerialiser
         if ($this->getRequest()->queryType == QueryType::ENTITIES_WITH_COUNT()) {
             $odata->rowCount = $this->getRequest()->getCountValue();
         }
-        foreach ($res as $entry) {
-            if (!$entry instanceof QueryResult) {
-                $query          = new QueryResult();
-                $query->results = $entry;
-            } else {
-                $query = $entry;
-            }
-            $odata->entries[] = $this->writeTopLevelElement($query);
+
+        if ($entryObjects->hasEntryProvider()) {
+            $entryProvider = $entryObjects;
+        } else if ($entryObjects->results instanceof Collection) {
+            $entryProvider = new CollectionEntryProvider($entryObjects->results);
+        } else {
+            $entryProvider = new ArrayEntryProvider($entryObjects->results);
         }
+
+        $odata->setEntryProvider(new ODataEntryProvider($entryProvider, $this));
 
         $resourceSet = $this->getRequest()->getTargetResourceSetWrapper()->getResourceSet();
         $requestTop  = $this->getRequest()->getTopOptionCount();
@@ -379,275 +380,6 @@ class CynicSerialiser implements IObjectSerialiser
         }
 
         return $odata;
-    }
-
-    /**
-     * Write top level feed element.
-     *
-     * @param QueryResult &$entryObjects Results property contains array of entry resources to be written
-     *
-     * @throws InvalidOperationException
-     * @throws ODataException
-     * @throws \ReflectionException
-     * @return ODataFeed
-     */
-    public function writeTopLevelElements(QueryResult &$entryObjects)
-    {
-        $res = &$entryObjects->results;
-        if (!(is_array($res) || $res instanceof Collection)) {
-            throw new InvalidOperationException('!is_array($entryObjects->results)');
-        }
-
-        if (is_array($res) && 0 == count($entryObjects->results)) {
-            $entryObjects->hasMore = false;
-        }
-        if ($res instanceof Collection && 0 == $res->count()) {
-            $entryObjects->hasMore = false;
-        }
-
-        $this->loadStackIfEmpty();
-        $setName = $this->getRequest()->getTargetResourceSetWrapper()->getName();
-
-        $title       = $this->getRequest()->getContainerName();
-        $relativeUri = $this->getRequest()->getIdentifier();
-        $absoluteUri = $this->getRequest()->getRequestUrl()->getUrlAsString();
-
-        $selfLink        = new ODataLink();
-        $selfLink->name  = 'self';
-        $selfLink->title = $title;
-        $selfLink->url   = $relativeUri;
-
-        $odata               = new ODataFeed();
-        $odata->title        = new ODataTitle($title);
-        $odata->id           = $absoluteUri;
-        $odata->selfLink     = $selfLink;
-        $odata->updated      = $this->getUpdated()->format(DATE_ATOM);
-        $odata->baseURI      = $this->isBaseWritten ? null : $this->absoluteServiceUriWithSlash;
-        $this->isBaseWritten = true;
-
-        if ($this->getRequest()->queryType == QueryType::ENTITIES_WITH_COUNT()) {
-            $odata->rowCount = $this->getRequest()->getCountValue();
-        }
-
-        if ($entryObjects->hasEntryProvider()) {
-            $entryProvider = $entryObjects;
-        } else if ($entryObjects->results instanceof Collection) {
-            $entryProvider = new CollectionEntryProvider($entryObjects->results);
-        } else {
-            $entryProvider = new ArrayEntryProvider($entryObjects->results);
-        }
-
-        $odata->setEntryProvider(new ODataEntryProvider($entryProvider, $this));
-
-        $resourceSet = $this->getRequest()->getTargetResourceSetWrapper()->getResourceSet();
-        $requestTop  = $this->getRequest()->getTopOptionCount();
-        $pageSize    = $this->getService()->getConfiguration()->getEntitySetPageSize($resourceSet);
-        $requestTop  = (null === $requestTop) ? $pageSize + 1 : $requestTop;
-
-        if (true === $entryObjects->hasMore && $requestTop > $pageSize) {
-            $stackSegment        = $setName;
-            $lastObject          = end($entryObjects->results);
-            $segment             = $this->getNextLinkUri($lastObject);
-            $nextLink            = new ODataLink();
-            $nextLink->name      = ODataConstants::ATOM_LINK_NEXT_ATTRIBUTE_STRING;
-            $nextLink->url       = rtrim($this->absoluteServiceUri, '/') . '/' . $stackSegment . $segment;
-            $odata->nextPageLink = $nextLink;
-        }
-
-        return $odata;
-    }
-
-    /**
-     * Write top level url element.
-     *
-     * @param QueryResult $entryObject Results property contains the entry resource whose url to be written
-     *
-     * @throws ODataException
-     * @throws \ReflectionException
-     * @return ODataURL
-     */
-    public function writeUrlElement(QueryResult $entryObject)
-    {
-        $url = new ODataURL();
-
-        /** @var object|null $results */
-        $results = $entryObject->results;
-        if (null !== $results) {
-            $currentResourceType = $this->getCurrentResourceSetWrapper()->getResourceType();
-            $relativeUri         = $this->getEntryInstanceKey(
-                $results,
-                $currentResourceType,
-                $this->getCurrentResourceSetWrapper()->getName()
-            );
-
-            $url->url = rtrim(strval($this->absoluteServiceUri), '/') . '/' . $relativeUri;
-        }
-
-        return $url;
-    }
-
-    /**
-     * Write top level url collection.
-     *
-     * @param QueryResult $entryObjects Results property contains the array of entry resources whose urls are
-     *                                  to be written
-     *
-     * @throws InvalidOperationException
-     * @throws ODataException
-     * @throws \ReflectionException
-     * @return ODataURLCollection
-     */
-    public function writeUrlElements(QueryResult $entryObjects)
-    {
-        $urls = new ODataURLCollection();
-        if (!empty($entryObjects->results)) {
-            $i = 0;
-            foreach ($entryObjects->results as $entryObject) {
-                if (!$entryObject instanceof QueryResult) {
-                    $query          = new QueryResult();
-                    $query->results = $entryObject;
-                } else {
-                    $query = $entryObject;
-                }
-                $urls->urls[$i] = $this->writeUrlElement($query);
-                ++$i;
-            }
-
-            if ($i > 0 && true === $entryObjects->hasMore) {
-                $stackSegment       = $this->getRequest()->getTargetResourceSetWrapper()->getName();
-                $lastObject         = end($entryObjects->results);
-                $segment            = $this->getNextLinkUri($lastObject);
-                $nextLink           = new ODataLink();
-                $nextLink->name     = ODataConstants::ATOM_LINK_NEXT_ATTRIBUTE_STRING;
-                $nextLink->url      = rtrim(strval($this->absoluteServiceUri), '/') . '/' . $stackSegment . $segment;
-                $nextLink->url      = ltrim($nextLink->url, '/');
-                $urls->nextPageLink = $nextLink;
-            }
-        }
-
-        if ($this->getRequest()->queryType == QueryType::ENTITIES_WITH_COUNT()) {
-            $urls->count = $this->getRequest()->getCountValue();
-        }
-
-        return $urls;
-    }
-
-    /**
-     * Write top level complex resource.
-     *
-     * @param QueryResult  &$complexValue Results property contains the complex object to be written
-     * @param string       $propertyName  The name of the complex property
-     * @param ResourceType &$resourceType Describes the type of complex object
-     *
-     * @throws InvalidOperationException
-     * @throws \ReflectionException
-     * @return ODataPropertyContent
-     */
-    public function writeTopLevelComplexObject(QueryResult &$complexValue, $propertyName, ResourceType &$resourceType)
-    {
-        $result = $complexValue->results;
-
-        $propertyContent         = new ODataPropertyContent();
-        $odataProperty           = new ODataProperty();
-        $odataProperty->name     = $propertyName;
-        $odataProperty->typeName = $resourceType->getFullName();
-        if (null !== $result) {
-            if (!is_object($result)) {
-                throw new InvalidOperationException('Supplied $customObject must be an object');
-            }
-            $internalContent      = $this->writeComplexValue($resourceType, $result);
-            $odataProperty->value = $internalContent;
-        }
-
-        $propertyContent->properties[$propertyName] = $odataProperty;
-
-        return $propertyContent;
-    }
-
-    /**
-     * Write top level bag resource.
-     *
-     * @param QueryResult  $bagValue
-     * @param string       $propertyName  The name of the bag property
-     * @param ResourceType &$resourceType Describes the type of bag object
-     *
-     * @throws InvalidOperationException
-     * @throws \ReflectionException
-     * @return ODataPropertyContent
-     */
-    public function writeTopLevelBagObject(QueryResult &$bagValue, $propertyName, ResourceType &$resourceType)
-    {
-        $result = $bagValue->results;
-
-        $propertyContent         = new ODataPropertyContent();
-        $odataProperty           = new ODataProperty();
-        $odataProperty->name     = $propertyName;
-        $odataProperty->typeName = 'Collection(' . $resourceType->getFullName() . ')';
-        $odataProperty->value    = $this->writeBagValue($resourceType, $result);
-
-        $propertyContent->properties[$propertyName] = $odataProperty;
-
-        return $propertyContent;
-    }
-
-    /**
-     * Write top level primitive value.
-     *
-     * @param QueryResult      &$primitiveValue   Results property contains the primitive value to be written
-     * @param ResourceProperty &$resourceProperty Resource property describing the primitive property to be written
-     *
-     * @throws InvalidOperationException
-     * @throws \ReflectionException
-     * @return ODataPropertyContent
-     */
-    public function writeTopLevelPrimitive(QueryResult &$primitiveValue, ResourceProperty &$resourceProperty = null)
-    {
-        if (null === $resourceProperty) {
-            throw new InvalidOperationException('Resource property must not be null');
-        }
-        $result         = new ODataPropertyContent();
-        $property       = new ODataProperty();
-        $property->name = $resourceProperty->getName();
-
-        $iType = $resourceProperty->getInstanceType();
-        if (!$iType instanceof IType) {
-            throw new InvalidOperationException(get_class($iType));
-        }
-        $property->typeName = $iType->getFullTypeName();
-        if (null !== $primitiveValue->results) {
-            $rType = $resourceProperty->getResourceType()->getInstanceType();
-            if (!$rType instanceof IType) {
-                throw new InvalidOperationException(get_class($rType));
-            }
-            $property->value = $this->primitiveToString($rType, $primitiveValue->results);
-        }
-
-        $result->properties[$property->name] = $property;
-
-        return $result;
-    }
-
-    /**
-     * Gets reference to the request submitted by client.
-     *
-     * @return RequestDescription
-     */
-    public function getRequest()
-    {
-        assert(null !== $this->request, 'Request not yet set');
-
-        return $this->request;
-    }
-
-    /**
-     * Sets reference to the request submitted by client.
-     *
-     * @param RequestDescription $request
-     */
-    public function setRequest(RequestDescription $request)
-    {
-        $this->request = $request;
-        $this->stack->setRequest($request);
     }
 
     /**
