@@ -1,6 +1,6 @@
 <?php
-
-declare(strict_types=1);
+// Disabled because of Error: "is_infinite($value)" expects to be float, string given 
+//declare(strict_types=1);
 
 namespace POData\Writers\Json;
 
