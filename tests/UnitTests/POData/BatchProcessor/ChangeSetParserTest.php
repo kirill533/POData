@@ -192,13 +192,8 @@ Content-ID: 2
         $this->assertEquals($second, $result[2]);
     }
 
-    /**
-     * @dataProvider getEOL()
-     * @param $eol
-     */
-    public function testHandleDataWithMalformedHeaderLine($eol)
+    public function testHandleDataWithMalformedHeaderLine()
     {
-        IndentedTextWriter::$PHP_EOL = $eol;
         $service = m::mock(BaseService::class);
         $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
 
@@ -239,14 +234,15 @@ Content-Length: ###
      */
     public function testHandleDataWithTooManySegments($eol)
     {
-        IndentedTextWriter::$PHP_EOL = $eol;
         $bigPayload = '--.--' . $eol . $eol . $eol . $eol . '.--.--.--.';
 
         /** @var ChangeSetParser|\Mockery\Mock $foo */
         $foo = m::mock(ChangeSetParser::class)->makePartial();
         $foo->shouldReceive('getData')->andReturn('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.', $bigPayload);
         $service = m::mock(BaseService::class);
-        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
+        $config = new ServiceConfiguration(null);
+        $config->setLineEndings($eol);
+        $service->shouldReceive('getConfiguration')->andReturn($config)->atLeast(1);
         $foo->shouldReceive('getService')->andReturn($service);
         $expected = 'how did we end up with more than 3 stages??';
         $actual   = null;
@@ -406,10 +402,5 @@ Stream II: ELECTRIC BOOGALOO--
         $foo = new ChangeSetParserDummy($service, $body);
         $foo->processSubRequest($first);
         $this->assertNotNull($first->Response);
-    }
-
-    function getEOL()
-    {
-        return [["\n"],["\r\n"]];
     }
 }

@@ -40,11 +40,6 @@ class ResourceClassesTest extends TestCase
         $x = NorthWindMetadata::Create();
     }
 
-    public function tearDown()
-    {
-        parent::tearDown();
-    }
-
     /**
      * test ResourceType class.
      * @throws InvalidOperationException

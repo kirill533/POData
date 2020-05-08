@@ -10,12 +10,6 @@ use UnitTests\POData\TestCase;
 
 class JsonWriterTest extends TestCase
 {
-    function tearDown()
-    {
-        parent::tearDown();
-        IndentedTextWriter::$PHP_EOL = "\n";
-    }
-
     public function testWriteValueNoType()
     {
         $writer = new JsonWriter('', PHP_EOL, true);
@@ -376,8 +370,4 @@ class JsonWriterTest extends TestCase
         $this->assertEquals($expected, $writer->getJsonOutput());
     }
 
-    function getEOL()
-    {
-        return [["\n"],["\r\n"]];
-    }
 }

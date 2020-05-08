@@ -1360,14 +1360,22 @@ class JsonODataV1WriterTest extends TestCase
         ];
     }
 
-    public function testSerialiseExceptionWithErrorCode()
+    /**
+     * @dataProvider getEOL()
+     * @param $eol
+     * @throws \Exception
+     */
+    public function testSerialiseExceptionWithErrorCode($eol)
     {
         $exception = new ODataException('BORK BORK BORK!', 500);
 
-        $expected = '{' . PHP_EOL . '    "error":{' . PHP_EOL . '        "code":"500","message":{' . PHP_EOL;
-        $expected .= '            "lang":"en-US","value":"BORK BORK BORK!"' . PHP_EOL;
-        $expected .= '        }' . PHP_EOL . '    }' . PHP_EOL . '}';
-        $actual   = JsonODataV1Writer::serializeException($exception, new ServiceConfiguration(null));
+        $expected = '{' . $eol . '    "error":{' . $eol . '        "code":"500","message":{' . $eol;
+        $expected .= '            "lang":"en-US","value":"BORK BORK BORK!"' . $eol;
+        $expected .= '        }' . $eol . '    }' . $eol . '}';
+        $config = new ServiceConfiguration(null);
+        $config->setLineEndings($eol);
+        $config->setPrettyOutput(true);
+        $actual   = JsonODataV1Writer::serializeException($exception, $config);
         $expected = preg_replace('~(*BSR_ANYCRLF)\R~', "\r\n", $expected);
         $actual   = preg_replace('~(*BSR_ANYCRLF)\R~', "\r\n", $actual);
         $this->assertEquals($expected, $actual);

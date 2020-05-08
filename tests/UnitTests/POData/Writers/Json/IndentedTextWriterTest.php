@@ -12,13 +12,7 @@ class IndentedTextWriterTest extends TestCase
 
     function tearDown()
     {
-        IndentedTextWriter::$PHP_EOL = "\n";
         parent::tearDown();
-    }
-
-    function getEOL()
-    {
-        return [["\n"],["\r\n"]];
     }
 
     /**

@@ -303,10 +303,38 @@ abstract class BaseService implements IRequestHandler, IService
         $serviceURI     = $this->getHost()->getAbsoluteServiceUri()->getUrlAsString();
 
         if (-1 < $serviceVersion->compare(Version::v3())) {
-            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::NONE(), $serviceURI));
-            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::MINIMAL_ALT(), $serviceURI));
-            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::MINIMAL(), $serviceURI));
-            $registry->register(new JsonLightODataWriter(JsonLightMetadataLevel::FULL(), $serviceURI));
+            $registry->register(
+                new JsonLightODataWriter(
+                    $this->getConfiguration()->getLineEndings(),
+                    $this->getConfiguration()->getPrettyOutput(),
+                    JsonLightMetadataLevel::NONE(),
+                    $serviceURI
+                )
+            );
+            $registry->register(
+                new JsonLightODataWriter(
+                    $this->getConfiguration()->getLineEndings(),
+                    $this->getConfiguration()->getPrettyOutput(),
+                    JsonLightMetadataLevel::MINIMAL_ALT(),
+                    $serviceURI
+                )
+            );
+            $registry->register(
+                new JsonLightODataWriter(
+                    $this->getConfiguration()->getLineEndings(),
+                    $this->getConfiguration()->getPrettyOutput(),
+                    JsonLightMetadataLevel::MINIMAL(),
+                    $serviceURI
+                )
+            );
+            $registry->register(
+                new JsonLightODataWriter(
+                    $this->getConfiguration()->getLineEndings(),
+                    $this->getConfiguration()->getPrettyOutput(),
+                    JsonLightMetadataLevel::FULL(),
+                    $serviceURI
+                )
+            );
         }
 
         //We always register the v1 stuff

@@ -30,4 +30,13 @@ class TestCase extends \PHPUnit\Framework\TestCase
         \Mockery::close();
         DateTime::setTimeProvider(null);
     }
+
+    /**
+     * Get List of End Of Line combinations, supported
+     * @return array
+     */
+    function getEOL()
+    {
+        return [["\n"],["\r\n"]];
+    }
 }

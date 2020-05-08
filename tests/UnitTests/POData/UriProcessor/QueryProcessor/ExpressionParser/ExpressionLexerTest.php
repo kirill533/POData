@@ -839,11 +839,4 @@ class ExpressionLexerTest extends TestCase
         $this->assertEquals(5, $foo->getPosition());
     }
 
-    /**
-     * @throws \Exception
-     */
-    public function tearDown()
-    {
-        parent::tearDown();
-    }
 }

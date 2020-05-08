@@ -31,11 +31,6 @@ class SkipTokenParserTest extends TestCase
         $this->mockQueryProvider = m::mock('POData\Providers\Query\IQueryProvider');
     }
 
-    public function tearDown()
-    {
-        parent::tearDown();
-    }
-
     /**
      * Named values are not allowed in skip token.
      */

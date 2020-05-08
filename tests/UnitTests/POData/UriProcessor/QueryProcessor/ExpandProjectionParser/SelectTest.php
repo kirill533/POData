@@ -631,9 +631,4 @@ class SelectTest extends TestCase
         $this->assertTrue(array_key_exists('UnitPrice', $childNodes));
         $this->assertTrue($childNodes['UnitPrice'] instanceof ProjectionNode);
     }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-    }
 }

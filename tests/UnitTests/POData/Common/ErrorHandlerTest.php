@@ -25,12 +25,6 @@ use UnitTests\POData\TestCase;
  */
 class ErrorHandlerTest extends TestCase
 {
-    function tearDown()
-    {
-        parent::tearDown();
-        IndentedTextWriter::$PHP_EOL = "\n";
-    }
-
     public function testHandleODataException()
     {
         $exception = new ODataException('FAIL', 500);
@@ -88,7 +82,10 @@ class ErrorHandlerTest extends TestCase
 
         $service = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
-        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null));
+        $config = new ServiceConfiguration(null);
+        $config->setLineEndings("\n");
+        $config->setPrettyOutput(true);
+        $service->shouldReceive('getConfiguration')->andReturn($config);
 
 
         ErrorHandler::handleException($exception, $service);
@@ -135,11 +132,6 @@ class ErrorHandlerTest extends TestCase
         ErrorHandler::handleException($exception, $service);
     }
 
-    function getEOL()
-    {
-        return [["\n"],["\r\n"]];
-    }
-
     /**
      * @dataProvider getEOL()
      * @throws ODataException
@@ -147,8 +139,6 @@ class ErrorHandlerTest extends TestCase
      */
     public function testHandleExceptionBadMimeTypes($eol)
     {
-        IndentedTextWriter::$PHP_EOL = $eol;
-
         $exception = new ODataException('FAIL', 500);
 
         $outgoing = m::mock(OutgoingResponse::class);
@@ -168,16 +158,18 @@ class ErrorHandlerTest extends TestCase
 
         $service = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
-        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null));
+        $config = new ServiceConfiguration(null);
+        $config->setLineEndings($eol);
+        $service->shouldReceive('getConfiguration')->andReturn($config);
 
 
         ErrorHandler::handleException($exception, $service);
 
-        $expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . PHP_EOL;
-        $expected .= '<error xmlns="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">' . PHP_EOL;
-        $expected .= ' <code>400</code>' . PHP_EOL;
-        $expected .= ' <message>Media type requires a \'/\' character.</message>' . PHP_EOL;
-        $expected .= '</error>' . PHP_EOL;
+        $expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . $eol;
+        $expected .= '<error xmlns="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">' . $eol;
+        $expected .= ' <code>400</code>' . $eol;
+        $expected .= ' <message>Media type requires a \'/\' character.</message>' . $eol;
+        $expected .= '</error>' . $eol;
         $actual = $service->getHost()->getOperationContext()->outgoingResponse()->getStream();
         $this->assertXmlStringEqualsXmlString($expected, $actual);
     }
@@ -189,7 +181,6 @@ class ErrorHandlerTest extends TestCase
      */
     public function testHandleNonODataExceptionWithValidMimeType($eol)
     {
-        IndentedTextWriter::$PHP_EOL = $eol;
         $exception = new Exception('FAIL', 500);
 
         $outgoing = m::mock(OutgoingResponse::class);
@@ -209,16 +200,17 @@ class ErrorHandlerTest extends TestCase
 
         $service = m::mock(IService::class);
         $service->shouldReceive('getHost')->andReturn($host);
-        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null));
-
+        $config = new ServiceConfiguration(null);
+        $config->setLineEndings($eol);
+        $service->shouldReceive('getConfiguration')->andReturn($config);
 
         ErrorHandler::handleException($exception, $service);
 
-        $expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . PHP_EOL;
-        $expected .= '<error xmlns="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">' . PHP_EOL;
-        $expected .= ' <code>500</code>' . PHP_EOL;
-        $expected .= ' <message>FAIL</message>' . PHP_EOL;
-        $expected .= '</error>' . PHP_EOL;
+        $expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . $eol;
+        $expected .= '<error xmlns="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">' . $eol;
+        $expected .= ' <code>500</code>' . $eol;
+        $expected .= ' <message>FAIL</message>' . $eol;
+        $expected .= '</error>' . $eol;
         $actual = $service->getHost()->getOperationContext()->outgoingResponse()->getStream();
         $this->assertXmlStringEqualsXmlString($expected, $actual);
     }

@@ -92,71 +92,6 @@ class HttpProcessUtility
     }
 
     /**
-     * Selects an acceptable MIME type that satisfies the Accepts header.
-     *
-     * @param null|string $acceptTypesText Text for Accepts header
-     * @param string[]    $availableTypes  Types that the server is willing to return, in descending order of preference
-     *
-     * @throws HttpHeaderFailure
-     *
-     * @return string|null The best MIME type for the client
-     */
-    public static function selectMimeType(?string $acceptTypesText, array $availableTypes): ?string
-    {
-        $selectedContentType     = null;
-        $selectedMatchingParts   = -1;
-        $selectedQualityValue    = 0;
-        $selectedPreferenceIndex = PHP_INT_MAX;
-        $acceptable              = false;
-        $acceptTypesEmpty        = true;
-
-        $acceptTypes  = self::mimeTypesFromAcceptHeaders($acceptTypesText);
-        $numAvailable = count($availableTypes);
-        foreach ($acceptTypes as $acceptType) {
-            $acceptTypesEmpty = false;
-            for ($i = 0; $i < $numAvailable; ++$i) {
-                $availableType = $availableTypes[$i];
-                $matchRating   = $acceptType->getMatchingRating($availableType);
-                if (0 > $matchRating) {
-                    continue;
-                }
-
-                $candidateQualityValue = $acceptType->getQualityValue();
-                if ($matchRating > $selectedMatchingParts) {
-                    // A more specific type wins.
-                    $selectedContentType     = $availableType;
-                    $selectedMatchingParts   = $matchRating;
-                    $selectedQualityValue    = $candidateQualityValue;
-                    $selectedPreferenceIndex = $i;
-                    $acceptable              = 0 != $selectedQualityValue;
-                } elseif ($matchRating == $selectedMatchingParts) {
-                    // A type with a higher q-value wins.
-                    if ($candidateQualityValue > $selectedQualityValue) {
-                        $selectedContentType     = $availableType;
-                        $selectedQualityValue    = $candidateQualityValue;
-                        $selectedPreferenceIndex = $i;
-                        $acceptable              = 0 != $selectedQualityValue;
-                    } elseif ($candidateQualityValue == $selectedQualityValue) {
-                        // A type that is earlier in the availableTypes array wins.
-                        if ($i < $selectedPreferenceIndex) {
-                            $selectedContentType     = $availableType;
-                            $selectedPreferenceIndex = $i;
-                        }
-                    }
-                }
-            }
-        }
-
-        if ($acceptTypesEmpty) {
-            $selectedContentType = $availableTypes[0];
-        } elseif (!$acceptable) {
-            $selectedContentType = null;
-        }
-
-        return $selectedContentType;
-    }
-
-    /**
      * Returns all MIME types from the $text.
      *
      * @param null|string $text Text as it appears on an HTTP Accepts header
@@ -426,13 +361,13 @@ class HttpProcessUtility
     /**
      * Selects an acceptable MIME type that satisfies the Accepts header.
      *
-     * @param string   $acceptTypesText Text for Accepts header
-     * @param string[] $availableTypes  Types that the server is willing to return, in descending order of preference
+     * @param null|string $acceptTypesText Text for Accepts header
+     * @param string[]    $availableTypes  Types that the server is willing to return, in descending order of preference
      *
      * @throws HttpHeaderFailure
-     * @return string|null       The best MIME type for the client
+     * @return string|null The best MIME type for the client
      */
-    public static function selectMimeType(string $acceptTypesText, array $availableTypes): ?string
+    public static function selectMimeType(?string $acceptTypesText, array $availableTypes): ?string
     {
         $selectedContentType     = null;
         $selectedMatchingParts   = -1;

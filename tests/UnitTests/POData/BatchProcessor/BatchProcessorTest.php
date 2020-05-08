@@ -25,11 +25,6 @@ use UnitTests\POData\TestCase;
 
 class BatchProcessorTest extends TestCase
 {
-    function tearDown()
-    {
-        parent::tearDown();
-        IndentedTextWriter::$PHP_EOL = "\n";
-    }
 
     public function testBatchRequestPartitioning()
     {
@@ -233,12 +228,13 @@ Host: host
      */
     public function testGetResponse($eol)
     {
-        IndentedTextWriter::$PHP_EOL = $eol;
         $resp = m::mock(ChangeSetParser::class)->makePartial();
-        $resp->shouldReceive('getResponse')->andReturn(IndentedTextWriter::$PHP_EOL . 'response' . IndentedTextWriter::$PHP_EOL);
+        $resp->shouldReceive('getResponse')->andReturn($eol . 'response' . $eol);
 
         $service = m::mock(BaseService::class);
-        $service->shouldReceive('getConfiguration')->andReturn(new ServiceConfiguration(null))->atLeast(1);
+        $config = new ServiceConfiguration(null);
+        $config->setLineEndings($eol);
+        $service->shouldReceive('getConfiguration')->andReturn($config)->atLeast(1);
 
         $request = m::mock(RequestDescription::class);
 
@@ -249,10 +245,5 @@ Host: host
 
         $bitz = explode('response', $actual);
         $this->assertEquals(3, count($bitz));
-    }
-
-    function getEOL()
-    {
-        return [["\n"],["\r\n"]];
     }
 }

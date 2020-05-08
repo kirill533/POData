@@ -721,8 +721,4 @@ class OrderByParserTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    public function tearDown()
-    {
-        parent::tearDown();
-    }
 }

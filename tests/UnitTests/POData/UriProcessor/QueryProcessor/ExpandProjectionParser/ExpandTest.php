@@ -546,8 +546,4 @@ class ExpandTest extends TestCase
         }
     }
 
-    public function tearDown()
-    {
-        parent::tearDown();
-    }
 }
