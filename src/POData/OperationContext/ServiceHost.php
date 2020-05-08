@@ -71,7 +71,7 @@ class ServiceHost
      * @param IOperationContext $context the OperationContext implementation to use.
      *
      * Currently we are forcing the input request to be of type
-     * \Illuminate\Http\Request but in the future we could make this more flexible if needed
+     *
      * @throws ODataException
      * @throws UrlFormatException
      */
