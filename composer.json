@@ -4,7 +4,7 @@
     "description": "OData for Poor PHP Developers",
     "keywords": [ "rest", "odata" ],
     "license": "MIT",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "authors": [
         {
             "name": "c-harris",
