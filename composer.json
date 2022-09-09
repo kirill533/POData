@@ -43,7 +43,7 @@
     "require": {
         "myclabs/php-enum": "^1.7",
         "cruxinator/php-bitmask": "^0.1",
-        "php": "^7.1",
+        "php": "^7.1|^8.0",
         "illuminate/support": ">=5.1|^6.0",
         "bim/o-data-metadata": "^0.1.6",
         "ext-xml": "*",
