@@ -10,7 +10,7 @@ module_name="POData"
 module_dir="$root_dir"
 
 cd ${root_dir}repo-build-dev/
-composer config repositories.ModuleBimLibM2Source${module_name} \
+composer config repositories.Bim.Dev.${module_name} \
     "{\"type\": \"path\",\"url\": \"$module_dir\",\"options\": {\"symlink\": true}}"
 
 mv "${root_dir}repo-build-dev/composer.json" "${root_dir}repo-build-dev/repositories.json"
