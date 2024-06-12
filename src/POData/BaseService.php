@@ -952,7 +952,7 @@ abstract class BaseService implements IRequestHandler, IService
             // If eTag is made up of datetime or string properties then the above
             // IType::convertToOData will perform utf8 and url encode. But we don't
             // want this for eTag value.
-            $eTag = urldecode(utf8_decode($eTag));
+            $eTag = urldecode(mb_convert_encoding($eTag, 'ISO-8859-1', 'UTF-8'));
 
             return rtrim($eTag, ',');
         }
