@@ -98,7 +98,12 @@ class EdmString implements IType
     public function convertToOData($value)
     {
         $rawValue = str_replace('/', '»', $value);
-        return '\'' . str_replace('%27', "''", urlencode(utf8_encode($rawValue))) . '\'';
+
+        $detectedEncoding = mb_detect_encoding($rawValue, mb_detect_order(), true);
+
+        $encodedValue = $detectedEncoding ? mb_convert_encoding($rawValue, 'UTF-8', $detectedEncoding) : $rawValue;
+
+        return '\'' . str_replace('%27', "''", urlencode($encodedValue)) . '\'';
     }
 
     /**
