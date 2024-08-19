@@ -112,7 +112,7 @@ class IncomingRequest implements IHTTPRequest
             $rawHost = $_SERVER[HttpProcessUtility::headerToServerKey(ODataConstants::HTTPREQUEST_HEADER_HOST)] ?? '';
             $rawUri  = $_SERVER[ODataConstants::HTTPREQUEST_URI] ?? '';
             $this->rawUrl .= '://' . $rawHost;
-            $this->rawUrl .= utf8_decode(urldecode($rawUri));
+            $this->rawUrl .= mb_convert_encoding(urldecode($rawUri), 'ISO-8859-1', 'UTF-8');
         }
 
         return $this->rawUrl;
@@ -234,7 +234,7 @@ class IncomingRequest implements IHTTPRequest
         if (null === $this->queryString) {
             if (array_key_exists(ODataConstants::HTTPREQUEST_QUERY_STRING, $_SERVER)) {
                 $rawString         = $_SERVER[ODataConstants::HTTPREQUEST_QUERY_STRING] ?? '';
-                $this->queryString = utf8_decode(trim($rawString));
+                $this->queryString = mb_convert_encoding(trim($rawString), 'ISO-8859-1', 'UTF-8');
             } else {
                 $this->queryString = '';
             }

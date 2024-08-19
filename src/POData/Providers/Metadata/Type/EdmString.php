@@ -99,11 +99,7 @@ class EdmString implements IType
     {
         $rawValue = str_replace('/', '»', $value);
 
-        $detectedEncoding = mb_detect_encoding($rawValue, mb_detect_order(), true);
-
-        $encodedValue = $detectedEncoding ? mb_convert_encoding($rawValue, 'UTF-8', $detectedEncoding) : $rawValue;
-
-        return '\'' . str_replace('%27', "''", urlencode($encodedValue)) . '\'';
+        return '\'' . str_replace('%27', "''", urlencode(mb_convert_encoding($rawValue, "UTF-8", mb_detect_encoding($rawValue)))) . '\'';
     }
 
     /**
